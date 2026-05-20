@@ -1,0 +1,223 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to (re)build, e.g. v0.54.4 (must already exist as a git tag)'
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: macOS arm64
+            runner: macos-14
+            target: aarch64-apple-darwin
+            cef_cache_path: ~/Library/Caches/tauri-cef
+          - label: Windows x64
+            runner: windows-latest
+            target: x86_64-pc-windows-msvc
+            cef_cache_path: ~/AppData/Local/tauri-cef
+    env:
+      TAG: ${{ github.event.inputs.tag || github.ref_name }}
+    steps:
+      - name: Resolve version from tag
+        id: ver
+        shell: bash
+        run: |
+          TAG="${TAG}"
+          if [[ -z "$TAG" ]]; then
+            echo "TAG is empty; refusing to build." >&2
+            exit 1
+          fi
+          VERSION="${TAG#v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG"         >> "$GITHUB_OUTPUT"
+
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ steps.ver.outputs.tag }}
+          submodules: recursive
+          fetch-depth: 1
+
+      - uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24.x
+          cache: pnpm
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      # Skip first 7 lines of Cargo.lock (workspace package version bumps) so
+      # the cache key tracks dependency changes only — bumping the app version
+      # otherwise busts the cache for no reason.
+      - name: Cargo.lock fingerprint (deps only)
+        id: cargo-fp
+        shell: bash
+        run: |
+          HASH=$(tail -n +8 Cargo.lock | shasum -a 256 | awk '{print $1}')
+          echo "hash=$HASH" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Cargo registry + git sources
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-registry-${{ steps.cargo-fp.outputs.hash }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-registry-
+
+      # CEF dist is ~400MB; skip the re-download on every run.
+      - name: Cache CEF binary distribution
+        uses: actions/cache@v4
+        with:
+          path: ${{ matrix.cef_cache_path }}
+          key: ${{ runner.os }}-cef-${{ hashFiles('app/src-tauri/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-cef-
+
+      # The vendored CEF-aware tauri-cli takes minutes to compile from scratch.
+      # Keyed on its own Cargo.toml; ensure-tauri-cli.sh additionally rebuilds
+      # if vendored source files are newer than the binary.
+      - name: Cache vendored cargo-tauri
+        uses: actions/cache@v4
+        with:
+          path: .cache/cargo-install
+          key: ${{ runner.os }}-vendored-tauri-cli-${{ hashFiles('app/src-tauri/vendor/tauri-cef/crates/tauri-cli/Cargo.toml') }}
+
+      - name: Install workspace dependencies
+        shell: bash
+        run: pnpm install --frozen-lockfile
+
+      - name: Ensure vendored CEF-aware tauri-cli is installed
+        shell: bash
+        env:
+          # ensure-tauri-cli.sh defaults CEF_PATH to a macOS path; set it
+          # explicitly per platform.
+          CEF_PATH: ${{ matrix.cef_cache_path }}
+        run: pnpm tauri:ensure
+
+      - name: Build macOS arm64 (.app + .dmg, hdiutil fallback)
+        if: runner.os == 'macOS'
+        shell: bash
+        working-directory: app
+        env:
+          NODE_OPTIONS: '--max-old-space-size=8192'
+          CEF_PATH: ${{ matrix.cef_cache_path }}
+        run: |
+          export PATH="$GITHUB_WORKSPACE/.cache/cargo-install/bin:$HOME/.cargo/bin:$PATH"
+
+          BUNDLE_DIR="$GITHUB_WORKSPACE/app/src-tauri/target/${{ matrix.target }}/release/bundle"
+          APP_PATH="${BUNDLE_DIR}/macos/OpenHuman.app"
+          DMG_PATH="${BUNDLE_DIR}/dmg/OpenHuman_${{ steps.ver.outputs.version }}_aarch64.dmg"
+
+          # tauri-bundler's bundle_dmg.sh drives Finder via AppleScript and
+          # intermittently fails with "AppleEvent timed out (-1712)". We
+          # tolerate that, then rebuild the DMG via hdiutil below.
+          set +e
+          cargo tauri build --bundles app dmg --target ${{ matrix.target }} -- --bin OpenHuman
+          BUILD_RC=$?
+          set -e
+
+          if [[ ! -f "$DMG_PATH" ]]; then
+            if [[ ! -d "$APP_PATH" ]]; then
+              echo "Build failed: neither .dmg nor .app produced (cargo rc=$BUILD_RC)" >&2
+              ls -R "$BUNDLE_DIR" 2>/dev/null || true
+              exit ${BUILD_RC:-1}
+            fi
+            echo "DMG missing but .app present — rebuilding DMG via hdiutil"
+            rm -f "${BUNDLE_DIR}/macos"/rw.*.dmg "$DMG_PATH"
+            mkdir -p "${BUNDLE_DIR}/dmg"
+            hdiutil create \
+              -volname "OpenHuman ${{ steps.ver.outputs.version }}" \
+              -srcfolder "$APP_PATH" \
+              -ov -format UDZO \
+              "$DMG_PATH"
+          fi
+
+          DMG_NAME="$(basename "$DMG_PATH")"
+          shasum -a 256 "$DMG_PATH" | awk -v n="$DMG_NAME" '{print $1"  "n}' > "${DMG_PATH}.sha256"
+
+          echo "ARTIFACT_PATH=$DMG_PATH"        >> "$GITHUB_ENV"
+          echo "SHA_PATH=${DMG_PATH}.sha256"    >> "$GITHUB_ENV"
+
+      - name: Build Windows x64 (NSIS .exe)
+        if: runner.os == 'Windows'
+        shell: bash
+        working-directory: app
+        env:
+          NODE_OPTIONS: '--max-old-space-size=8192'
+          CEF_PATH: ${{ matrix.cef_cache_path }}
+        run: |
+          export PATH="$GITHUB_WORKSPACE/.cache/cargo-install/bin:$HOME/.cargo/bin:$PATH"
+
+          cargo tauri build --target ${{ matrix.target }} --bundles nsis -- --bin OpenHuman
+
+          # tauri-bundler may emit to either app/src-tauri/target/... or root
+          # target/... depending on how cargo resolves the workspace; check
+          # both.
+          EXE_PATH=""
+          for candidate in \
+            "$GITHUB_WORKSPACE/app/src-tauri/target/${{ matrix.target }}/release/bundle/nsis"/OpenHuman_*_x64-setup.exe \
+            "$GITHUB_WORKSPACE/target/${{ matrix.target }}/release/bundle/nsis"/OpenHuman_*_x64-setup.exe ; do
+            if [[ -f "$candidate" ]]; then
+              EXE_PATH="$candidate"
+              break
+            fi
+          done
+
+          if [[ -z "$EXE_PATH" ]]; then
+            echo "NSIS .exe not found in any expected location" >&2
+            ls -R "$GITHUB_WORKSPACE/app/src-tauri/target/${{ matrix.target }}/release/bundle" 2>/dev/null || true
+            ls -R "$GITHUB_WORKSPACE/target/${{ matrix.target }}/release/bundle" 2>/dev/null || true
+            exit 1
+          fi
+
+          EXE_NAME="$(basename "$EXE_PATH")"
+          shasum -a 256 "$EXE_PATH" | awk -v n="$EXE_NAME" '{print $1"  "n}' > "${EXE_PATH}.sha256"
+
+          echo "ARTIFACT_PATH=$EXE_PATH"     >> "$GITHUB_ENV"
+          echo "SHA_PATH=${EXE_PATH}.sha256" >> "$GITHUB_ENV"
+
+      # softprops/action-gh-release is idempotent: creates the release on
+      # first invocation, appends assets on subsequent ones. The two matrix
+      # jobs race the create call safely.
+      - name: Publish to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.ver.outputs.tag }}
+          name: OpenHuman 钉钉 ${{ steps.ver.outputs.version }}
+          body: |
+            Fork build of OpenHuman ${{ steps.ver.outputs.version }} (unsigned).
+
+            - macOS arm64 (Apple Silicon): `OpenHuman_${{ steps.ver.outputs.version }}_aarch64.dmg` — first launch: right-click → Open to bypass Gatekeeper.
+            - Windows x64: `OpenHuman_${{ steps.ver.outputs.version }}_x64-setup.exe` (NSIS).
+
+            Quick install (see `scripts/install.{sh,ps1}` for one-line installers).
+          draft: false
+          make_latest: true
+          fail_on_unmatched_files: true
+          files: |
+            ${{ env.ARTIFACT_PATH }}
+            ${{ env.SHA_PATH }}
