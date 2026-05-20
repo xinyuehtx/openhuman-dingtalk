@@ -174,6 +174,9 @@ pub fn all_tools_with_runtime(
             security.clone(),
         )),
         Box::new(GmailUnsubscribeTool),
+        // DingTalk Workspace CLI — covers 19 DingTalk products via the
+        // `dws` binary. See https://github.com/DingTalk-Real-AI/dingtalk-workspace-cli
+        Box::new(DwsTool::new()),
     ];
 
     if browser_config.enabled {
@@ -455,20 +458,11 @@ pub fn all_tools_with_runtime(
             tracing::debug!("[integrations] twilio disabled — skipping");
         }
 
-        // Composio — backend-proxied 1000+ OAuth integrations. Registers
-        // five agent tools (list_toolkits, list_connections, authorize,
-        // list_tools, execute) when the composio toggle is on. See
-        // `src/openhuman/composio/tools.rs` for per-tool details.
-        let composio_tools = crate::openhuman::composio::all_composio_agent_tools(root_config);
-        if !composio_tools.is_empty() {
-            tracing::debug!(
-                count = composio_tools.len(),
-                "[integrations] registered composio tools"
-            );
-            tools.extend(composio_tools);
-        } else {
-            tracing::debug!("[integrations] composio disabled — skipping");
-        }
+        // Composio agent tools were intentionally removed from this fork:
+        // the project runs locally only and does not require Composio's
+        // OAuth-broker backend. The Composio module itself is kept for the
+        // existing trigger/periodic plumbing that other parts of the core
+        // still rely on, but no Composio tools are exposed to agents.
     } else {
         tracing::debug!(
             "[integrations] build_client returned None — integration tools not registered"

@@ -217,6 +217,13 @@ pub fn all_controller_schemas() -> Vec<ControllerSchema> {
         schemas("update_voice_server_settings"),
         schemas("update_composio_trigger_settings"),
         schemas("get_composio_trigger_settings"),
+        schemas("get_dws_sync_settings"),
+        schemas("update_dws_sync_settings"),
+        schemas("dws_sync_now"),
+        schemas("dws_runtime_status"),
+        schemas("dws_runtime_install"),
+        schemas("dws_runtime_open_login"),
+        schemas("dws_runtime_logout"),
     ]
 }
 
@@ -333,6 +340,34 @@ pub fn all_registered_controllers() -> Vec<RegisteredController> {
         RegisteredController {
             schema: schemas("get_composio_trigger_settings"),
             handler: handle_get_composio_trigger_settings,
+        },
+        RegisteredController {
+            schema: schemas("get_dws_sync_settings"),
+            handler: handle_get_dws_sync_settings,
+        },
+        RegisteredController {
+            schema: schemas("update_dws_sync_settings"),
+            handler: handle_update_dws_sync_settings,
+        },
+        RegisteredController {
+            schema: schemas("dws_sync_now"),
+            handler: handle_dws_sync_now,
+        },
+        RegisteredController {
+            schema: schemas("dws_runtime_status"),
+            handler: handle_dws_runtime_status,
+        },
+        RegisteredController {
+            schema: schemas("dws_runtime_install"),
+            handler: handle_dws_runtime_install,
+        },
+        RegisteredController {
+            schema: schemas("dws_runtime_open_login"),
+            handler: handle_dws_runtime_open_login,
+        },
+        RegisteredController {
+            schema: schemas("dws_runtime_logout"),
+            handler: handle_dws_runtime_logout,
         },
     ]
 }
@@ -853,6 +888,88 @@ pub fn schemas(function: &str) -> ControllerSchema {
                 },
             ],
         },
+        "get_dws_sync_settings" => ControllerSchema {
+            namespace: "config",
+            function: "get_dws_sync_settings",
+            description: "Read DWS (DingTalk) periodic sync settings: enabled state, interval, and per-category toggles.",
+            inputs: vec![],
+            outputs: vec![json_output("settings", "DWS sync settings object.")],
+        },
+        "update_dws_sync_settings" => ControllerSchema {
+            namespace: "config",
+            function: "update_dws_sync_settings",
+            description: "Update DWS (DingTalk) periodic sync settings. Only provided fields are changed.",
+            inputs: vec![
+                FieldSchema {
+                    name: "enabled",
+                    ty: TypeSchema::Option(Box::new(TypeSchema::Bool)),
+                    comment: "Enable or disable periodic DWS sync.",
+                    required: false,
+                },
+                FieldSchema {
+                    name: "interval_minutes",
+                    ty: TypeSchema::Option(Box::new(TypeSchema::U64)),
+                    comment: "Sync interval in minutes (minimum 5).",
+                    required: false,
+                },
+                FieldSchema {
+                    name: "categories",
+                    ty: TypeSchema::Option(Box::new(TypeSchema::Json)),
+                    comment: "Per-category toggles: { calendar, todo, contact, attendance, approval, report, mail, doc, chat }.",
+                    required: false,
+                },
+            ],
+            outputs: vec![json_output("snapshot", "Updated config snapshot.")],
+        },
+        "dws_sync_now" => ControllerSchema {
+            namespace: "config",
+            function: "dws_sync_now",
+            description: "Immediately trigger a DWS data sync for all enabled categories. Returns sync results per category.",
+            inputs: vec![],
+            outputs: vec![json_output("result", "Sync results with per-category success/failure details.")],
+        },
+        "dws_runtime_status" => ControllerSchema {
+            namespace: "config",
+            function: "dws_runtime_status",
+            description: "Detect the locally-installed dws CLI: install location, version, login state.",
+            inputs: vec![],
+            outputs: vec![json_output(
+                "status",
+                "Runtime status: { status, dws_path?, version?, auth_output? }.",
+            )],
+        },
+        "dws_runtime_install" => ControllerSchema {
+            namespace: "config",
+            function: "dws_runtime_install",
+            description: "Run the platform-appropriate dws install script. Idempotent — re-runs upgrade in place.",
+            inputs: vec![],
+            outputs: vec![json_output(
+                "result",
+                "Install result: { success, exit_code, output }.",
+            )],
+        },
+        "dws_runtime_open_login" => ControllerSchema {
+            namespace: "config",
+            function: "dws_runtime_open_login",
+            description:
+                "Spawn a fresh terminal window running `dws auth login` so the user can scan the QR / press enter. \
+                 Returns once the terminal is launched (login completes asynchronously in that window).",
+            inputs: vec![],
+            outputs: vec![json_output(
+                "result",
+                "Spawn result: { success, exit_code, output }.",
+            )],
+        },
+        "dws_runtime_logout" => ControllerSchema {
+            namespace: "config",
+            function: "dws_runtime_logout",
+            description: "Run `dws auth logout` in the background.",
+            inputs: vec![],
+            outputs: vec![json_output(
+                "result",
+                "Logout result: { success, exit_code, output }.",
+            )],
+        },
         _ => ControllerSchema {
             namespace: "config",
             function: "unknown",
@@ -1289,6 +1406,129 @@ fn handle_get_composio_trigger_settings(_params: Map<String, Value>) -> Controll
                 Err(err)
             }
         }
+    })
+}
+
+// ── DWS Sync settings ─────────────────────────────────────────────────────────
+
+#[derive(Debug, Deserialize)]
+struct DwsSyncSettingsUpdate {
+    enabled: Option<bool>,
+    interval_minutes: Option<u32>,
+    categories: Option<DwsSyncCategoriesUpdate>,
+}
+
+#[derive(Debug, Deserialize)]
+struct DwsSyncCategoriesUpdate {
+    calendar: Option<bool>,
+    todo: Option<bool>,
+    contact: Option<bool>,
+    attendance: Option<bool>,
+    approval: Option<bool>,
+    report: Option<bool>,
+    mail: Option<bool>,
+    doc: Option<bool>,
+    chat: Option<bool>,
+}
+
+fn handle_get_dws_sync_settings(_params: Map<String, Value>) -> ControllerFuture {
+    Box::pin(async {
+        log::debug!("[config][rpc] get_dws_sync_settings enter");
+        match config_rpc::get_dws_sync_settings().await {
+            Ok(outcome) => {
+                log::debug!("[config][rpc] get_dws_sync_settings ok");
+                to_json(outcome)
+            }
+            Err(err) => {
+                log::warn!("[config][rpc] get_dws_sync_settings failed: {err}");
+                Err(err)
+            }
+        }
+    })
+}
+
+fn handle_update_dws_sync_settings(params: Map<String, Value>) -> ControllerFuture {
+    Box::pin(async move {
+        log::debug!("[config][rpc] update_dws_sync_settings enter");
+        let update = match deserialize_params::<DwsSyncSettingsUpdate>(params) {
+            Ok(u) => u,
+            Err(err) => {
+                log::warn!("[config][rpc] update_dws_sync_settings invalid params: {err}");
+                return Err(err);
+            }
+        };
+        let categories_patch = update
+            .categories
+            .map(|c| config_rpc::DwsSyncCategoriesPatch {
+                calendar: c.calendar,
+                todo: c.todo,
+                contact: c.contact,
+                attendance: c.attendance,
+                approval: c.approval,
+                report: c.report,
+                mail: c.mail,
+                doc: c.doc,
+                chat: c.chat,
+            });
+        let patch = config_rpc::DwsSyncSettingsPatch {
+            enabled: update.enabled,
+            interval_minutes: update.interval_minutes,
+            categories: categories_patch,
+        };
+        match config_rpc::load_and_apply_dws_sync_settings(patch).await {
+            Ok(outcome) => {
+                log::debug!("[config][rpc] update_dws_sync_settings ok");
+                to_json(outcome)
+            }
+            Err(err) => {
+                log::warn!("[config][rpc] update_dws_sync_settings failed: {err}");
+                Err(err)
+            }
+        }
+    })
+}
+
+fn handle_dws_sync_now(_params: Map<String, Value>) -> ControllerFuture {
+    Box::pin(async {
+        log::debug!("[config][rpc] dws_sync_now enter");
+        match config_rpc::dws_sync_now().await {
+            Ok(outcome) => {
+                log::debug!("[config][rpc] dws_sync_now ok");
+                to_json(outcome)
+            }
+            Err(err) => {
+                log::warn!("[config][rpc] dws_sync_now failed: {err}");
+                Err(err)
+            }
+        }
+    })
+}
+
+fn handle_dws_runtime_status(_params: Map<String, Value>) -> ControllerFuture {
+    Box::pin(async {
+        log::debug!("[config][rpc] dws_runtime_status enter");
+        to_json(config_rpc::dws_runtime_status().await?)
+    })
+}
+
+fn handle_dws_runtime_install(_params: Map<String, Value>) -> ControllerFuture {
+    Box::pin(async {
+        log::debug!("[config][rpc] dws_runtime_install enter");
+        to_json(config_rpc::dws_runtime_install().await?)
+    })
+}
+
+fn handle_dws_runtime_open_login(_params: Map<String, Value>) -> ControllerFuture {
+    Box::pin(async {
+        log::debug!("[config][rpc] dws_runtime_open_login enter");
+        to_json(config_rpc::dws_runtime_open_login().await?)
+    })
+}
+
+fn handle_dws_runtime_logout(_params: Map<String, Value>) -> ControllerFuture {
+    Box::pin(async {
+        log::debug!("[config][rpc] dws_runtime_logout enter");
+        to_json(config_rpc::dws_runtime_logout().await?)
     })
 }
 

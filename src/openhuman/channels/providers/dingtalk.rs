@@ -3,14 +3,32 @@ use async_trait::async_trait;
 use futures_util::{SinkExt, StreamExt};
 use std::collections::HashMap;
 use std::sync::Arc;
+use std::time::Instant;
 use tokio::sync::RwLock;
 use tokio_tungstenite::tungstenite::Message;
 use uuid::Uuid;
 
 const DINGTALK_BOT_CALLBACK_TOPIC: &str = "/v1.0/im/bot/messages/get";
 
+/// How long before expiry we consider the cached access token stale (5-minute buffer).
+const ACCESS_TOKEN_REFRESH_BUFFER_SECS: u64 = 300;
+
+/// Cached DingTalk access token with expiry tracking.
+struct CachedAccessToken {
+    token: String,
+    obtained_at: Instant,
+    expires_in_secs: u64,
+}
+
+impl CachedAccessToken {
+    fn is_valid(&self) -> bool {
+        let elapsed = self.obtained_at.elapsed().as_secs();
+        elapsed + ACCESS_TOKEN_REFRESH_BUFFER_SECS < self.expires_in_secs
+    }
+}
+
 /// DingTalk channel — connects via Stream Mode WebSocket for real-time messages.
-/// Replies are sent through per-message session webhook URLs.
+/// Replies are sent through per-message session webhook URLs with access_token fallback.
 pub struct DingTalkChannel {
     client_id: String,
     client_secret: String,
@@ -18,6 +36,8 @@ pub struct DingTalkChannel {
     /// Per-chat session webhooks for sending replies (chatID -> webhook URL).
     /// DingTalk provides a unique webhook URL with each incoming message.
     session_webhooks: Arc<RwLock<HashMap<String, String>>>,
+    /// Cached access token for fallback message sending when session webhooks expire.
+    access_token_cache: Arc<RwLock<Option<CachedAccessToken>>>,
 }
 
 /// Response from DingTalk gateway connection registration.
@@ -27,6 +47,15 @@ struct GatewayResponse {
     ticket: String,
 }
 
+/// Response from DingTalk access token API.
+#[derive(serde::Deserialize)]
+struct AccessTokenResponse {
+    #[serde(rename = "accessToken")]
+    access_token: String,
+    #[serde(rename = "expireIn")]
+    expire_in: u64,
+}
+
 impl DingTalkChannel {
     pub fn new(client_id: String, client_secret: String, allowed_users: Vec<String>) -> Self {
         Self {
@@ -34,6 +63,7 @@ impl DingTalkChannel {
             client_secret,
             allowed_users,
             session_webhooks: Arc::new(RwLock::new(HashMap::new())),
+            access_token_cache: Arc::new(RwLock::new(None)),
         }
     }
 
@@ -103,24 +133,56 @@ impl DingTalkChannel {
         let gw: GatewayResponse = resp.json().await?;
         Ok(gw)
     }
-}
 
-#[async_trait]
-impl Channel for DingTalkChannel {
-    fn name(&self) -> &str {
-        "dingtalk"
+    /// Obtain a valid access token, using cache when possible.
+    async fn get_access_token(&self) -> anyhow::Result<String> {
+        // Check cache first.
+        {
+            let cache = self.access_token_cache.read().await;
+            if let Some(ref cached) = *cache {
+                if cached.is_valid() {
+                    tracing::debug!("[dingtalk] using cached access_token");
+                    return Ok(cached.token.clone());
+                }
+            }
+        }
+
+        // Fetch a new token.
+        tracing::debug!("[dingtalk] fetching new access_token from DingTalk API");
+        let body = serde_json::json!({
+            "appKey": self.client_id,
+            "appSecret": self.client_secret,
+        });
+
+        let resp = self
+            .http_client()
+            .post("https://api.dingtalk.com/v1.0/oauth2/accessToken")
+            .json(&body)
+            .send()
+            .await?;
+
+        if !resp.status().is_success() {
+            let status = resp.status();
+            let err = resp.text().await.unwrap_or_default();
+            anyhow::bail!("DingTalk access_token fetch failed ({status}): {err}");
+        }
+
+        let token_resp: AccessTokenResponse = resp.json().await?;
+        let token = token_resp.access_token.clone();
+
+        // Update cache.
+        let mut cache = self.access_token_cache.write().await;
+        *cache = Some(CachedAccessToken {
+            token: token_resp.access_token,
+            obtained_at: Instant::now(),
+            expires_in_secs: token_resp.expire_in,
+        });
+
+        Ok(token)
     }
 
-    async fn send(&self, message: &SendMessage) -> anyhow::Result<()> {
-        let webhooks = self.session_webhooks.read().await;
-        let webhook_url = webhooks.get(&message.recipient).ok_or_else(|| {
-            anyhow::anyhow!(
-                "No session webhook found for chat {}. \
-                 The user must send a message first to establish a session.",
-                message.recipient
-            )
-        })?;
-
+    /// Send a message using session webhook (primary path).
+    async fn send_via_webhook(&self, webhook_url: &str, message: &SendMessage) -> anyhow::Result<()> {
         let title = message.subject.as_deref().unwrap_or("OpenHuman");
         let body = serde_json::json!({
             "msgtype": "markdown",
@@ -144,6 +206,130 @@ impl Channel for DingTalkChannel {
         }
 
         Ok(())
+    }
+
+    /// Send a message using access_token-based robot API (fallback when webhook is unavailable).
+    async fn send_via_access_token(&self, recipient: &str, message: &SendMessage) -> anyhow::Result<()> {
+        let token = self.get_access_token().await?;
+        tracing::debug!(
+            "[dingtalk] sending message via access_token to recipient={}",
+            recipient
+        );
+
+        let body = serde_json::json!({
+            "robotCode": self.client_id,
+            "userIds": [recipient],
+            "msgKey": "sampleMarkdown",
+            "msgParam": serde_json::json!({
+                "title": message.subject.as_deref().unwrap_or("OpenHuman"),
+                "text": message.content,
+            }).to_string(),
+        });
+
+        let resp = self
+            .http_client()
+            .post("https://api.dingtalk.com/v1.0/robot/oToMessages/batchSend")
+            .header("x-acs-dingtalk-access-token", &token)
+            .json(&body)
+            .send()
+            .await?;
+
+        if !resp.status().is_success() {
+            let status = resp.status();
+            let err = resp.text().await.unwrap_or_default();
+            anyhow::bail!("DingTalk robot batchSend failed ({status}): {err}");
+        }
+
+        tracing::debug!("[dingtalk] access_token message sent successfully");
+        Ok(())
+    }
+}
+
+#[async_trait]
+impl Channel for DingTalkChannel {
+    fn name(&self) -> &str {
+        "dingtalk"
+    }
+
+    fn supports_draft_updates(&self) -> bool {
+        true
+    }
+
+    async fn send(&self, message: &SendMessage) -> anyhow::Result<()> {
+        // Try session webhook first (primary path).
+        let webhook_url = {
+            let webhooks = self.session_webhooks.read().await;
+            webhooks.get(&message.recipient).cloned()
+        };
+
+        if let Some(url) = webhook_url {
+            tracing::debug!(
+                "[dingtalk] sending via session webhook to recipient={}",
+                message.recipient
+            );
+            match self.send_via_webhook(&url, message).await {
+                Ok(()) => return Ok(()),
+                Err(e) => {
+                    tracing::warn!(
+                        "[dingtalk] webhook send failed (possibly expired): {e}; \
+                         falling back to access_token API"
+                    );
+                }
+            }
+        } else {
+            tracing::debug!(
+                "[dingtalk] no session webhook for recipient={}; using access_token API",
+                message.recipient
+            );
+        }
+
+        // Fallback: send via access_token-based robot API.
+        self.send_via_access_token(&message.recipient, message).await
+    }
+
+    async fn send_draft(&self, message: &SendMessage) -> anyhow::Result<Option<String>> {
+        // DingTalk does not support message editing via session webhooks.
+        // We send an initial "thinking" message and return a synthetic draft ID.
+        // Subsequent updates are sent as new messages (append strategy).
+        let draft_id = Uuid::new_v4().to_string();
+        tracing::debug!(
+            "[dingtalk] send_draft: draft_id={}, recipient={}",
+            draft_id,
+            message.recipient
+        );
+
+        // Send the initial content (or a placeholder).
+        self.send(message).await?;
+        Ok(Some(draft_id))
+    }
+
+    async fn update_draft(
+        &self,
+        _recipient: &str,
+        _message_id: &str,
+        _text: &str,
+    ) -> anyhow::Result<()> {
+        // DingTalk session webhooks do not support message editing.
+        // Silently skip intermediate updates to avoid spamming the chat.
+        // The finalize_draft call will send the complete response.
+        tracing::trace!("[dingtalk] update_draft: skipping intermediate update (not supported)");
+        Ok(())
+    }
+
+    async fn finalize_draft(
+        &self,
+        recipient: &str,
+        _message_id: &str,
+        text: &str,
+        thread_ts: Option<&str>,
+    ) -> anyhow::Result<()> {
+        // Send the final complete message.
+        tracing::debug!(
+            "[dingtalk] finalize_draft: sending final message to recipient={}",
+            recipient
+        );
+        let final_message = SendMessage::new(text, recipient).in_thread(thread_ts.map(String::from));
+        self.send(&final_message).await
     }
 
     async fn listen(&self, tx: tokio::sync::mpsc::Sender<ChannelMessage>) -> anyhow::Result<()> {

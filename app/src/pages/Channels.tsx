@@ -9,7 +9,7 @@ import type { ChannelType } from '../types/channels';
 const Channels = () => {
   const { t } = useT();
   const { definitions, loading, error } = useChannelDefinitions();
-  const [selectedChannel, setSelectedChannel] = useState<ChannelType>('telegram');
+  const [selectedChannel, setSelectedChannel] = useState<ChannelType>('dingtalk');
 
   return (
     <div className="flex flex-col h-full overflow-hidden">

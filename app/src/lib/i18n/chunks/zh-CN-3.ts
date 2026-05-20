@@ -357,6 +357,9 @@ const zhCN3: TranslationMap = {
   'channels.telegram.managedDmTimeout': '私信连接超时',
   'channels.telegram.reconnect': '重新连接',
   'channels.telegram.savedRestartRequired': '频道已保存。重启应用以激活。',
+  'channels.dingtalk.connect': '连接',
+  'channels.dingtalk.reconnect': '重新连接',
+  'channels.dingtalk.savedRestartRequired': '频道已保存。重启应用以激活。',
   'channels.web.alwaysAvailable': '始终可用',
 };
 

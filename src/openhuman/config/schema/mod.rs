@@ -23,6 +23,7 @@ pub use load::{
     clear_active_user, default_root_openhuman_dir, pre_login_user_dir, read_active_user_id,
     user_openhuman_dir, write_active_user_id, PRE_LOGIN_USER_ID,
 };
+mod dws;
 mod local_ai;
 mod meet;
 mod node;
@@ -51,6 +52,7 @@ pub use channels::{
 };
 pub use context::ContextConfig;
 pub use dictation::{DictationActivationMode, DictationConfig};
+pub use dws::{DwsSyncCategories, DwsSyncConfig};
 pub use heartbeat_cron::{CronConfig, HeartbeatConfig};
 pub use identity_cost::{CostConfig, ModelPricing};
 pub use learning::{LearningConfig, ReflectionSource};

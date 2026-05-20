@@ -1149,6 +1149,10 @@ fn register_domain_subscribers(
         }
         crate::openhuman::composio::register_composio_trigger_subscriber();
         crate::openhuman::composio::start_periodic_sync();
+        // DWS (DingTalk) periodic sync — picks up categories + interval from
+        // `[dws_sync]` and only spawns when enabled. apply_config is a no-op
+        // when disabled, so this is safe to call unconditionally.
+        crate::openhuman::tools::implementations::dws::sync::apply_config(&config.dws_sync);
         // Initialise the scheduler gate before any background AI workers
         // start so they observe a real policy on their first iteration
         // (otherwise they fall back to `Policy::Normal` and miss the

@@ -178,6 +178,11 @@ pub struct Config {
     #[serde(default)]
     pub web_search: WebSearchConfig,
 
+    /// DWS (DingTalk Workspace CLI) periodic sync configuration.
+    /// Controls automatic data pulling from DingTalk products.
+    #[serde(default)]
+    pub dws_sync: DwsSyncConfig,
+
     #[serde(default)]
     pub proxy: ProxyConfig,
 
@@ -549,6 +554,7 @@ impl Default for Config {
             multimodal: MultimodalConfig::default(),
             seltz: SeltzConfig::default(),
             web_search: WebSearchConfig::default(),
+            dws_sync: DwsSyncConfig::default(),
             proxy: ProxyConfig::default(),
             cost: CostConfig::default(),
             computer_control: ComputerControlConfig::default(),

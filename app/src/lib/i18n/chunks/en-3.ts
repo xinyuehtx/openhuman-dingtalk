@@ -366,6 +366,9 @@ const en3: TranslationMap = {
   'channels.telegram.managedDmTimeout': 'Managed dm timeout',
   'channels.telegram.reconnect': 'Reconnect',
   'channels.telegram.savedRestartRequired': 'Channel saved. Restart the app to activate it.',
+  'channels.dingtalk.connect': 'Connect',
+  'channels.dingtalk.reconnect': 'Reconnect',
+  'channels.dingtalk.savedRestartRequired': 'Channel saved. Restart the app to activate it.',
   'channels.web.alwaysAvailable': 'Always available',
 };
 

@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import AddAccountModal from '../components/accounts/AddAccountModal';
 import { AgentIcon, ProviderIcon } from '../components/accounts/providerIcons';
 import RespondQueuePanel from '../components/accounts/RespondQueuePanel';
 import WebviewHost from '../components/accounts/WebviewHost';
@@ -10,36 +9,18 @@ import { usePrewarmMostRecentAccount } from '../hooks/usePrewarmMostRecentAccoun
 // [#1123] Commented out — welcome-agent onboarding replaced by Joyride walkthrough
 // import { useCoreState } from '../providers/CoreStateProvider';
 import { useT } from '../lib/i18n/I18nContext';
-import { trackEvent } from '../services/analytics';
 import {
   hideWebviewAccount,
   purgeWebviewAccount,
   showWebviewAccount,
   startWebviewAccountService,
 } from '../services/webviewAccountService';
-import {
-  addAccount,
-  removeAccount,
-  setActiveAccount,
-  setLastActiveAccount,
-} from '../store/accountsSlice';
+import { removeAccount, setActiveAccount, setLastActiveAccount } from '../store/accountsSlice';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { fetchRespondQueue } from '../store/providerSurfaceSlice';
-import type { Account, AccountProvider, ProviderDescriptor } from '../types/accounts';
+import type { Account } from '../types/accounts';
 import { AGENT_ACCOUNT_ID as AGENT_ID } from '../utils/accountsFullscreen';
 import { AgentChatPanel } from './Conversations';
-
-function makeAccountId(): string {
-  const c = globalThis.crypto;
-  if (c && typeof c.randomUUID === 'function') return c.randomUUID();
-  if (c && typeof c.getRandomValues === 'function') {
-    const bytes = new Uint8Array(4);
-    c.getRandomValues(bytes);
-    const suffix = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
-    return `acct-${Date.now().toString(36)}-${suffix}`;
-  }
-  return `acct-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-}
 
 interface RailButtonProps {
   active: boolean;
@@ -117,7 +98,6 @@ const Accounts = () => {
   const respondQueueStatus = useAppSelector(state => state.providerSurfaces.status);
   const respondQueueError = useAppSelector(state => state.providerSurfaces.error);
 
-  const [addOpen, setAddOpen] = useState(false);
   const [ctxMenu, setCtxMenu] = useState<ContextMenuState | null>(null);
   // Respond Queue is a power-user surface (pending replies from connected
   // accounts). Hidden by default so the agent chat gets full width; users
@@ -157,11 +137,6 @@ const Accounts = () => {
     return () => window.clearInterval(id);
   }, [dispatch]);
 
-  const connectedProviders = useMemo(
-    () => new Set<AccountProvider>(accounts.map(a => a.provider)),
-    [accounts]
-  );
-
   // [#1123] Commented out — welcome-agent onboarding replaced by Joyride walkthrough
   // While welcome-locked, derive the effective selection directly from
   // `welcomeLocked` so the first paint after a lock flip never renders the
@@ -174,11 +149,11 @@ const Accounts = () => {
 
   // The child Tauri webview is a native view composited above the HTML
   // canvas, so DOM z-index can't put React overlays on top of it. Hide
-  // the active webview while any overlay (add-account modal or the
-  // right-click context menu) is open and restore it on close. No-op
-  // when the agent pane is selected (pure HTML).
+  // the active webview while any overlay (right-click context menu) is
+  // open and restore it on close. No-op when the agent pane is selected
+  // (pure HTML).
   const activeId = active?.id ?? null;
-  const overlayOpen = addOpen || ctxMenu !== null;
+  const overlayOpen = ctxMenu !== null;
   useEffect(() => {
     if (!activeId) return;
     if (overlayOpen) {
@@ -187,25 +162,6 @@ const Accounts = () => {
       void showWebviewAccount(activeId);
     }
   }, [overlayOpen, activeId]);
-
-  const handlePickProvider = (p: ProviderDescriptor) => {
-    setAddOpen(false);
-    trackEvent('account_connect_start', { provider: p.id });
-    const id = makeAccountId();
-    const acct: Account = {
-      id,
-      provider: p.id,
-      label: p.label,
-      createdAt: new Date().toISOString(),
-      status: 'pending',
-    };
-    dispatch(addAccount(acct));
-    dispatch(setActiveAccount(id));
-    // Issue #1233 — record this real-account selection in the persisted
-    // MRU pointer so the next session can prewarm it. Agent selections
-    // never reach this code path (separate `selectAgent` callback below).
-    dispatch(setLastActiveAccount(id));
-  };
 
   const selectAgent = () => dispatch(setActiveAccount(AGENT_ID));
   const selectAccount = (id: string) => {
@@ -264,20 +220,6 @@ const Accounts = () => {
             <ProviderIcon provider={acct.provider} className="h-8 w-8 rounded-md" />
           </RailButton>
         ))}
-
-        <button
-          onClick={() => setAddOpen(true)}
-          className="group relative mt-2 flex h-11 w-11 items-center justify-center rounded-xl border border-dashed border-stone-300 dark:border-neutral-700 text-stone-400 dark:text-neutral-500 hover:z-50 hover:bg-stone-50 dark:hover:bg-neutral-800/60 hover:text-stone-600 dark:hover:text-neutral-300"
-          aria-label={t('accounts.addAccount')}>
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          {/* Issue #1284 — see RailButton for why the tooltip sits below
-              the icon instead of to the right. */}
-          <span className="pointer-events-none absolute left-1/2 top-full mt-1 -translate-x-1/2 whitespace-nowrap rounded-md bg-stone-900 px-2 py-1 text-xs text-white opacity-0 shadow-md transition-opacity group-hover:opacity-100 z-50">
-            {t('accounts.addAccount')}
-          </span>
-        </button>
       </aside>
 
       {/* Main pane */}
@@ -335,13 +277,6 @@ const Accounts = () => {
           </div>
         )}
       </main>
-
-      <AddAccountModal
-        open={addOpen}
-        onClose={() => setAddOpen(false)}
-        onPick={handlePickProvider}
-        connectedProviders={connectedProviders}
-      />
 
       {ctxMenu && (
         <div

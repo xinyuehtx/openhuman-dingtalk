@@ -7,7 +7,14 @@ export interface ToolDefinition {
   rustToolNames: string[];
 }
 
-export type ToolCategory = 'System' | 'Files' | 'Vision' | 'Web' | 'Memory' | 'Automation';
+export type ToolCategory =
+  | 'System'
+  | 'Files'
+  | 'Vision'
+  | 'Web'
+  | 'Memory'
+  | 'Automation'
+  | 'DingTalk';
 
 export const TOOL_CATEGORIES: ToolCategory[] = [
   'System',
@@ -16,6 +23,7 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
   'Web',
   'Memory',
   'Automation',
+  'DingTalk',
 ];
 
 export const TOOL_CATALOG: ToolDefinition[] = [
@@ -150,6 +158,17 @@ export const TOOL_CATALOG: ToolDefinition[] = [
     defaultEnabled: true,
     rustToolNames: ['schedule'],
   },
+
+  // DingTalk
+  {
+    id: 'dws',
+    displayName: '钉钉 DWS',
+    description:
+      '通过 DingTalk Workspace CLI 管理钉钉产品能力：AI表格、日历、通讯录、群聊、待办、审批、考勤、文档、云盘等。',
+    category: 'DingTalk',
+    defaultEnabled: true,
+    rustToolNames: ['dws'],
+  },
 ];
 
 export const CATEGORY_DESCRIPTIONS: Record<ToolCategory, string> = {
@@ -159,6 +178,7 @@ export const CATEGORY_DESCRIPTIONS: Record<ToolCategory, string> = {
   Web: 'Browser, HTTP, and web search',
   Memory: 'Persistent recall for the AI',
   Automation: 'Cron jobs and scheduled tasks',
+  DingTalk: '钉钉工作台集成 (DWS CLI)',
 };
 
 export function getToolsByCategory(): Record<ToolCategory, ToolDefinition[]> {

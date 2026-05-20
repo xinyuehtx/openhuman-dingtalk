@@ -84,7 +84,7 @@ const MessagingPanel = () => {
   const [channelModalDef, setChannelModalDef] = useState<ChannelDefinition | null>(null);
 
   const configurableChannels = useMemo(
-    () => definitions.filter(d => d.id !== 'web'),
+    () => definitions.filter(d => d.id === 'dingtalk'),
     [definitions]
   );
 

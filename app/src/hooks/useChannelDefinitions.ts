@@ -39,8 +39,8 @@ export function useChannelDefinitions() {
       ]);
       if (cancelled) return;
 
-      const resolvedDefs =
-        defs && Array.isArray(defs) && defs.length > 0 ? defs : FALLBACK_DEFINITIONS;
+      const allDefs = defs && Array.isArray(defs) && defs.length > 0 ? defs : FALLBACK_DEFINITIONS;
+      const resolvedDefs = allDefs.filter(d => d.id === 'dingtalk');
       setDefinitions(resolvedDefs);
       log('loaded %d channel definitions', resolvedDefs.length);
 
@@ -63,7 +63,7 @@ export function useChannelDefinitions() {
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       if (!cancelled) {
-        setDefinitions(FALLBACK_DEFINITIONS);
+        setDefinitions(FALLBACK_DEFINITIONS.filter(d => d.id === 'dingtalk'));
         setError(`Could not load from backend: ${msg}`);
         log('fallback to local definitions: %s', msg);
       }

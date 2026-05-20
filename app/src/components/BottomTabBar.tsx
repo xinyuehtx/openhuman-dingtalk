@@ -91,21 +91,6 @@ const makeTabs = (t: (key: string) => string) => [
   // Settings › Notifications since it's a low-traffic destination.
   // The /notifications route still exists for deep links.
   {
-    id: 'rewards',
-    label: t('nav.rewards'),
-    path: '/rewards',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={1.8}
-          d="M12 8v8m0-8l-3-3m3 3l3-3M8 14H6a2 2 0 01-2-2V7a2 2 0 012-2h2m8 9h2a2 2 0 002-2V7a2 2 0 00-2-2h-2M7 19h10"
-        />
-      </svg>
-    ),
-  },
-  {
     id: 'settings',
     label: t('nav.settings'),
     path: '/settings',

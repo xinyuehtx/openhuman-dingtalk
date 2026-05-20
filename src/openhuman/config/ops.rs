@@ -1296,6 +1296,213 @@ pub async fn get_data_paths() -> Result<RpcOutcome<serde_json::Value>, String> {
     ))
 }
 
+// ── DWS Sync configuration ────────────────────────────────────────────────────
+
+/// Patch structure for updating DWS sync settings.
+pub struct DwsSyncSettingsPatch {
+    pub enabled: Option<bool>,
+    pub interval_minutes: Option<u32>,
+    pub categories: Option<DwsSyncCategoriesPatch>,
+}
+
+/// Partial category toggle update (only provided fields are applied).
+pub struct DwsSyncCategoriesPatch {
+    pub calendar: Option<bool>,
+    pub todo: Option<bool>,
+    pub contact: Option<bool>,
+    pub attendance: Option<bool>,
+    pub approval: Option<bool>,
+    pub report: Option<bool>,
+    pub mail: Option<bool>,
+    pub doc: Option<bool>,
+    pub chat: Option<bool>,
+}
+
+/// Reads the current DWS sync settings from config, plus the per-category
+/// last-sync timestamps so the UI can show "上次同步：刚刚" labels.
+pub async fn get_dws_sync_settings() -> Result<RpcOutcome<serde_json::Value>, String> {
+    use crate::openhuman::tools::implementations::dws::sync;
+
+    let config = load_config_with_timeout().await?;
+    let state = sync::load_state(&config.workspace_dir).await;
+
+    let result = serde_json::json!({
+        "enabled": config.dws_sync.enabled,
+        "interval_minutes": config.dws_sync.interval_minutes,
+        "categories": {
+            "calendar": config.dws_sync.categories.calendar,
+            "todo": config.dws_sync.categories.todo,
+            "contact": config.dws_sync.categories.contact,
+            "attendance": config.dws_sync.categories.attendance,
+            "approval": config.dws_sync.categories.approval,
+            "report": config.dws_sync.categories.report,
+            "mail": config.dws_sync.categories.mail,
+            "doc": config.dws_sync.categories.doc,
+            "chat": config.dws_sync.categories.chat,
+        },
+        "last_synced_at": state.last_synced_at,
+    });
+    Ok(RpcOutcome::new(
+        result,
+        vec!["dws_sync settings read".to_string()],
+    ))
+}
+
+/// Loads the configuration, applies DWS sync settings patch, and saves it.
+pub async fn load_and_apply_dws_sync_settings(
+    update: DwsSyncSettingsPatch,
+) -> Result<RpcOutcome<serde_json::Value>, String> {
+    let mut config = load_config_with_timeout().await?;
+    apply_dws_sync_settings(&mut config, update).await
+}
+
+/// Applies DWS sync settings to the given config and saves.
+pub async fn apply_dws_sync_settings(
+    config: &mut Config,
+    update: DwsSyncSettingsPatch,
+) -> Result<RpcOutcome<serde_json::Value>, String> {
+    if let Some(enabled) = update.enabled {
+        config.dws_sync.enabled = enabled;
+        tracing::debug!(enabled = enabled, "[config][dws_sync] enabled updated");
+    }
+    if let Some(interval) = update.interval_minutes {
+        config.dws_sync.interval_minutes = interval.max(5);
+        tracing::debug!(
+            interval_minutes = config.dws_sync.interval_minutes,
+            "[config][dws_sync] interval_minutes updated"
+        );
+    }
+    if let Some(cats) = update.categories {
+        let c = &mut config.dws_sync.categories;
+        if let Some(v) = cats.calendar {
+            c.calendar = v;
+        }
+        if let Some(v) = cats.todo {
+            c.todo = v;
+        }
+        if let Some(v) = cats.contact {
+            c.contact = v;
+        }
+        if let Some(v) = cats.attendance {
+            c.attendance = v;
+        }
+        if let Some(v) = cats.approval {
+            c.approval = v;
+        }
+        if let Some(v) = cats.report {
+            c.report = v;
+        }
+        if let Some(v) = cats.mail {
+            c.mail = v;
+        }
+        if let Some(v) = cats.doc {
+            c.doc = v;
+        }
+        if let Some(v) = cats.chat {
+            c.chat = v;
+        }
+        tracing::debug!("[config][dws_sync] categories updated");
+    }
+    config.save().await.map_err(|e| e.to_string())?;
+    // Reflect the new settings into the live periodic scheduler — flipping
+    // enabled / interval / categories should take effect immediately without
+    // requiring a core restart.
+    crate::openhuman::tools::implementations::dws::sync::apply_config(&config.dws_sync);
+    let snapshot = snapshot_config_json(config)?;
+    Ok(RpcOutcome::new(
+        snapshot,
+        vec![format!(
+            "dws_sync settings saved to {}",
+            config.config_path.display()
+        )],
+    ))
+}
+
+// ── DWS runtime (install / login / logout / status) ─────────────────────────
+
+/// Detect the locally-installed DWS CLI: install location, version, login state.
+pub async fn dws_runtime_status() -> Result<RpcOutcome<serde_json::Value>, String> {
+    use crate::openhuman::tools::implementations::dws::runtime;
+    let status = runtime::status().await;
+    let payload = serde_json::to_value(&status).map_err(|e| e.to_string())?;
+    Ok(RpcOutcome::single_log(
+        payload,
+        format!("dws runtime status: {}", status.status),
+    ))
+}
+
+/// Run the platform-appropriate dws install script. Returns combined stdout/stderr.
+pub async fn dws_runtime_install() -> Result<RpcOutcome<serde_json::Value>, String> {
+    use crate::openhuman::tools::implementations::dws::runtime;
+    let result = runtime::install().await;
+    let payload = serde_json::to_value(&result).map_err(|e| e.to_string())?;
+    Ok(RpcOutcome::single_log(
+        payload,
+        format!("dws runtime install: success={}", result.success),
+    ))
+}
+
+/// Open a fresh terminal window pointing at `dws auth login` so the user can
+/// complete the interactive login (scan / enter). Returns immediately once the
+/// terminal has been spawned.
+pub async fn dws_runtime_open_login() -> Result<RpcOutcome<serde_json::Value>, String> {
+    use crate::openhuman::tools::implementations::dws::runtime;
+    let result = runtime::open_login_terminal().await;
+    let payload = serde_json::to_value(&result).map_err(|e| e.to_string())?;
+    Ok(RpcOutcome::single_log(
+        payload,
+        format!("dws runtime open_login: success={}", result.success),
+    ))
+}
+
+/// Run `dws auth logout` in the background.
+pub async fn dws_runtime_logout() -> Result<RpcOutcome<serde_json::Value>, String> {
+    use crate::openhuman::tools::implementations::dws::runtime;
+    let result = runtime::logout().await;
+    let payload = serde_json::to_value(&result).map_err(|e| e.to_string())?;
+    Ok(RpcOutcome::single_log(
+        payload,
+        format!("dws runtime logout: success={}", result.success),
+    ))
+}
+
+/// Triggers an immediate DWS sync for categories that are enabled in config.
+pub async fn dws_sync_now() -> Result<RpcOutcome<serde_json::Value>, String> {
+    use crate::openhuman::tools::implementations::dws::sync;
+
+    let config = load_config_with_timeout().await?;
+    let enabled_categories = sync::enabled_categories(&config.dws_sync.categories);
+
+    if enabled_categories.is_empty() {
+        return Ok(RpcOutcome::new(
+            serde_json::json!({
+                "synced": false,
+                "message": "No categories enabled for sync",
+            }),
+            vec!["dws_sync: no categories enabled".to_string()],
+        ));
+    }
+
+    let result = sync::sync_now(&enabled_categories).await;
+    let result_json =
+        serde_json::to_value(&result).map_err(|e| format!("serialization error: {e}"))?;
+
+    // Reload state so we can echo the freshly-recorded timestamps to the UI.
+    let state = sync::load_state(&config.workspace_dir).await;
+
+    Ok(RpcOutcome::new(
+        serde_json::json!({
+            "synced": true,
+            "result": result_json,
+            "last_synced_at": state.last_synced_at,
+        }),
+        vec![format!(
+            "dws_sync: synced {} categories",
+            enabled_categories.len()
+        )],
+    ))
+}
+
 #[cfg(test)]
 #[path = "ops_tests.rs"]
 mod tests;

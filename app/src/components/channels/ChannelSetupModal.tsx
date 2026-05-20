@@ -7,6 +7,7 @@ import { createPortal } from 'react-dom';
 
 import { useT } from '../../lib/i18n/I18nContext';
 import type { ChannelDefinition, ChannelType } from '../../types/channels';
+import DingTalkConfig from './DingTalkConfig';
 import DiscordConfig from './DiscordConfig';
 import TelegramConfig from './TelegramConfig';
 
@@ -14,6 +15,8 @@ const CHANNEL_ICONS: Record<string, string> = {
   telegram: '\u2708\uFE0F',
   discord: '\uD83C\uDFAE',
   web: '\uD83C\uDF10',
+  dingtalk: '\uD83D\uDD14',
+  lark: '\uD83E\uDEB6',
 };
 
 interface ChannelSetupModalProps {
@@ -29,6 +32,8 @@ function ChannelConfigContent({ definition }: { definition: ChannelDefinition })
       return <TelegramConfig definition={definition} />;
     case 'discord':
       return <DiscordConfig definition={definition} />;
+    case 'dingtalk':
+      return <DingTalkConfig definition={definition} />;
     default:
       return (
         <p className="text-sm text-stone-400 dark:text-neutral-500 py-4">
@@ -52,14 +57,23 @@ export default function ChannelSetupModal({ definition, onClose }: ChannelSetupM
 
   useEffect(() => {
     const previousFocus = document.activeElement as HTMLElement;
-    modalRef.current?.focus();
+    // Use a short delay to avoid stealing focus from password fields during
+    // browser autofill or password manager interactions.
+    const timer = window.setTimeout(() => {
+      if (modalRef.current && !modalRef.current.contains(document.activeElement)) {
+        modalRef.current.focus();
+      }
+    }, 50);
     return () => {
+      window.clearTimeout(timer);
       previousFocus?.focus?.();
     };
   }, []);
 
   const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) onClose();
+    // Only close if the direct click target is the backdrop itself.
+    // Ignore events that bubble from password managers or autocomplete dropdowns.
+    if (e.target === e.currentTarget && e.detail > 0) onClose();
   };
 
   const icon = CHANNEL_ICONS[definition.icon] ?? '';
@@ -80,6 +94,7 @@ export default function ChannelSetupModal({ definition, onClose }: ChannelSetupM
           animationFillMode: 'both',
         }}
         tabIndex={-1}
+        onMouseDown={e => e.stopPropagation()}
         onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="px-5 pt-5 pb-4 border-b border-stone-200 dark:border-neutral-800">

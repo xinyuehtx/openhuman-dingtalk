@@ -11,7 +11,6 @@ import Intelligence from './pages/Intelligence';
 import Invites from './pages/Invites';
 import Notifications from './pages/Notifications';
 import Onboarding from './pages/onboarding/Onboarding';
-import Rewards from './pages/Rewards';
 import Settings from './pages/Settings';
 import Skills from './pages/Skills';
 import Welcome from './pages/Welcome';
@@ -110,15 +109,6 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute requireAuth={true}>
             <Notifications />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/rewards"
-        element={
-          <ProtectedRoute requireAuth={true}>
-            <Rewards />
           </ProtectedRoute>
         }
       />

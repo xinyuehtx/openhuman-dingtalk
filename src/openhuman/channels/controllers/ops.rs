@@ -6,7 +6,7 @@ use serde_json::{json, Value};
 use crate::api::config::{app_env_from_env, effective_backend_api_url, is_staging_app_env};
 use crate::api::jwt::get_session_token;
 use crate::api::rest::BackendOAuthClient;
-use crate::openhuman::config::{Config, DiscordConfig, IMessageConfig, TelegramConfig};
+use crate::openhuman::config::{Config, DingTalkConfig, DiscordConfig, IMessageConfig, TelegramConfig};
 use crate::openhuman::credentials;
 use crate::rpc::RpcOutcome;
 
@@ -332,6 +332,41 @@ pub async fn connect_channel(
             mention_only,
             "[discord] connect_channel: wrote channels_config.discord; restart core for listener to load token"
         );
+    } else if channel_id == "dingtalk" && auth_mode == ChannelAuthMode::BotToken {
+        let client_id = creds_map
+            .get("client_id")
+            .and_then(|v| v.as_str())
+            .map(str::trim)
+            .filter(|s| !s.is_empty())
+            .ok_or_else(|| "missing required client_id".to_string())?
+            .to_string();
+        let client_secret = creds_map
+            .get("client_secret")
+            .and_then(|v| v.as_str())
+            .map(str::trim)
+            .filter(|s| !s.is_empty())
+            .ok_or_else(|| "missing required client_secret".to_string())?
+            .to_string();
+        let allowed_users = parse_allowed_users(creds_map.get("allowed_users"));
+        let allowed_users_count = allowed_users.len();
+
+        let mut persisted = config.clone();
+        persisted.channels_config.dingtalk = Some(DingTalkConfig {
+            client_id,
+            client_secret,
+            allowed_users,
+        });
+
+        persisted
+            .save()
+            .await
+            .map_err(|e| format!("failed to persist dingtalk config.toml: {e}"))?;
+
+        tracing::info!(
+            target: "openhuman::channels",
+            allowed_users_count,
+            "[dingtalk] connect_channel: wrote channels_config.dingtalk; restart core for Stream Mode listener to activate"
+        );
     }
 
     Ok(RpcOutcome::single_log(
@@ -400,6 +435,18 @@ pub async fn disconnect_channel(
             tracing::info!(
                 target: "openhuman::channels",
                 "[imessage] disconnect_channel: cleared channels_config.imessage"
+            );
+        }
+    } else if channel_id == "dingtalk" && auth_mode == ChannelAuthMode::BotToken {
+        let mut persisted = config.clone();
+        if persisted.channels_config.dingtalk.take().is_some() {
+            persisted
+                .save()
+                .await
+                .map_err(|e| format!("failed to clear dingtalk config.toml: {e}"))?;
+            tracing::info!(
+                target: "openhuman::channels",
+                "[dingtalk] disconnect_channel: cleared channels_config.dingtalk"
             );
         }
     }

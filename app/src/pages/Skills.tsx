@@ -2,21 +2,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import ChannelSetupModal from '../components/channels/ChannelSetupModal';
-import ComposioConnectModal from '../components/composio/ComposioConnectModal';
-import {
-  composioToolkitMeta,
-  type ComposioToolkitMeta,
-  KNOWN_COMPOSIO_TOOLKITS,
-} from '../components/composio/toolkitMeta';
+import DwsSetupCard from '../components/dws/DwsSetupCard';
 import { ToastContainer } from '../components/intelligence/Toast';
 import AutocompleteSetupModal from '../components/skills/AutocompleteSetupModal';
 import CreateSkillModal from '../components/skills/CreateSkillModal';
 import InstallSkillDialog from '../components/skills/InstallSkillDialog';
-// import MeetingBotsCard from '../components/skills/MeetingBotsCard';
 import ScreenIntelligenceSetupModal from '../components/skills/ScreenIntelligenceSetupModal';
 import UnifiedSkillCard from '../components/skills/SkillCard';
-import { SKILL_CATEGORY_ORDER, type SkillCategory } from '../components/skills/skillCategories';
-import SkillCategoryFilter from '../components/skills/SkillCategoryFilter';
+import { type SkillCategory } from '../components/skills/skillCategories';
 import SkillDetailDrawer from '../components/skills/SkillDetailDrawer';
 import {
   BUILT_IN_SKILL_ICONS,
@@ -24,22 +17,17 @@ import {
   skillCategoryHeadingClassName,
   SkillCategoryIcon,
 } from '../components/skills/skillIcons';
-import SkillSearchBar from '../components/skills/SkillSearchBar';
 import UninstallSkillConfirmDialog from '../components/skills/UninstallSkillConfirmDialog';
 import VoiceSetupModal from '../components/skills/VoiceSetupModal';
 import { useAutocompleteSkillStatus } from '../features/autocomplete/useAutocompleteSkillStatus';
 import { useScreenIntelligenceSkillStatus } from '../features/screen-intelligence/useScreenIntelligenceSkillStatus';
 import { useVoiceSkillStatus } from '../features/voice/useVoiceSkillStatus';
 import { useChannelDefinitions } from '../hooks/useChannelDefinitions';
-import { useComposioIntegrations } from '../lib/composio/hooks';
-import { canonicalizeComposioToolkitSlug } from '../lib/composio/toolkitSlug';
-import { type ComposioConnection, deriveComposioState } from '../lib/composio/types';
 import { useT } from '../lib/i18n/I18nContext';
 import { skillsApi, type SkillSummary } from '../services/api/skillsApi';
 import { useAppSelector } from '../store/hooks';
 import type { ChannelConnectionStatus, ChannelDefinition, ChannelType } from '../types/channels';
 import type { ToastNotification } from '../types/intelligence';
-import { IS_DEV } from '../utils/config';
 import { subconsciousEscalationsDismiss } from '../utils/tauriCommands';
 
 function channelStatusLabel(status: ChannelConnectionStatus, t: (key: string) => string): string {
@@ -66,139 +54,6 @@ function channelStatusColor(status: ChannelConnectionStatus): string {
     default:
       return 'text-stone-400 dark:text-neutral-500';
   }
-}
-
-// ─── Composio visual mappers ─────────────────────────────────────────────
-// Reuse the same dot/label/color vocabulary as the channel cards so the
-// "Integrations" section sits visually flush with the rest of the grid.
-
-function composioStatusLabel(
-  connection: ComposioConnection | undefined,
-  t: (key: string) => string
-): string {
-  switch (deriveComposioState(connection)) {
-    case 'connected':
-      return t('skills.connected');
-    case 'pending':
-      return t('channels.status.connecting');
-    case 'expired':
-      return t('composio.authExpired');
-    case 'error':
-      return t('common.error');
-    default:
-      return '';
-  }
-}
-
-function composioStatusColor(connection: ComposioConnection | undefined): string {
-  switch (deriveComposioState(connection)) {
-    case 'connected':
-      return 'text-sage-600 dark:text-sage-300';
-    case 'pending':
-      return 'text-amber-600 dark:text-amber-300';
-    case 'expired':
-      return 'text-coral-600 dark:text-coral-300';
-    case 'error':
-      return 'text-coral-600 dark:text-coral-300';
-    default:
-      return 'text-stone-400 dark:text-neutral-500';
-  }
-}
-
-/** Sort order for the integrations grid: connected first, then pending, errors, disconnected. */
-function composioSortRank(connection: ComposioConnection | undefined): number {
-  switch (deriveComposioState(connection)) {
-    case 'connected':
-      return 0;
-    case 'pending':
-      return 1;
-    case 'expired':
-      return 2;
-    case 'error':
-      return 3;
-    default:
-      return 4;
-  }
-}
-
-interface ComposioConnectorTileProps {
-  meta: ComposioToolkitMeta;
-  connection: ComposioConnection | undefined;
-  hasComposioError: boolean;
-  onOpen: () => void;
-  onRetryGlobal: () => void;
-}
-
-function ComposioConnectorTile({
-  meta,
-  connection,
-  hasComposioError,
-  onOpen,
-  onRetryGlobal,
-}: ComposioConnectorTileProps) {
-  const { t } = useT();
-  const state = hasComposioError ? 'error' : deriveComposioState(connection);
-  const statusLabel = hasComposioError
-    ? t('composio.statusUnavailable')
-    : composioStatusLabel(connection, t);
-  const ctaLabel = hasComposioError
-    ? t('common.retry')
-    : state === 'connected'
-      ? t('skills.configure')
-      : state === 'pending'
-        ? t('skills.connect')
-        : state === 'expired'
-          ? t('composio.reconnect')
-          : state === 'error'
-            ? t('common.retry')
-            : t('skills.connect');
-
-  const isConnected = state === 'connected';
-  const isPending = state === 'pending';
-  const isExpired = state === 'expired';
-  const isError = state === 'error' || hasComposioError;
-
-  const handleClick = () => {
-    if (hasComposioError) {
-      void onRetryGlobal();
-      return;
-    }
-    onOpen();
-  };
-
-  return (
-    <button
-      type="button"
-      onClick={handleClick}
-      title={`${meta.name} — ${meta.description}`}
-      aria-label={`${meta.name}, ${statusLabel}. ${ctaLabel}.`}
-      className={`group flex flex-col justify-center items-center rounded-2xl border p-3 text-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40 ${
-        isConnected
-          ? 'border-sage-300 bg-sage-50/80 shadow-[0_0_0_1px_rgba(34,197,94,0.12)] hover:bg-sage-50 dark:border-sage-500/30 dark:bg-sage-500/10 dark:hover:bg-sage-500/15'
-          : isPending
-            ? 'border-amber-200 bg-amber-50/40 hover:bg-amber-50/70 dark:border-amber-500/30 dark:bg-amber-500/10 dark:hover:bg-amber-500/15'
-            : isExpired || isError
-              ? 'border-coral-200 bg-coral-50/30 hover:bg-coral-50/50 dark:border-coral-500/30 dark:bg-coral-500/10 dark:hover:bg-coral-500/15'
-              : 'border-stone-200 bg-white hover:bg-stone-50 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-neutral-800/60'
-      }`}>
-      <div className="relative flex h-12 w-12 flex-shrink-0 items-center justify-center text-stone-700 dark:text-neutral-200 [&_img]:max-h-10 [&_img]:max-w-10 [&_svg]:h-8 [&_svg]:w-8">
-        {meta.icon}
-      </div>
-      <div className="flex w-full min-w-0 flex-col items-center justify-start gap-0.5">
-        <span className="line-clamp-2 text-[11px] font-semibold leading-tight text-stone-900 dark:text-neutral-100">
-          {meta.name}
-        </span>
-        <span
-          className={`line-clamp-1 text-[10px] font-medium ${
-            hasComposioError
-              ? 'text-amber-700 dark:text-amber-300'
-              : composioStatusColor(connection)
-          }`}>
-          {statusLabel}
-        </span>
-      </div>
-    </button>
-  );
 }
 
 interface ChannelTileProps {
@@ -294,17 +149,7 @@ export default function Skills() {
   const { definitions: channelDefs } = useChannelDefinitions();
   const channelConnections = useAppSelector(state => state.channelConnections);
 
-  const {
-    toolkits: composioToolkits,
-    connectionByToolkit: composioConnectionByToolkit,
-    error: composioError,
-    refresh: refreshComposio,
-  } = useComposioIntegrations();
-
   const [channelModalDef, setChannelModalDef] = useState<ChannelDefinition | null>(null);
-  const [composioModalToolkit, setComposioModalToolkit] = useState<ComposioToolkitMeta | null>(
-    null
-  );
   const [screenIntelligenceModalOpen, setScreenIntelligenceModalOpen] = useState(false);
   const [autocompleteModalOpen, setAutocompleteModalOpen] = useState(false);
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
@@ -312,8 +157,6 @@ export default function Skills() {
   const autocompleteStatus = useAutocompleteSkillStatus();
   const voiceStatus = useVoiceSkillStatus();
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<SkillCategory>('All');
   const [discoveredSkills, setDiscoveredSkills] = useState<SkillSummary[]>([]);
   const [selectedSkill, setSelectedSkill] = useState<SkillSummary | null>(null);
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -339,19 +182,13 @@ export default function Skills() {
     navigate(location.pathname, { replace: true, state: null });
   }, [location.pathname, navigate]);
 
+  // Kept around for parity with the previous Composio drawer that used to dismiss
+  // open subconscious escalations on connect — still useful for channel modals.
   const dismissPendingEscalationIfResolved = useCallback(
     async (resolution: string) => {
       if (!pendingEscalationId) return;
-      console.debug('[skills][subconscious] dismiss escalation:start', {
-        escalationId: pendingEscalationId,
-        resolution,
-      });
       try {
         await subconsciousEscalationsDismiss(pendingEscalationId);
-        console.debug('[skills][subconscious] dismiss escalation:success', {
-          escalationId: pendingEscalationId,
-          resolution,
-        });
       } catch (error) {
         console.debug('[skills][subconscious] dismiss escalation:error', {
           escalationId: pendingEscalationId,
@@ -365,13 +202,9 @@ export default function Skills() {
     [clearPendingEscalationState, pendingEscalationId]
   );
 
-  // Discover SKILL.md skills via the core RPC. Ignore failures — the rest of
-  // the page still works when the sidecar is unreachable or no skills exist.
-  // Extracted so create/install flows can trigger a refresh on success.
   const refreshDiscoveredSkills = useCallback(async (): Promise<SkillSummary[]> => {
     try {
       const skills = await skillsApi.listSkills();
-      console.debug('[skills][discovered] listSkills ok', { count: skills.length });
       setDiscoveredSkills(skills);
       return skills;
     } catch (err) {
@@ -386,12 +219,7 @@ export default function Skills() {
     let cancelled = false;
     void (async () => {
       const skills = await refreshDiscoveredSkills();
-      if (cancelled) {
-        // If the effect was cancelled mid-fetch, the state update still
-        // fired inside `refreshDiscoveredSkills`. That's fine — React
-        // will bail on the unmounted update; no retry needed.
-        return;
-      }
+      if (cancelled) return;
       void skills;
     })();
     return () => {
@@ -414,25 +242,6 @@ export default function Skills() {
     [channelDefs]
   );
 
-  const composioCatalogToolkits = useMemo(() => {
-    const normalizedToolkits = composioToolkits.map(slug => canonicalizeComposioToolkitSlug(slug));
-    const missingKnownToolkits = KNOWN_COMPOSIO_TOOLKITS.filter(
-      slug => !normalizedToolkits.includes(slug)
-    );
-    if (IS_DEV && missingKnownToolkits.length > 0) {
-      console.debug('[skills][composio] filling gaps from KNOWN_COMPOSIO_TOOLKITS', {
-        toolkitCount: composioToolkits.length,
-        connectionCount: composioConnectionByToolkit.size,
-        hasError: Boolean(composioError),
-        missingKnownToolkits,
-      });
-    }
-    return Array.from(new Set([...KNOWN_COMPOSIO_TOOLKITS, ...normalizedToolkits])).sort((a, b) =>
-      a.localeCompare(b)
-    );
-  }, [composioToolkits, composioConnectionByToolkit, composioError]);
-
-  // Unified item list
   const allItems: SkillItem[] = useMemo(() => {
     const items: SkillItem[] = [];
 
@@ -461,12 +270,6 @@ export default function Skills() {
       });
     }
 
-    // Composio toolkits are rendered in a dedicated icon grid (see below)
-    // so ~100+ connectors stay scannable without a vertical list per category.
-
-    // Discovered SKILL.md skills — surface each as a card whose CTA opens
-    // the detail drawer. They live under the generic "Other" category so
-    // they don't displace hand-curated built-ins or Channels.
     for (const skill of discoveredSkills) {
       items.push({
         id: `discovered-${skill.id}`,
@@ -483,94 +286,21 @@ export default function Skills() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [configurableChannels, channelConnections, discoveredSkills]);
 
-  const composioGridEntries = useMemo(() => {
-    const entries: Array<{
-      meta: ComposioToolkitMeta;
-      connection: ComposioConnection | undefined;
-    }> = [];
-    for (const slug of composioCatalogToolkits) {
-      const meta = composioToolkitMeta(slug);
-      const connection = composioConnectionByToolkit.get(meta.slug);
-      entries.push({ meta, connection });
-    }
-    return entries;
-  }, [composioCatalogToolkits, composioConnectionByToolkit]);
-
-  const composioFilteredEntries = useMemo(() => {
-    const q = searchQuery.toLowerCase();
-    const matchesCategory =
-      selectedCategory === 'All'
-        ? () => true
-        : (meta: ComposioToolkitMeta) => meta.category === selectedCategory;
-    const matchesSearch = (meta: ComposioToolkitMeta) =>
-      !q || meta.name.toLowerCase().includes(q) || meta.description.toLowerCase().includes(q);
-
-    return composioGridEntries.filter(({ meta }) => matchesCategory(meta) && matchesSearch(meta));
-  }, [composioGridEntries, searchQuery, selectedCategory]);
-
-  const composioSortedEntries = useMemo(() => {
-    return [...composioFilteredEntries].sort((a, b) => {
-      const rankA = composioSortRank(a.connection);
-      const rankB = composioSortRank(b.connection);
-      if (rankA !== rankB) return rankA - rankB;
-      return a.meta.name.localeCompare(b.meta.name, undefined, { sensitivity: 'base' });
-    });
-  }, [composioFilteredEntries]);
-
-  useEffect(() => {
-    if (!IS_DEV) return;
-    console.debug('[skills][composio] hook result', {
-      toolkitCount: composioToolkits.length,
-      connectionCount: composioConnectionByToolkit.size,
-      hasError: Boolean(composioError),
-      error: composioError,
-      gridVisibleCount: composioSortedEntries.length,
-    });
-  }, [composioToolkits, composioConnectionByToolkit, composioError, composioSortedEntries.length]);
-
-  const availableCategories: SkillCategory[] = useMemo(() => {
-    const cats = new Set<SkillCategory>(['All']);
-    for (const item of allItems) {
-      if (item.category === 'Channels') continue;
-      cats.add(item.category);
-    }
-    for (const { meta } of composioGridEntries) {
-      cats.add(meta.category);
-    }
-    return SKILL_CATEGORY_ORDER.filter(c => c !== 'Channels' && cats.has(c));
-  }, [allItems, composioGridEntries]);
-
-  const filteredItems = useMemo(() => {
-    const q = searchQuery.toLowerCase();
-    return allItems.filter(item => {
-      const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
-      const matchesSearch =
-        !q || item.name.toLowerCase().includes(q) || item.description.toLowerCase().includes(q);
-      return matchesCategory && matchesSearch;
-    });
-  }, [allItems, searchQuery, selectedCategory]);
-
-  const groupedItems = useMemo(() => {
-    const groups = new Map<SkillCategory, SkillItem[]>();
-    for (const item of filteredItems) {
-      const existing = groups.get(item.category);
-      if (existing) {
-        existing.push(item);
-      } else {
-        groups.set(item.category, [item]);
-      }
-    }
-    return Array.from(groups.entries()).map(([category, items]) => ({ category, items }));
-  }, [filteredItems]);
-
   const channelsGroup = useMemo(() => {
     const items = allItems.filter(item => item.category === 'Channels');
     return items.length > 0 ? { category: 'Channels' as SkillCategory, items } : undefined;
   }, [allItems]);
-  const otherGroups = useMemo(
-    () => groupedItems.filter(g => g.category !== 'Channels'),
-    [groupedItems]
-  );
+
+  const otherGroups = useMemo(() => {
+    const groups = new Map<SkillCategory, SkillItem[]>();
+    for (const item of allItems) {
+      if (item.category === 'Channels') continue;
+      const list = groups.get(item.category);
+      if (list) list.push(item);
+      else groups.set(item.category, [item]);
+    }
+    return Array.from(groups.entries()).map(([category, items]) => ({ category, items }));
+  }, [allItems]);
 
   const renderGroup = ({ category, items }: { category: SkillCategory; items: SkillItem[] }) => (
     <div
@@ -590,10 +320,7 @@ export default function Skills() {
       <div className="space-y-2">
         {items.map(item => {
           if (item.kind === 'builtin') {
-            /* v8 ignore start -- BUILT_IN_SKILLS list is empty today; the per-id
-               branches below are kept for re-enabling screen-intelligence /
-               text-autocomplete / voice-stt and shouldn't drag the diff-coverage
-               gate down while they're unreachable. */
+            /* v8 ignore start */
             if (item.id === 'screen-intelligence') {
               return (
                 <UnifiedSkillCard
@@ -710,10 +437,7 @@ export default function Skills() {
                 statusLabel={scopeLabel}
                 statusColor={scopeColor}
                 ctaLabel={t('common.seeAll')}
-                onCtaClick={() => {
-                  console.debug('[skills][discovered] open drawer', { skillId: skill.id });
-                  setSelectedSkill(skill);
-                }}
+                onCtaClick={() => setSelectedSkill(skill)}
                 secondaryActions={
                   canUninstall
                     ? [
@@ -734,12 +458,7 @@ export default function Skills() {
                               />
                             </svg>
                           ),
-                          onClick: () => {
-                            console.debug('[skills][discovered] open uninstall', {
-                              skillId: skill.id,
-                            });
-                            setUninstallCandidate(skill);
-                          },
+                          onClick: () => setUninstallCandidate(skill),
                         },
                       ]
                     : undefined
@@ -757,139 +476,74 @@ export default function Skills() {
       <div className="min-h-full flex flex-col">
         <div className="flex-1 flex items-start justify-center p-4 pt-6">
           <div className="w-full max-w-3xl space-y-4">
-            {/* <div className="flex items-center justify-between gap-2">
-              <div className="min-w-0">
-                <h1 className="text-base font-semibold text-stone-900 dark:text-neutral-100">
-                  Skills
-                </h1>
-                <p className="text-xs text-stone-500 dark:text-neutral-400">
-                  Scaffold a new <code className="font-mono">SKILL.md</code> or install a published
-                  package.
+            {/* DingTalk DWS — primary integration for this fork. */}
+            <div
+              className="rounded-2xl border border-stone-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-3 shadow-soft animate-fade-up"
+              data-walkthrough="skills-dws">
+              <div className="px-1 pb-3 pt-1">
+                <h2 className="flex items-center gap-2 text-sm font-semibold text-stone-900 dark:text-neutral-100">
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary-100 dark:bg-primary-500/20 text-primary-600 dark:text-primary-300">
+                    🟦
+                  </span>
+                  钉钉工作台 (DWS)
+                </h2>
+                <p className="mt-0.5 text-[11px] leading-relaxed text-stone-500 dark:text-neutral-400">
+                  通过 DingTalk Workspace CLI 管理钉钉全产品能力 — AI
+                  表格、日历、通讯录、待办、审批、考勤、文档、云盘等。
                 </p>
               </div>
-              <div className="flex flex-shrink-0 items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setInstallDialogOpen(true)}
-                  className="rounded-lg border border-stone-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-xs font-medium text-stone-700 dark:text-neutral-200 shadow-soft transition-colors hover:bg-stone-50 dark:hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1">
-                  Install from URL
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCreateModalOpen(true)}
-                  className="rounded-lg bg-primary-500 px-3 py-2 text-xs font-semibold text-white shadow-soft transition-colors hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1">
-                  New skill
-                </button>
+              <div className="px-1 pb-1">
+                <DwsSetupCard />
               </div>
-            </div> */}
+            </div>
 
-            {composioError && (
-              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3 shadow-soft">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <h2 className="text-sm font-semibold text-amber-900">
-                      Connections are showing stale status
-                    </h2>
-                    <p className="mt-1 text-xs leading-relaxed text-amber-800">{composioError}</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => void refreshComposio()}
-                    className="flex-shrink-0 rounded-lg border border-amber-300 dark:border-amber-500/40 bg-white dark:bg-neutral-900 px-3 py-1.5 text-[11px] font-medium text-amber-800 dark:text-amber-300 transition-colors hover:bg-amber-100 dark:hover:bg-amber-500/10">
-                    Retry
-                  </button>
+            {channelsGroup && (
+              <div className="rounded-2xl border border-stone-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-3 shadow-soft animate-fade-up">
+                <div className="px-1 pb-3 pt-1">
+                  <h2
+                    className="flex items-center gap-2 text-sm font-semibold text-stone-900 dark:text-neutral-100"
+                    data-walkthrough="skills-channels">
+                    <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-stone-100 dark:bg-neutral-800">
+                      <SkillCategoryIcon
+                        category="Channels"
+                        className={skillCategoryHeadingClassName('Channels')}
+                      />
+                    </span>
+                    {t('skills.channels')}
+                  </h2>
+                  <p className="mt-0.5 text-[11px] leading-relaxed text-stone-500 dark:text-neutral-400">
+                    {t('channels.defaultMessaging')}
+                  </p>
+                </div>
+                <div
+                  className="grid gap-2 sm:gap-3"
+                  style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(5.5rem, 1fr))' }}>
+                  {channelsGroup.items.map(item => (
+                    <ChannelTile
+                      key={item.id}
+                      def={item.channelDef!}
+                      status={item.channelStatus!}
+                      icon={item.icon}
+                      onOpen={() => setChannelModalDef(item.channelDef!)}
+                    />
+                  ))}
                 </div>
               </div>
             )}
 
-            {
-              <>
-                {channelsGroup && (
-                  <div className="rounded-2xl border border-stone-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-3 shadow-soft animate-fade-up">
-                    <div className="px-1 pb-3 pt-1">
-                      <h2
-                        className="flex items-center gap-2 text-sm font-semibold text-stone-900 dark:text-neutral-100"
-                        data-walkthrough="skills-channels">
-                        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-stone-100 dark:bg-neutral-800">
-                          <SkillCategoryIcon
-                            category="Channels"
-                            className={skillCategoryHeadingClassName('Channels')}
-                          />
-                        </span>
-                        {t('skills.channels')}
-                      </h2>
-                      <p className="mt-0.5 text-[11px] leading-relaxed text-stone-500 dark:text-neutral-400">
-                        {t('channels.defaultMessaging')}
-                      </p>
-                    </div>
-                    <div
-                      className="grid gap-2 sm:gap-3"
-                      style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(5.5rem, 1fr))' }}>
-                      {channelsGroup.items.map(item => (
-                        <ChannelTile
-                          key={item.id}
-                          def={item.channelDef!}
-                          status={item.channelStatus!}
-                          icon={item.icon}
-                          onOpen={() => setChannelModalDef(item.channelDef!)}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* <MeetingBotsCard onToast={addToast} /> */}
-
-                <div className="rounded-2xl border border-stone-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-3 shadow-soft animate-fade-up">
-                  <div className="px-1 pb-3 pt-1">
-                    <h2
-                      className="text-sm font-semibold text-stone-900 dark:text-neutral-100"
-                      data-walkthrough="skills-grid">
-                      {t('skills.integrations')}
-                    </h2>
-                    <p className="mt-0.5 text-[11px] leading-relaxed text-stone-500 dark:text-neutral-400">
-                      {t('skills.available')}
-                    </p>
-                  </div>
-                  <div className="space-y-3 px-1 pb-3">
-                    <SkillSearchBar value={searchQuery} onChange={setSearchQuery} />
-                    <SkillCategoryFilter
-                      categories={availableCategories}
-                      selected={selectedCategory}
-                      onChange={setSelectedCategory}
-                    />
-                  </div>
-                  {composioSortedEntries.length > 0 ? (
-                    <div
-                      className="grid gap-2 sm:gap-3"
-                      style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(5.5rem, 1fr))' }}>
-                      {composioSortedEntries.map(({ meta, connection }) => (
-                        <ComposioConnectorTile
-                          key={meta.slug}
-                          meta={meta}
-                          connection={connection}
-                          hasComposioError={Boolean(composioError)}
-                          onOpen={() => setComposioModalToolkit(meta)}
-                          onRetryGlobal={() => void refreshComposio()}
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="px-1 py-4 text-center text-xs text-stone-400 dark:text-neutral-500">
-                      {t('skills.noResults')}
-                    </p>
-                  )}
-                </div>
-
-                {otherGroups.map(group => renderGroup(group))}
-              </>
-            }
+            {otherGroups.map(group => renderGroup(group))}
           </div>
         </div>
       </div>
 
       {channelModalDef && (
-        <ChannelSetupModal definition={channelModalDef} onClose={() => setChannelModalDef(null)} />
+        <ChannelSetupModal
+          definition={channelModalDef}
+          onClose={() => {
+            void dismissPendingEscalationIfResolved(`channel:${channelModalDef.id}`);
+            setChannelModalDef(null);
+          }}
+        />
       )}
 
       {screenIntelligenceModalOpen && (
@@ -907,18 +561,6 @@ export default function Skills() {
         <VoiceSetupModal onClose={() => setVoiceModalOpen(false)} skillStatus={voiceStatus} />
       )}
 
-      {composioModalToolkit && (
-        <ComposioConnectModal
-          toolkit={composioModalToolkit}
-          connection={composioConnectionByToolkit.get(composioModalToolkit.slug)}
-          onChanged={() => {
-            void refreshComposio();
-            void dismissPendingEscalationIfResolved(`composio:${composioModalToolkit.slug}`);
-          }}
-          onClose={() => setComposioModalToolkit(null)}
-        />
-      )}
-
       {selectedSkill && (
         <SkillDetailDrawer skill={selectedSkill} onClose={() => setSelectedSkill(null)} />
       )}
@@ -927,11 +569,7 @@ export default function Skills() {
         <CreateSkillModal
           onClose={() => setCreateModalOpen(false)}
           onCreated={skill => {
-            console.debug('[skills][create] created', { id: skill.id, scope: skill.scope });
             setCreateModalOpen(false);
-            // Optimistically append; then reconcile against a fresh list so
-            // version/author/warnings picked up by the Rust discoverer end
-            // up in state too.
             setDiscoveredSkills(prev =>
               prev.some(s => s.id === skill.id) ? prev : [...prev, skill]
             );
@@ -945,20 +583,12 @@ export default function Skills() {
         <InstallSkillDialog
           onClose={() => setInstallDialogOpen(false)}
           onInstalled={result => {
-            console.debug('[skills][install] complete', {
-              url: result.url,
-              newSkills: result.newSkills.length,
-            });
             void (async () => {
               const skills = await refreshDiscoveredSkills();
-              // Auto-select the first newly-installed skill, if any — matches
-              // the create flow's UX of landing the user in the detail view.
               const firstNewId = result.newSkills[0];
               if (firstNewId) {
                 const match = skills.find(s => s.id === firstNewId);
-                if (match) {
-                  setSelectedSkill(match);
-                }
+                if (match) setSelectedSkill(match);
               }
             })();
           }}
@@ -970,22 +600,12 @@ export default function Skills() {
           skill={uninstallCandidate}
           onClose={() => setUninstallCandidate(null)}
           onUninstalled={result => {
-            console.debug('[skills][uninstall] complete', {
-              name: result.name,
-              removedPath: result.removedPath,
-            });
             addToast({
               type: 'success',
               title: t('skills.disconnect'),
               message: `"${result.name}" ${t('common.success')}`,
             });
-            // If the detail drawer was showing the skill we just removed,
-            // close it — the resource tree is now stale and any `read_resource`
-            // RPC would fail with a clean "not installed" error.
             setSelectedSkill(prev => (prev && prev.id === result.name ? null : prev));
-            // Drop it from local state so the card disappears without a
-            // round-trip; refresh to pick up any side effects (e.g. a
-            // previously-shadowed project-scope skill now surfaces).
             setDiscoveredSkills(prev => prev.filter(s => s.id !== result.name));
             void refreshDiscoveredSkills();
           }}
