@@ -27,10 +27,12 @@ jobs:
           - label: macOS arm64
             runner: macos-14
             target: aarch64-apple-darwin
+            rust_targets: aarch64-apple-darwin,x86_64-apple-darwin
             cef_cache_path: ~/Library/Caches/tauri-cef
           - label: Windows x64
             runner: windows-latest
             target: x86_64-pc-windows-msvc
+            rust_targets: x86_64-pc-windows-msvc
             cef_cache_path: ~/AppData/Local/tauri-cef
     env:
       TAG: ${{ github.event.inputs.tag || github.ref_name }}
@@ -66,7 +68,7 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.target }}
+          targets: ${{ matrix.rust_targets }}
 
       # Skip first 7 lines of Cargo.lock (workspace package version bumps) so
       # the cache key tracks dependency changes only — bumping the app version
