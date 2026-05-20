@@ -118,7 +118,7 @@ const hi1: TranslationMap = {
   'clearData.failed': 'डेटा क्लियर करने और लॉगआउट में दिक्कत आई। दोबारा कोशिश करें।',
   'clearData.failedLogout': 'लॉग आउट नहीं हो पाया। दोबारा कोशिश करें।',
   'clearData.failedPersist': 'सेव्ड ऐप स्टेट क्लियर नहीं हो पाई। दोबारा कोशिश करें।',
-  'welcome.title': 'OpenHuman में आपका स्वागत है',
+  'welcome.title': 'OpenHuman 钉钉 में आपका स्वागत है',
   'welcome.subtitle': 'आपकी पर्सनल AI सुपर इंटेलिजेंस। प्राइवेट, सिंपल और बेहद पावरफुल।',
   'welcome.connectPrompt': 'RPC URL कॉन्फिगर करें (एडवांस्ड)',
   'welcome.selectRuntime': 'एक रनटाइम चुनें',
@@ -134,7 +134,7 @@ const hi1: TranslationMap = {
     'आपका डिवाइस कनेक्टेड है। कनेक्शन बनाए रखने के लिए ऐप चलाते रहें। नीचे बटन से अपने एजेंट को मैसेज करें।',
   'home.statusBackendOnly': 'बैकएंड से फिर से जुड़ रहे हैं… आपका एजेंट जल्द ही उपलब्ध होगा।',
   'home.statusCoreUnreachable':
-    'लोकल कोर साइडकार रिस्पॉन्ड नहीं कर रहा। OpenHuman का बैकग्राउंड प्रोसेस क्रैश हो गया होगा या शुरू नहीं हो पाया।',
+    'लोकल कोर साइडकार रिस्पॉन्ड नहीं कर रहा। OpenHuman 钉钉 का बैकग्राउंड प्रोसेस क्रैश हो गया होगा या शुरू नहीं हो पाया।',
   'home.statusInternetOffline':
     'आपका डिवाइस अभी ऑफलाइन है। अपना नेटवर्क चेक करें या दोबारा कनेक्ट करने के लिए ऐप रीस्टार्ट करें।',
   'home.restartCore': 'कोर रीस्टार्ट करें',
@@ -186,7 +186,7 @@ const hi1: TranslationMap = {
   'rewards.referralCode': 'आपका रेफरल कोड',
   'rewards.copyCode': 'कोड कॉपी करें',
   'rewards.share': 'शेयर करें',
-  'onboarding.welcome': 'नमस्ते। मैं OpenHuman हूँ।',
+  'onboarding.welcome': 'नमस्ते। मैं OpenHuman 钉钉 हूँ।',
   'onboarding.welcomeDesc':
     'आपका सुपर-इंटेलिजेंट AI असिस्टेंट जो आपके कंप्यूटर पर चलता है। प्राइवेट, सिंपल और बेहद पावरफुल।',
   'onboarding.context': 'कॉन्टेक्स्ट गैदरिंग',
@@ -198,14 +198,14 @@ const hi1: TranslationMap = {
   'onboarding.referral': 'रेफरल',
   'onboarding.referralDesc': 'अगर आपके पास रेफरल कोड है तो लगाएं।',
   'onboarding.finish': 'सेटअप पूरा करें',
-  'onboarding.finishDesc': 'सब तैयार है! OpenHuman इस्तेमाल शुरू करें।',
+  'onboarding.finishDesc': 'सब तैयार है! OpenHuman 钉钉 इस्तेमाल शुरू करें।',
   'onboarding.skip': 'स्किप करें',
   'onboarding.getStarted': 'शुरू करें',
-  'onboarding.runtimeChoice.title': 'OpenHuman कैसे चलाना चाहते हैं?',
+  'onboarding.runtimeChoice.title': 'OpenHuman 钉钉 कैसे चलाना चाहते हैं?',
   'onboarding.runtimeChoice.subtitle':
     'अपने लिए सही सेटअप चुनें। बाद में Settings में बदल सकते हैं।',
   'onboarding.runtimeChoice.cloud.title': 'सिंपल',
-  'onboarding.runtimeChoice.cloud.tagline': 'OpenHuman सब कुछ मैनेज करेगा।',
+  'onboarding.runtimeChoice.cloud.tagline': 'OpenHuman 钉钉 सब कुछ मैनेज करेगा।',
   'onboarding.runtimeChoice.cloud.f1': 'बिल्ट-इन सिक्योरिटी',
   'onboarding.runtimeChoice.cloud.f2': 'ज़्यादा उपयोग के लिए टोकन कम्प्रेशन',
   'onboarding.runtimeChoice.cloud.f3': 'एक सब्सक्रिप्शन, हर मॉडल शामिल',
@@ -240,7 +240,7 @@ const hi1: TranslationMap = {
   'onboarding.custom.stepperMemory': 'मेमोरी',
   'onboarding.custom.stepCounter': 'स्टेप {n} / {total}',
   'onboarding.custom.defaultTitle': 'डिफ़ॉल्ट',
-  'onboarding.custom.defaultSubtitle': 'OpenHuman खुद मैनेज करेगा।',
+  'onboarding.custom.defaultSubtitle': 'OpenHuman 钉钉 खुद मैनेज करेगा।',
   'onboarding.custom.configureTitle': 'कॉन्फिगर करें',
   'onboarding.custom.configureSubtitle': 'मैं खुद चुनूँगा।',
   'onboarding.custom.progressAriaLabel': 'ऑनबोर्डिंग प्रोग्रेस',
@@ -254,32 +254,32 @@ const hi1: TranslationMap = {
   'onboarding.custom.inference.subtitle':
     'कौन सा लैंग्वेज मॉडल आपके सवाल जवाब देगा और एजेंट चलाएगा?',
   'onboarding.custom.inference.defaultDesc':
-    'OpenHuman हर वर्कलोड के लिए खुद सही मॉडल चुनता है। कोई key नहीं, कोई सेटअप नहीं।',
+    'OpenHuman 钉钉 हर वर्कलोड के लिए खुद सही मॉडल चुनता है। कोई key नहीं, कोई सेटअप नहीं।',
   'onboarding.custom.inference.configureDesc':
     'अपनी OpenAI या Anthropic key लाएं। हर टेक्स्ट वर्कलोड के लिए इस्तेमाल होगी।',
   'onboarding.custom.voice.title': 'वॉइस',
   'onboarding.custom.voice.subtitle': 'वॉइस मोड के लिए स्पीच-टू-टेक्स्ट और टेक्स्ट-टू-स्पीच।',
   'onboarding.custom.voice.defaultDesc':
-    'OpenHuman में मैनेज्ड STT/TTS है जो बस काम करता है। कुछ सेट नहीं करना।',
+    'OpenHuman 钉钉 में मैनेज्ड STT/TTS है जो बस काम करता है। कुछ सेट नहीं करना।',
   'onboarding.custom.voice.configureDesc':
     'अपना ElevenLabs / OpenAI Whisper / आदि इस्तेमाल करें। Settings › Voice में कॉन्फिगर करें।',
   'onboarding.custom.oauth.title': 'कनेक्शन (OAuth)',
   'onboarding.custom.oauth.subtitle': 'Gmail, Slack, Notion और OAuth ज़रूरी सर्विसेज़।',
   'onboarding.custom.oauth.defaultDesc':
-    'OpenHuman मैनेज्ड Composio वर्कस्पेस चलाता है। हर सर्विस एक क्लिक में कनेक्ट होती है।',
+    'OpenHuman 钉钉 मैनेज्ड Composio वर्कस्पेस चलाता है। हर सर्विस एक क्लिक में कनेक्ट होती है।',
   'onboarding.custom.oauth.configureDesc':
     'अपना Composio अकाउंट / API key लाएं। Settings › Connections में कॉन्फिगर करें।',
   'onboarding.custom.search.title': 'वेब सर्च',
-  'onboarding.custom.search.subtitle': 'OpenHuman आपकी तरफ से वेब कैसे सर्च करता है।',
+  'onboarding.custom.search.subtitle': 'OpenHuman 钉钉 आपकी तरफ से वेब कैसे सर्च करता है।',
   'onboarding.custom.search.defaultDesc':
-    'OpenHuman मैनेज्ड सर्च बैकएंड इस्तेमाल करता है। कोई key नहीं चाहिए।',
+    'OpenHuman 钉钉 मैनेज्ड सर्च बैकएंड इस्तेमाल करता है। कोई key नहीं चाहिए।',
   'onboarding.custom.search.configureDesc':
     'अपनी सर्च प्रोवाइडर key लाएं (Tavily, Brave, आदि)। Settings › Tools में कॉन्फिगर करें।',
   'onboarding.custom.memory.title': 'मेमोरी',
   'onboarding.custom.memory.subtitle':
-    'OpenHuman आपका कॉन्टेक्स्ट, पसंद और पुरानी बातें कैसे याद रखता है।',
+    'OpenHuman 钉钉 आपका कॉन्टेक्स्ट, पसंद और पुरानी बातें कैसे याद रखता है।',
   'onboarding.custom.memory.defaultDesc':
-    'OpenHuman मेमोरी स्टोरेज और रिट्रीवल अपने आप मैनेज करता है। कुछ सेट नहीं करना।',
+    'OpenHuman 钉钉 मेमोरी स्टोरेज और रिट्रीवल अपने आप मैनेज करता है। कुछ सेट नहीं करना।',
   'onboarding.custom.memory.configureDesc':
     'मेमोरी खुद देखें, एक्सपोर्ट करें या मिटाएं। Settings › Memory में कॉन्फिगर करें।',
   'accounts.addAccount': 'अकाउंट जोड़ें',
@@ -339,7 +339,7 @@ const hi1: TranslationMap = {
   'misc.downloading': 'डाउनलोड हो रहा है...',
   'misc.installing': 'इन्स्टॉल हो रहा है...',
   'misc.beta':
-    'OpenHuman अभी अर्ली बीटा में है। फीडबैक शेयर करें या कोई बग मिले तो रिपोर्ट करें — हर रिपोर्ट हमें तेज़ी से काम करने में मदद करती है।',
+    'OpenHuman 钉钉 अभी अर्ली बीटा में है। फीडबैक शेयर करें या कोई बग मिले तो रिपोर्ट करें — हर रिपोर्ट हमें तेज़ी से काम करने में मदद करती है।',
   'misc.betaFeedback': 'फीडबैक भेजें',
   'mnemonic.title': 'रिकवरी फ्रेज़',
   'mnemonic.warning': 'इन शब्दों को क्रम में लिखें और किसी सुरक्षित जगह रखें।',
@@ -362,11 +362,11 @@ const hi1: TranslationMap = {
   'privacy.anonymizedAnalytics': 'अनॉनिमाइज़्ड एनालिटिक्स',
   'privacy.shareAnonymizedData': 'अनॉनिमाइज़्ड यूसेज डेटा शेयर करें',
   'privacy.shareAnonymizedDataDesc':
-    'अनॉनिमस क्रैश रिपोर्ट और यूसेज एनालिटिक्स शेयर करके OpenHuman को बेहतर बनाने में मदद करें। सभी डेटा पूरी तरह अनॉनिमाइज़्ड है — कोई पर्सनल डेटा, मैसेज, वॉलेट keys या सेशन जानकारी कभी कलेक्ट नहीं होती।',
+    'अनॉनिमस क्रैश रिपोर्ट और यूसेज एनालिटिक्स शेयर करके OpenHuman 钉钉 को बेहतर बनाने में मदद करें। सभी डेटा पूरी तरह अनॉनिमाइज़्ड है — कोई पर्सनल डेटा, मैसेज, वॉलेट keys या सेशन जानकारी कभी कलेक्ट नहीं होती।',
   'privacy.meetingFollowUps': 'मीटिंग फॉलो-अप',
   'privacy.autoHandoffMeet': 'Google Meet ट्रांसक्रिप्ट ऑटो-हैंडऑफ ऑर्केस्ट्रेटर को करें',
   'privacy.autoHandoffMeetDesc':
-    'Google Meet कॉल खत्म होने पर, OpenHuman का ऑर्केस्ट्रेटर ट्रांसक्रिप्ट पढ़ सकता है और मैसेज ड्राफ्ट करना, फॉलो-अप शेड्यूल करना या Slack पर सारांश पोस्ट करना जैसे काम कर सकता है। डिफ़ॉल्ट रूप से बंद है।',
+    'Google Meet कॉल खत्म होने पर, OpenHuman 钉钉 का ऑर्केस्ट्रेटर ट्रांसक्रिप्ट पढ़ सकता है और मैसेज ड्राफ्ट करना, फॉलो-अप शेड्यूल करना या Slack पर सारांश पोस्ट करना जैसे काम कर सकता है। डिफ़ॉल्ट रूप से बंद है।',
   'privacy.analyticsDisclaimer':
     'सभी एनालिटिक्स और बग रिपोर्ट पूरी तरह अनॉनिमाइज़्ड हैं। चालू होने पर, हम केवल क्रैश जानकारी, डिवाइस टाइप और एरर फाइल लोकेशन कलेक्ट करते हैं। हम कभी आपके मैसेज, सेशन डेटा, वॉलेट keys, API keys या कोई भी पर्सनल जानकारी एक्सेस नहीं करते। यह सेटिंग कभी भी बदल सकते हैं।',
   'settings.about.version': 'वर्जन',

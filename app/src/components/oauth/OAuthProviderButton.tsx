@@ -22,7 +22,7 @@ const OAUTH_LOADING_TIMEOUT_MS = 90_000;
 
 const getOAuthStartupFailureMessage = (provider: OAuthProviderConfig): string => {
   if (provider.id === 'twitter') {
-    return 'Twitter/X sign-in could not start. Check that the Twitter OAuth app callback URL, client ID/secret, and requested scopes match the OpenHuman backend, then try again.';
+    return 'Twitter/X sign-in could not start. Check that the Twitter OAuth app callback URL, client ID/secret, and requested scopes match the OpenHuman 钉钉 backend, then try again.';
   }
 
   return `${provider.name} sign-in could not start. Please try again.`;

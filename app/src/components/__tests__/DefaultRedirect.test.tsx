@@ -63,7 +63,7 @@ describe('DefaultRedirect', () => {
     expect(screen.queryByText('Home')).not.toBeInTheDocument();
     expect(screen.queryByText('Welcome')).not.toBeInTheDocument();
     // Positively assert the loading screen rendered (not just "nothing visible")
-    expect(screen.getByText('Initializing OpenHuman...')).toBeInTheDocument();
+    expect(screen.getByText('Initializing OpenHuman 钉钉...')).toBeInTheDocument();
   });
 
   it('redirects to /onboarding for a genuinely new user (currentUser set, onboarding false)', () => {

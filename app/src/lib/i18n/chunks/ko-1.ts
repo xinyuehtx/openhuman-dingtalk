@@ -117,7 +117,7 @@ const ko1: TranslationMap = {
   'clearData.failed': '데이터 삭제 및 로그아웃에 실패했습니다. 다시 시도해 주세요.',
   'clearData.failedLogout': '로그아웃에 실패했습니다. 다시 시도해 주세요.',
   'clearData.failedPersist': '저장된 앱 상태를 삭제하지 못했습니다. 다시 시도해 주세요.',
-  'welcome.title': 'OpenHuman에 오신 것을 환영합니다',
+  'welcome.title': 'OpenHuman 钉钉에 오신 것을 환영합니다',
   'welcome.subtitle': '개인용 AI 슈퍼 인텔리전스입니다. 비공개이며, 간단하고, 매우 강력합니다.',
   'welcome.connectPrompt': 'RPC URL 구성(고급)',
   'welcome.selectRuntime': '런타임 선택',
@@ -134,7 +134,7 @@ const ko1: TranslationMap = {
   'home.statusBackendOnly':
     '백엔드에 다시 연결하는 중입니다… 곧 에이전트를 다시 사용할 수 있습니다.',
   'home.statusCoreUnreachable':
-    '로컬 코어 사이드카가 응답하지 않습니다. OpenHuman 백그라운드 프로세스가 중단되었거나 시작하지 못했을 수 있습니다.',
+    '로컬 코어 사이드카가 응답하지 않습니다. OpenHuman 钉钉 백그라운드 프로세스가 중단되었거나 시작하지 못했을 수 있습니다.',
   'home.statusInternetOffline':
     '현재 기기가 오프라인 상태입니다. 네트워크를 확인하거나 앱을 다시 시작하여 다시 연결하세요.',
   'home.restartCore': '코어 다시 시작',
@@ -186,7 +186,7 @@ const ko1: TranslationMap = {
   'rewards.referralCode': '내 추천 코드',
   'rewards.copyCode': '코드 복사',
   'rewards.share': '공유',
-  'onboarding.welcome': '안녕하세요. 저는 OpenHuman입니다.',
+  'onboarding.welcome': '안녕하세요. 저는 OpenHuman 钉钉입니다.',
   'onboarding.welcomeDesc':
     '컴퓨터에서 실행되는 초지능 AI 어시스턴트입니다. 비공개이며, 간단하고, 매우 강력합니다.',
   'onboarding.context': '컨텍스트 수집',
@@ -198,14 +198,14 @@ const ko1: TranslationMap = {
   'onboarding.referral': '추천',
   'onboarding.referralDesc': '추천 코드가 있다면 적용하세요.',
   'onboarding.finish': '설정 완료',
-  'onboarding.finishDesc': '모든 준비가 끝났습니다! OpenHuman을 사용해 보세요.',
+  'onboarding.finishDesc': '모든 준비가 끝났습니다! OpenHuman 钉钉을 사용해 보세요.',
   'onboarding.skip': '건너뛰기',
   'onboarding.getStarted': '시작하기',
-  'onboarding.runtimeChoice.title': 'OpenHuman을 어떻게 실행하시겠습니까?',
+  'onboarding.runtimeChoice.title': 'OpenHuman 钉钉을 어떻게 실행하시겠습니까?',
   'onboarding.runtimeChoice.subtitle':
     '가장 잘 맞는 설정을 선택하세요. 나중에 설정에서 변경할 수 있습니다.',
   'onboarding.runtimeChoice.cloud.title': '간단 모드',
-  'onboarding.runtimeChoice.cloud.tagline': 'OpenHuman이 모든 것을 대신 관리하도록 합니다.',
+  'onboarding.runtimeChoice.cloud.tagline': 'OpenHuman 钉钉이 모든 것을 대신 관리하도록 합니다.',
   'onboarding.runtimeChoice.cloud.f1': '내장 보안',
   'onboarding.runtimeChoice.cloud.f2': '사용량을 더 오래 쓰기 위한 토큰 압축',
   'onboarding.runtimeChoice.cloud.f3': '하나의 구독으로 모든 모델 포함',
@@ -241,7 +241,7 @@ const ko1: TranslationMap = {
   'onboarding.custom.stepperMemory': '메모리',
   'onboarding.custom.stepCounter': '{total}단계 중 {n}단계',
   'onboarding.custom.defaultTitle': '기본값',
-  'onboarding.custom.defaultSubtitle': 'OpenHuman이 대신 관리하도록 합니다.',
+  'onboarding.custom.defaultSubtitle': 'OpenHuman 钉钉이 대신 관리하도록 합니다.',
   'onboarding.custom.configureTitle': '구성',
   'onboarding.custom.configureSubtitle': '사용할 항목을 직접 선택합니다.',
   'onboarding.custom.progressAriaLabel': '온보딩 진행 상황',
@@ -255,34 +255,34 @@ const ko1: TranslationMap = {
   'onboarding.custom.inference.subtitle':
     '어떤 언어 모델이 질문에 답하고 에이전트를 실행해야 하나요?',
   'onboarding.custom.inference.defaultDesc':
-    'OpenHuman은 모든 작업을 적절한 기본 모델로 라우팅합니다. 키도 필요 없고 설정도 필요 없습니다.',
+    'OpenHuman 钉钉은 모든 작업을 적절한 기본 모델로 라우팅합니다. 키도 필요 없고 설정도 필요 없습니다.',
   'onboarding.custom.inference.configureDesc':
     '직접 OpenAI 또는 Anthropic 키를 가져오세요. 모든 텍스트 기반 작업에 이 키를 사용합니다.',
   'onboarding.custom.voice.title': '음성',
   'onboarding.custom.voice.subtitle':
     '음성 모드를 위한 음성-텍스트 변환 및 텍스트-음성 변환입니다.',
   'onboarding.custom.voice.defaultDesc':
-    'OpenHuman에는 바로 사용할 수 있는 관리형 STT/TTS가 포함되어 있습니다. 별도로 연결할 필요가 없습니다.',
+    'OpenHuman 钉钉에는 바로 사용할 수 있는 관리형 STT/TTS가 포함되어 있습니다. 별도로 연결할 필요가 없습니다.',
   'onboarding.custom.voice.configureDesc':
     '직접 ElevenLabs / OpenAI Whisper 등을 사용하세요. 설정 › 음성에서 구성할 수 있습니다.',
   'onboarding.custom.oauth.title': '연결(OAuth)',
   'onboarding.custom.oauth.subtitle':
     'OAuth가 필요한 Gmail, Slack, Notion 및 기타 연결 서비스입니다.',
   'onboarding.custom.oauth.defaultDesc':
-    'OpenHuman은 관리형 Composio 워크스페이스를 실행합니다. 나중에 각 서비스를 한 번의 클릭으로 연결할 수 있습니다.',
+    'OpenHuman 钉钉은 관리형 Composio 워크스페이스를 실행합니다. 나중에 각 서비스를 한 번의 클릭으로 연결할 수 있습니다.',
   'onboarding.custom.oauth.configureDesc':
     '직접 Composio 계정 또는 API 키를 가져오세요. 설정 › 연결에서 구성할 수 있습니다.',
   'onboarding.custom.search.title': '웹 검색',
-  'onboarding.custom.search.subtitle': 'OpenHuman이 사용자를 대신해 웹을 검색하는 방식입니다.',
+  'onboarding.custom.search.subtitle': 'OpenHuman 钉钉이 사용자를 대신해 웹을 검색하는 방식입니다.',
   'onboarding.custom.search.defaultDesc':
-    'OpenHuman은 관리형 검색 백엔드를 사용합니다. 키가 필요 없습니다.',
+    'OpenHuman 钉钉은 관리형 검색 백엔드를 사용합니다. 키가 필요 없습니다.',
   'onboarding.custom.search.configureDesc':
     '직접 검색 제공업체 키(Tavily, Brave 등)를 가져오세요. 설정 › 도구에서 구성할 수 있습니다.',
   'onboarding.custom.memory.title': '메모리',
   'onboarding.custom.memory.subtitle':
-    'OpenHuman이 사용자의 컨텍스트, 선호도, 이전 대화를 기억하는 방식입니다.',
+    'OpenHuman 钉钉이 사용자의 컨텍스트, 선호도, 이전 대화를 기억하는 방식입니다.',
   'onboarding.custom.memory.defaultDesc':
-    'OpenHuman은 메모리 저장과 검색을 자동으로 관리합니다. 설정할 것이 없습니다.',
+    'OpenHuman 钉钉은 메모리 저장과 검색을 자동으로 관리합니다. 설정할 것이 없습니다.',
   'onboarding.custom.memory.configureDesc':
     '메모리를 직접 검사, 내보내기 또는 삭제할 수 있습니다. 설정 › 메모리에서 구성할 수 있습니다.',
   'accounts.addAccount': '계정 추가',
@@ -342,7 +342,7 @@ const ko1: TranslationMap = {
   'misc.downloading': '다운로드 중...',
   'misc.installing': '설치 중...',
   'misc.beta':
-    'OpenHuman은 초기 베타 버전입니다. 피드백을 공유하거나 발견한 버그를 신고해 주세요 — 모든 신고는 더 빠른 출시를 돕습니다.',
+    'OpenHuman 钉钉은 초기 베타 버전입니다. 피드백을 공유하거나 발견한 버그를 신고해 주세요 — 모든 신고는 더 빠른 출시를 돕습니다.',
   'misc.betaFeedback': '피드백 보내기',
   'mnemonic.title': '복구 문구',
   'mnemonic.warning': '이 단어들을 순서대로 적어 안전한 곳에 보관하세요.',
@@ -365,11 +365,11 @@ const ko1: TranslationMap = {
   'privacy.anonymizedAnalytics': '익명화된 분석',
   'privacy.shareAnonymizedData': '익명화된 사용 데이터 공유',
   'privacy.shareAnonymizedDataDesc':
-    '익명 충돌 보고서와 사용 분석을 공유하여 OpenHuman 개선을 도와주세요. 모든 데이터는 완전히 익명화되며, 개인 데이터, 메시지, 지갑 키 또는 세션 정보는 절대 수집되지 않습니다.',
+    '익명 충돌 보고서와 사용 분석을 공유하여 OpenHuman 钉钉 개선을 도와주세요. 모든 데이터는 완전히 익명화되며, 개인 데이터, 메시지, 지갑 키 또는 세션 정보는 절대 수집되지 않습니다.',
   'privacy.meetingFollowUps': '회의 후속 조치',
   'privacy.autoHandoffMeet': 'Google Meet transcript를 오케스트레이터에 자동 전달',
   'privacy.autoHandoffMeetDesc':
-    'Google Meet 통화가 끝나면 OpenHuman의 오케스트레이터가 transcript를 읽고 메시지 초안 작성, 후속 일정 예약, 연결된 Slack 워크스페이스에 요약 게시 같은 작업을 수행할 수 있습니다. 기본값은 꺼짐입니다.',
+    'Google Meet 통화가 끝나면 OpenHuman 钉钉의 오케스트레이터가 transcript를 읽고 메시지 초안 작성, 후속 일정 예약, 연결된 Slack 워크스페이스에 요약 게시 같은 작업을 수행할 수 있습니다. 기본값은 꺼짐입니다.',
   'privacy.analyticsDisclaimer':
     '모든 분석 및 버그 보고서는 완전히 익명화됩니다. 활성화하면 충돌 정보, 기기 유형, 오류 파일 위치만 수집합니다. 메시지, 세션 데이터, 지갑 키, API 키 또는 개인 식별 정보에는 절대 접근하지 않습니다. 이 설정은 언제든지 변경할 수 있습니다.',
   'settings.about.version': '버전',

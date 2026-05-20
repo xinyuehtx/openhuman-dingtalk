@@ -73,7 +73,7 @@ export async function transcribeCloud(
     if (msg.includes('unknown method')) {
       sttLog('transcribe rpc stale-sidecar path hit; rewriting unknown-method error: %s', msg);
       throw new Error(
-        'Voice transcription is unavailable in this build. Restart the OpenHuman desktop app to pick up the latest core sidecar.'
+        'Voice transcription is unavailable in this build. Restart the OpenHuman 钉钉 desktop app to pick up the latest core sidecar.'
       );
     }
     sttLog('transcribe rpc failed (passthrough): %O', err);
@@ -151,7 +151,7 @@ export async function transcribeWithFactory(
     if (msg.includes('unknown method')) {
       sttLog('[voice-stt] dispatch stale-sidecar path: %s', msg);
       throw new Error(
-        'Voice transcription is unavailable in this build. Restart the OpenHuman desktop app to pick up the latest core sidecar.'
+        'Voice transcription is unavailable in this build. Restart the OpenHuman 钉钉 desktop app to pick up the latest core sidecar.'
       );
     }
     sttLog('[voice-stt] dispatch failed (passthrough): %O', err);

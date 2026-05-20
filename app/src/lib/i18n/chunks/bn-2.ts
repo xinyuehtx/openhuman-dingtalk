@@ -48,7 +48,7 @@ const bn2: TranslationMap = {
   'settings.billing.browserOpenFailed':
     'ব্রাউজার স্বয়ংক্রিয়ভাবে খোলা যায়নি। উপরের বাটন ব্যবহার করুন।',
   'settings.tools.chooseCapabilities':
-    'OpenHuman আপনার হয়ে কোন ক্যাপাবিলিটিগুলো ব্যবহার করতে পারবে তা বেছে নিন।',
+    'OpenHuman 钉钉 আপনার হয়ে কোন ক্যাপাবিলিটিগুলো ব্যবহার করতে পারবে তা বেছে নিন।',
   'settings.tools.saveChanges': 'পরিবর্তন সংরক্ষণ করুন',
   'settings.tools.preferencesSaved': 'পছন্দ সংরক্ষিত',
   'settings.tools.saveFailed': 'পছন্দ সংরক্ষণ ব্যর্থ। আবার চেষ্টা করুন।',
@@ -390,7 +390,7 @@ const bn2: TranslationMap = {
   'devOptions.menuMessagingDesc':
     'Configure Telegram/Discord auth modes and default channel routing',
   'devOptions.menuTools': 'Tools',
-  'devOptions.menuToolsDesc': 'Enable or disable capabilities OpenHuman can use on your behalf',
+  'devOptions.menuToolsDesc': 'Enable or disable capabilities OpenHuman 钉钉 can use on your behalf',
   'devOptions.menuAgentChat': 'Agent Chat',
   'devOptions.menuAgentChatDesc': 'Test agent conversation with model and temperature overrides',
   'devOptions.menuCronJobs': 'Cron Jobs',

@@ -171,7 +171,7 @@ const en: TranslationMap = {
   'clearData.failedPersist': 'Failed to clear persisted app state. Please try again.',
 
   // Welcome page
-  'welcome.title': 'Welcome to OpenHuman',
+  'welcome.title': 'Welcome to OpenHuman 钉钉',
   'welcome.subtitle':
     'Your personal AI super intelligence. Private, simple and extremely powerful.',
   'welcome.connectPrompt': 'Configure RPC URL (Advanced)',
@@ -190,7 +190,7 @@ const en: TranslationMap = {
     'Your device is connected. Keep the app running to keep the connection alive. Message your agent with the button below.',
   'home.statusBackendOnly': 'Reconnecting to backend… your agent will be available again shortly.',
   'home.statusCoreUnreachable':
-    "The OpenHuman core isn't responding. The background process may have crashed or failed to start.",
+    "The OpenHuman 钉钉 core isn't responding. The background process may have crashed or failed to start.",
   'home.statusInternetOffline':
     'Your device is offline right now. Check your network or restart the app to reconnect.',
   'home.restartCore': 'Restart Core',
@@ -254,7 +254,7 @@ const en: TranslationMap = {
   'rewards.share': 'Share',
 
   // Onboarding
-  'onboarding.welcome': "Hi. I'm OpenHuman.",
+  'onboarding.welcome': "Hi. I'm OpenHuman 钉钉.",
   'onboarding.welcomeDesc':
     'Your super-intelligent AI assistant that runs on your computer. Private, simple, and extremely powerful.',
   'onboarding.context': 'Context Gathering',
@@ -266,16 +266,16 @@ const en: TranslationMap = {
   'onboarding.referral': 'Referral',
   'onboarding.referralDesc': 'Apply a referral code if you have one.',
   'onboarding.finish': 'Finish Setup',
-  'onboarding.finishDesc': "You're all set! Start using OpenHuman.",
+  'onboarding.finishDesc': "You're all set! Start using OpenHuman 钉钉.",
   'onboarding.skip': 'Skip',
   'onboarding.getStarted': 'Get Started',
 
   // Onboarding: runtime-choice step (Cloud vs Custom)
-  'onboarding.runtimeChoice.title': 'How would you like to run OpenHuman?',
+  'onboarding.runtimeChoice.title': 'How would you like to run OpenHuman 钉钉?',
   'onboarding.runtimeChoice.subtitle':
     'Pick the setup that fits you best. You can change this later in Settings.',
   'onboarding.runtimeChoice.cloud.title': 'Simple',
-  'onboarding.runtimeChoice.cloud.tagline': 'Let OpenHuman manage everything for you.',
+  'onboarding.runtimeChoice.cloud.tagline': 'Let OpenHuman 钉钉 manage everything for you.',
   'onboarding.runtimeChoice.cloud.f1': 'Built-in security',
   'onboarding.runtimeChoice.cloud.f2': 'Token compression to stretch your usage further',
   'onboarding.runtimeChoice.cloud.f3': 'One subscription, every model included',
@@ -315,7 +315,7 @@ const en: TranslationMap = {
   'onboarding.custom.stepperMemory': 'Memory',
   'onboarding.custom.stepCounter': 'Step {n} of {total}',
   'onboarding.custom.defaultTitle': 'Default',
-  'onboarding.custom.defaultSubtitle': 'Let OpenHuman manage it for you.',
+  'onboarding.custom.defaultSubtitle': 'Let OpenHuman 钉钉 manage it for you.',
   'onboarding.custom.configureTitle': 'Configure',
   'onboarding.custom.configureSubtitle': "I'll pick what to use.",
   'onboarding.custom.progressAriaLabel': 'Onboarding progress',
@@ -331,7 +331,7 @@ const en: TranslationMap = {
   'onboarding.custom.inference.subtitle':
     'Which language model should answer your questions and run your agents?',
   'onboarding.custom.inference.defaultDesc':
-    'OpenHuman routes every workload to a sensible default model. No keys, no setup.',
+    'OpenHuman 钉钉 routes every workload to a sensible default model. No keys, no setup.',
   'onboarding.custom.inference.configureDesc':
     'Bring your own OpenAI or Anthropic key. We use it for every text-based workload.',
 
@@ -339,7 +339,7 @@ const en: TranslationMap = {
   'onboarding.custom.voice.title': 'Voice',
   'onboarding.custom.voice.subtitle': 'Speech-to-text and text-to-speech for voice mode.',
   'onboarding.custom.voice.defaultDesc':
-    'OpenHuman ships with managed STT/TTS that just works. Nothing to wire up.',
+    'OpenHuman 钉钉 ships with managed STT/TTS that just works. Nothing to wire up.',
   'onboarding.custom.voice.configureDesc':
     'Use your own ElevenLabs / OpenAI Whisper / etc. Configure in Settings › Voice.',
 
@@ -348,24 +348,24 @@ const en: TranslationMap = {
   'onboarding.custom.oauth.subtitle':
     'Gmail, Slack, Notion, and other connected services that need OAuth.',
   'onboarding.custom.oauth.defaultDesc':
-    'OpenHuman runs a managed Composio workspace. One click to connect each service later.',
+    'OpenHuman 钉钉 runs a managed Composio workspace. One click to connect each service later.',
   'onboarding.custom.oauth.configureDesc':
     'Bring your own Composio account / API key. Configure in Settings › Connections.',
 
   // Onboarding: Custom > Search
   'onboarding.custom.search.title': 'Web Search',
-  'onboarding.custom.search.subtitle': 'How OpenHuman searches the web on your behalf.',
+  'onboarding.custom.search.subtitle': 'How OpenHuman 钉钉 searches the web on your behalf.',
   'onboarding.custom.search.defaultDesc':
-    'OpenHuman uses a managed search backend. No keys needed.',
+    'OpenHuman 钉钉 uses a managed search backend. No keys needed.',
   'onboarding.custom.search.configureDesc':
     'Bring your own search provider key (Tavily, Brave, etc.). Configure in Settings › Tools.',
 
   // Onboarding: Custom > Memory
   'onboarding.custom.memory.title': 'Memory',
   'onboarding.custom.memory.subtitle':
-    'How OpenHuman remembers your context, preferences, and prior conversations.',
+    'How OpenHuman 钉钉 remembers your context, preferences, and prior conversations.',
   'onboarding.custom.memory.defaultDesc':
-    'OpenHuman manages memory storage and retrieval automatically. Nothing to set up.',
+    'OpenHuman 钉钉 manages memory storage and retrieval automatically. Nothing to set up.',
   'onboarding.custom.memory.configureDesc':
     'Inspect, export, or wipe memory yourself. Configure in Settings › Memory.',
 
@@ -439,7 +439,7 @@ const en: TranslationMap = {
   'misc.downloading': 'Downloading...',
   'misc.installing': 'Installing...',
   'misc.beta':
-    'OpenHuman is in early beta. Feel free to share feedback or report any bugs you run into — every report helps us ship faster.',
+    'OpenHuman 钉钉 is in early beta. Feel free to share feedback or report any bugs you run into — every report helps us ship faster.',
   'misc.betaFeedback': 'Send feedback',
 
   // Mnemonic / Recovery
@@ -465,11 +465,11 @@ const en: TranslationMap = {
   'privacy.anonymizedAnalytics': 'Anonymized Analytics',
   'privacy.shareAnonymizedData': 'Share Anonymized Usage Data',
   'privacy.shareAnonymizedDataDesc':
-    'Help improve OpenHuman by sharing anonymous crash reports and usage analytics. All data is fully anonymized — no personal data, messages, wallet keys, or session information is ever collected.',
+    'Help improve OpenHuman 钉钉 by sharing anonymous crash reports and usage analytics. All data is fully anonymized — no personal data, messages, wallet keys, or session information is ever collected.',
   'privacy.meetingFollowUps': 'Meeting follow-ups',
   'privacy.autoHandoffMeet': 'Auto-handoff Google Meet transcripts to the orchestrator',
   'privacy.autoHandoffMeetDesc':
-    "When a Google Meet call ends, OpenHuman's orchestrator can read the transcript and may take actions like drafting messages, scheduling follow-ups, or posting summaries to your connected Slack workspace. Off by default.",
+    "When a Google Meet call ends, OpenHuman 钉钉's orchestrator can read the transcript and may take actions like drafting messages, scheduling follow-ups, or posting summaries to your connected Slack workspace. Off by default.",
   'privacy.analyticsDisclaimer':
     'All analytics and bug reports are fully anonymized. When enabled, we collect only crash information, device type, and the file location of errors. We never access your messages, session data, wallet keys, API keys, or any personally identifiable information. You can change this setting at any time.',
 
@@ -538,7 +538,7 @@ const en: TranslationMap = {
 
   // Settings: Tools
   'settings.tools.chooseCapabilities':
-    'Choose which capabilities OpenHuman can use on your behalf.',
+    'Choose which capabilities OpenHuman 钉钉 can use on your behalf.',
   'settings.tools.saveChanges': 'Save Changes',
   'settings.tools.preferencesSaved': 'Preferences saved',
   'settings.tools.saveFailed': 'Failed to save preferences. Try again.',
@@ -1070,9 +1070,9 @@ const en: TranslationMap = {
   'bootCheck.tokenRequired': "We'll need an auth token to connect.",
   'bootCheck.chooseCoreMode': 'Select a Runtime',
   'bootCheck.connectToCore': 'Connect to Your Runtime',
-  'bootCheck.desktopDescription': 'OpenHuman needs a runtime to think. Pick where it should live.',
+  'bootCheck.desktopDescription': 'OpenHuman 钉钉 needs a runtime to think. Pick where it should live.',
   'bootCheck.webDescription':
-    'On the web, OpenHuman connects to a runtime you control. Drop in its URL and auth token below, or grab the desktop app to run one right on your machine.',
+    'On the web, OpenHuman 钉钉 connects to a runtime you control. Drop in its URL and auth token below, or grab the desktop app to run one right on your machine.',
   'bootCheck.preferDesktop': 'Rather keep everything on your own device?',
   'bootCheck.downloadDesktop': 'Get the Desktop App',
   'bootCheck.localRecommended': 'Run Locally (Recommended)',
@@ -1098,7 +1098,7 @@ const en: TranslationMap = {
   'bootCheck.quit': 'Quit',
   'bootCheck.legacyDetected': 'Legacy Background Runtime Detected',
   'bootCheck.legacyDescription':
-    'A separately-installed OpenHuman daemon is already running on this device. We need to clear it out before the built-in runtime can take over.',
+    'A separately-installed OpenHuman 钉钉 daemon is already running on this device. We need to clear it out before the built-in runtime can take over.',
   'bootCheck.removing': 'Removing…',
   'bootCheck.removeContinue': 'Remove and Continue',
   'bootCheck.localNeedsRestart': 'Local Runtime Needs a Restart',
@@ -1237,7 +1237,7 @@ const en: TranslationMap = {
   'accounts.webviewHost.timeoutHint': 'Timeout hint',
   'app.connectionBadge.composio': 'Composio',
   'app.connectionBadge.messaging': 'Messaging',
-  'app.connectionIndicator.connected': 'Connected to OpenHuman AI 🚀',
+  'app.connectionIndicator.connected': 'Connected to OpenHuman 钉钉 AI 🚀',
   'app.connectionIndicator.connecting': 'Connecting',
   'app.connectionIndicator.coreOffline': 'Core offline',
   'app.connectionIndicator.disconnected': 'Disconnected',
@@ -1256,7 +1256,7 @@ const en: TranslationMap = {
   'app.openhumanLink.accounts.continueWith': 'Continue with {label} sign-in',
   'app.openhumanLink.accounts.done': 'Done',
   'app.openhumanLink.accounts.intro':
-    'Connect your apps to give OpenHuman access to your accounts.',
+    'Connect your apps to give OpenHuman 钉钉 access to your accounts.',
   'app.openhumanLink.accounts.webviewNote':
     'Your credentials stay on this device and are never shared.',
   'app.openhumanLink.billing.openDashboard': 'Open dashboard',
@@ -1265,10 +1265,10 @@ const en: TranslationMap = {
   'app.openhumanLink.billing.trialDesc': 'Trial desc',
   'app.openhumanLink.defaultBody':
     "Not ready in the popup yet. Open the full settings page when you're done.",
-  'app.openhumanLink.discord.intro': 'Join the OpenHuman community on Discord.',
+  'app.openhumanLink.discord.intro': 'Join the OpenHuman 钉钉 community on Discord.',
   'app.openhumanLink.discord.openInvite': 'Open invite link',
   'app.openhumanLink.discord.perk1': 'Early access to new features',
-  'app.openhumanLink.discord.perk2': 'Connect with other OpenHuman users',
+  'app.openhumanLink.discord.perk2': 'Connect with other OpenHuman 钉钉 users',
   'app.openhumanLink.discord.perk3': 'Share feedback directly with the team',
   'app.openhumanLink.discord.perk4': 'Community help and support',
   'app.openhumanLink.done': 'Done',
@@ -1277,15 +1277,15 @@ const en: TranslationMap = {
   'app.openhumanLink.notifications.asking': 'Asking your OS…',
   'app.openhumanLink.notifications.blocked': 'Notifications blocked',
   'app.openhumanLink.notifications.blockedStep1': 'Open System Settings',
-  'app.openhumanLink.notifications.blockedStep2': 'Go to Notifications → OpenHuman',
+  'app.openhumanLink.notifications.blockedStep2': 'Go to Notifications → OpenHuman 钉钉',
   'app.openhumanLink.notifications.blockedStep3': 'Enable Allow Notifications',
-  'app.openhumanLink.notifications.intro': 'Allow OpenHuman to send you notifications.',
+  'app.openhumanLink.notifications.intro': 'Allow OpenHuman 钉钉 to send you notifications.',
   'app.openhumanLink.notifications.promptHint': 'Click Allow when your system asks for permission.',
   'app.openhumanLink.notifications.retry': 'Retry test notification',
   'app.openhumanLink.notifications.send': 'Send test notification',
   'app.openhumanLink.notifications.sendFailed': "Couldn't send: {error}",
   'app.openhumanLink.notifications.sent':
-    'Test notification sent. If you didn’t receive it, go to System Settings → Notifications → OpenHuman, turn on Allow Notifications, and set Banner Style to Persistent.',
+    'Test notification sent. If you didn’t receive it, go to System Settings → Notifications → OpenHuman 钉钉, turn on Allow Notifications, and set Banner Style to Persistent.',
   'app.openhumanLink.skipForNow': 'Skip for now',
   'app.openhumanLink.telegramUnavailable': 'Telegram unavailable',
   'app.openhumanLink.title.accounts': 'Connect your apps',
@@ -1297,7 +1297,7 @@ const en: TranslationMap = {
   'app.persistRehydration.heading': 'Restoring your data',
   'app.persistRehydration.resetCta': 'Resetting…',
   'app.persistRehydration.resetting': 'Resetting…',
-  'app.routeLoading.initializing': 'Initializing OpenHuman...',
+  'app.routeLoading.initializing': 'Initializing OpenHuman 钉钉...',
   'app.update.currentlyOn': '{version}',
   'app.update.errorFallback': 'Something went wrong while updating.',
   'app.update.header.default': 'Update',
@@ -1376,7 +1376,7 @@ const en: TranslationMap = {
   'composio.connect.permissionsDefault': 'Read + Write enabled by default',
   'composio.connect.permissionsNote': 'can expose',
   'composio.connect.permissionsNoteSuffix':
-    "OpenHuman's own agent permissions are controlled below as read, write, and admin toggles.",
+    "OpenHuman 钉钉's own agent permissions are controlled below as read, write, and admin toggles.",
   'composio.connect.reopenBrowser': 'Reopen browser',
   'composio.connect.requestingUrl': 'Requesting connect URL…',
   'composio.connect.retryConnection': 'Retry connection',
@@ -1409,7 +1409,7 @@ const en: TranslationMap = {
   'daemon.serviceBlockingGate.retryFailed':
     'Retry failed. Download the latest app build and try again.',
   'daemon.serviceBlockingGate.retrying': 'Retrying...',
-  'daemon.serviceBlockingGate.title': 'OpenHuman core is unavailable',
+  'daemon.serviceBlockingGate.title': 'OpenHuman 钉钉 core is unavailable',
   'home.banners.discordSubtitle': 'Get support, share feedback, and meet the community.',
   'home.banners.discordTitle': 'Join Our Discord',
   'home.banners.earlyBirdDismiss': 'Dismiss early bird banner',
@@ -1490,7 +1490,7 @@ const en: TranslationMap = {
   'openhuman.team_list_teams': 'Team list teams',
   'overlay.ariaAttention': 'Attention message',
   'overlay.ariaCompanion': 'Companion active',
-  'overlay.ariaOrb': 'OpenHuman overlay',
+  'overlay.ariaOrb': 'OpenHuman 钉钉 overlay',
   'overlay.ariaVoiceActive': 'Voice input active',
   'overlay.companion.error': 'Error',
   'overlay.companion.listening': 'Listening…',
@@ -1549,7 +1549,7 @@ const en: TranslationMap = {
   'rewards.community.discordStatusUnavailable': 'Discord status unavailable',
   'rewards.community.discordWaiting': 'Waiting for Discord…',
   'rewards.community.heroSubtitle': 'Refer friends and complete challenges to earn credits.',
-  'rewards.community.heroTitle': 'Earn rewards with OpenHuman',
+  'rewards.community.heroTitle': 'Earn rewards with OpenHuman 钉钉',
   'rewards.community.joinDiscord': 'Join Discord',
   'rewards.community.loadingRewards': 'Loading rewards…',
   'rewards.community.locked': 'Locked',
@@ -1620,7 +1620,7 @@ const en: TranslationMap = {
   'settings.ai.clearStoredKey': 'Clear stored key',
   'settings.ai.connectProvider': 'Connect',
   'settings.ai.customRouting': 'Custom routing',
-  'settings.ai.defaultResolvesTo': 'OpenHuman',
+  'settings.ai.defaultResolvesTo': 'OpenHuman 钉钉',
   'settings.ai.discard': 'Discard',
   'settings.ai.editProvider': 'Edit {label}',
   'settings.ai.llmProviders': 'LLM Providers',
@@ -1739,15 +1739,15 @@ const en: TranslationMap = {
   'settings.composio.confirmSwitch': 'I understand, switch to Direct',
   'settings.composio.confirmTitle': '⚠️ Switching to Direct mode',
   'settings.composio.confirmWarning':
-    "Your existing integrations (Gmail, Slack, GitHub, etc. linked through OpenHuman) won't be visible — they live in the OpenHuman-managed Composio tenant.",
+    "Your existing integrations (Gmail, Slack, GitHub, etc. linked through OpenHuman 钉钉) won't be visible — they live in the OpenHuman 钉钉-managed Composio tenant.",
   'settings.composio.intro':
     'Composio integrates 250+ external apps as tools your agent can call. Choose how those tool calls are routed.',
   'settings.composio.modeDirect': 'Direct (bring your own API key)',
   'settings.composio.modeDirectDesc':
     'Calls go to backend.composio.dev directly. Sovereign / offline-friendly. Tool execution works synchronously; real-time trigger webhooks are not yet routed in direct mode (follow-up issue).',
-  'settings.composio.modeManaged': 'Managed (OpenHuman handles it for you)',
+  'settings.composio.modeManaged': 'Managed (OpenHuman 钉钉 handles it for you)',
   'settings.composio.modeManagedDesc':
-    'OpenHuman proxies tool calls through our backend (recommended). Auth is brokered; you never paste a Composio API key. Webhooks are fully routed.',
+    'OpenHuman 钉钉 proxies tool calls through our backend (recommended). Auth is brokered; you never paste a Composio API key. Webhooks are fully routed.',
   'settings.composio.routingMode': 'Routing mode',
   'settings.composio.saveErrorNoKey': 'Failed to save. Direct mode requires a non-empty API key.',
   'settings.composio.saving': 'Saving…',
@@ -1865,7 +1865,7 @@ const en: TranslationMap = {
   'settings.localModel.status.ollamaDiagnostics': 'Ollama Diagnostics',
   'settings.localModel.status.ollamaNotInstalled': 'Ollama runtime unavailable',
   'settings.localModel.status.ollamaNotInstalledDesc':
-    'OpenHuman now treats Ollama as an external inference runtime. Start your own Ollama server, pull the models you want, and point workload routing at it.',
+    'OpenHuman 钉钉 now treats Ollama as an external inference runtime. Start your own Ollama server, pull the models you want, and point workload routing at it.',
   'settings.localModel.status.progress': 'Progress',
   'settings.localModel.status.provider': 'Provider',
   'settings.localModel.status.retryBootstrap': 'Retry Bootstrap',
@@ -1895,12 +1895,12 @@ const en: TranslationMap = {
   'settings.appearance.helperText':
     'Dark mode switches the entire app — chat, settings, panels — to a dim palette. "Match system" follows your OS appearance and updates live.',
   'settings.mascot.active': 'Active',
-  'settings.mascot.characterDesc': 'Choose your OpenHuman character.',
+  'settings.mascot.characterDesc': 'Choose your OpenHuman 钉钉 character.',
   'settings.mascot.characterHeading': 'Character',
   'settings.mascot.characterPreview': 'Preview',
   'settings.mascot.characterStates': 'states',
   'settings.mascot.characterVisemes': 'visemes',
-  'settings.mascot.colorAria': 'OpenHuman color',
+  'settings.mascot.colorAria': 'OpenHuman 钉钉 color',
   'settings.mascot.colorDesc': 'Pick a color theme for your character.',
   'settings.mascot.colorHeading': 'Color',
   'settings.mascot.colorBlack': 'Black',
@@ -1908,11 +1908,11 @@ const en: TranslationMap = {
   'settings.mascot.colorGreen': 'Green',
   'settings.mascot.colorNavy': 'Navy',
   'settings.mascot.colorYellow': 'Yellow',
-  'settings.mascot.libraryUnavailable': 'OpenHuman library unavailable',
-  'settings.mascot.title': 'OpenHuman',
-  'settings.mascot.loadingLibrary': 'Loading OpenHuman library…',
-  'settings.mascot.localDefault': 'Local OpenHuman (default)',
-  'settings.mascot.noCharacters': 'No OpenHuman characters are available yet',
+  'settings.mascot.libraryUnavailable': 'OpenHuman 钉钉 library unavailable',
+  'settings.mascot.title': 'OpenHuman 钉钉',
+  'settings.mascot.loadingLibrary': 'Loading OpenHuman 钉钉 library…',
+  'settings.mascot.localDefault': 'Local OpenHuman 钉钉 (default)',
+  'settings.mascot.noCharacters': 'No OpenHuman 钉钉 characters are available yet',
   'settings.mascot.noColorVariants': 'No color variants',
   'settings.mascot.voice.current': 'current',
   'settings.mascot.voice.customDesc':
@@ -1939,7 +1939,7 @@ const en: TranslationMap = {
     'Sensible default — good continuity without burning extra tokens on every run.',
   'settings.memoryWindow.balanced.label': 'Balanced',
   'settings.memoryWindow.description':
-    'How much remembered context OpenHuman injects into every new agent run. Larger windows feel more aware of past conversations but use more tokens — and cost more — on every run.',
+    'How much remembered context OpenHuman 钉钉 injects into every new agent run. Larger windows feel more aware of past conversations but use more tokens — and cost more — on every run.',
   'settings.memoryWindow.extended.badge': 'More context',
   'settings.memoryWindow.extended.hint':
     'More long-term memory injected into each run. Higher token cost per turn.',
@@ -2009,20 +2009,20 @@ const en: TranslationMap = {
   'skills.install.title': 'Install skill from URL',
   'skills.install.urlLabel': 'Skill URL',
   'skills.meetingBots.bannerDesc':
-    'OpenHuman joins calls silently and handles notes and follow-ups automatically.',
-  'skills.meetingBots.bannerTitle': 'Send OpenHuman to your next meeting',
-  'skills.meetingBots.busyTitle': 'OpenHuman is busy',
+    'OpenHuman 钉钉 joins calls silently and handles notes and follow-ups automatically.',
+  'skills.meetingBots.bannerTitle': 'Send OpenHuman 钉钉 to your next meeting',
+  'skills.meetingBots.busyTitle': 'OpenHuman 钉钉 is busy',
   'skills.meetingBots.comingSoon': '{label} coming soon',
-  'skills.meetingBots.couldNotStartTitle': 'Could not start OpenHuman',
+  'skills.meetingBots.couldNotStartTitle': 'Could not start OpenHuman 钉钉',
   'skills.meetingBots.displayName': 'Display name',
-  'skills.meetingBots.failedToStart': 'Failed to start OpenHuman.',
+  'skills.meetingBots.failedToStart': 'Failed to start OpenHuman 钉钉.',
   'skills.meetingBots.joiningMessage': 'It should appear as a participant in a few seconds.',
-  'skills.meetingBots.joiningTitle': 'OpenHuman is joining the meeting',
+  'skills.meetingBots.joiningTitle': 'OpenHuman 钉钉 is joining the meeting',
   'skills.meetingBots.meetingLink': 'Meeting link',
-  'skills.meetingBots.modalAriaLabel': 'Send OpenHuman to a meeting',
+  'skills.meetingBots.modalAriaLabel': 'Send OpenHuman 钉钉 to a meeting',
   'skills.meetingBots.modalDesc':
-    'OpenHuman will join as a silent participant and help with notes and follow-ups.',
-  'skills.meetingBots.modalTitle': 'Send OpenHuman to a meeting',
+    'OpenHuman 钉钉 will join as a silent participant and help with notes and follow-ups.',
+  'skills.meetingBots.modalTitle': 'Send OpenHuman 钉钉 to a meeting',
   'skills.meetingBots.newBadge': 'New',
   'skills.meetingBots.sendTo': 'Send to {label}',
   'skills.meetingBots.starting': 'Starting…',
@@ -2148,7 +2148,7 @@ const en: TranslationMap = {
   'composio.triggers.loading': 'Loading…',
   'conversations.taskKanban.todo': 'To do',
   'settings.composio.loading': 'Loading…',
-  'settings.mascot.noCharactersAvailable': 'No OpenHuman characters are available yet',
+  'settings.mascot.noCharactersAvailable': 'No OpenHuman 钉钉 characters are available yet',
   'skills.uninstall.confirmTitle': 'Uninstall {name}?',
   'conversations.taskKanban.blocked': 'Blocked',
   'conversations.taskKanban.done': 'Done',
@@ -2157,7 +2157,7 @@ const en: TranslationMap = {
   'settings.composio.notYetRouted': 'not yet routed',
   'settings.localModel.download.manageExternal': 'Manage this model in your external runtime.',
   'settings.localModel.status.manageOllamaExternal':
-    'Manage the Ollama process and model pulls outside OpenHuman, then rerun diagnostics.',
+    'Manage the Ollama process and model pulls outside OpenHuman 钉钉, then rerun diagnostics.',
   'settings.localModel.status.ollamaDocs': 'Ollama docs',
   'settings.localModel.status.thenRetry':
     'for setup instructions, then retry after your runtime is reachable.',
@@ -2171,7 +2171,7 @@ const en: TranslationMap = {
   'devOptions.menuMessagingDesc':
     'Configure Telegram/Discord auth modes and default channel routing',
   'devOptions.menuTools': 'Tools',
-  'devOptions.menuToolsDesc': 'Enable or disable capabilities OpenHuman can use on your behalf',
+  'devOptions.menuToolsDesc': 'Enable or disable capabilities OpenHuman 钉钉 can use on your behalf',
   'devOptions.menuAgentChat': 'Agent Chat',
   'devOptions.menuAgentChatDesc': 'Test agent conversation with model and temperature overrides',
   'devOptions.menuCronJobs': 'Cron Jobs',

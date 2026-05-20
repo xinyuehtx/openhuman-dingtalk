@@ -66,7 +66,7 @@ describe('desktopDeepLinkListener', () => {
     expect(getDeepLinkAuthState()).toEqual({
       isProcessing: false,
       errorMessage:
-        'Twitter/X sign-in failed before OpenHuman received authorization. Check the Twitter Developer Portal app settings: OAuth 2.0 must be enabled, callback URL must match the backend redirect URL exactly, and the client ID, client secret, and requested scopes must match the OpenHuman backend configuration.',
+        'Twitter/X sign-in failed before OpenHuman 钉钉 received authorization. Check the Twitter Developer Portal app settings: OAuth 2.0 must be enabled, callback URL must match the backend redirect URL exactly, and the client ID, client secret, and requested scopes must match the OpenHuman 钉钉 backend configuration.',
       requiresAppDataReset: false,
     });
     expect(oauthErrorEvents).toHaveLength(1);
@@ -74,7 +74,7 @@ describe('desktopDeepLinkListener', () => {
       provider: 'twitter',
       errorCode: 'invalid_request',
       message:
-        'Twitter/X sign-in failed before OpenHuman received authorization. Check the Twitter Developer Portal app settings: OAuth 2.0 must be enabled, callback URL must match the backend redirect URL exactly, and the client ID, client secret, and requested scopes must match the OpenHuman backend configuration.',
+        'Twitter/X sign-in failed before OpenHuman 钉钉 received authorization. Check the Twitter Developer Portal app settings: OAuth 2.0 must be enabled, callback URL must match the backend redirect URL exactly, and the client ID, client secret, and requested scopes must match the OpenHuman 钉钉 backend configuration.',
     });
     expect(console.warn).toHaveBeenCalledWith(
       '[DeepLink][oauth:error] OAuth provider returned an error',
@@ -133,7 +133,7 @@ describe('desktopDeepLinkListener', () => {
       provider: 'twit_ter',
       errorCode: 'bad_request',
       message:
-        'OAuth sign-in failed before OpenHuman received authorization. Check the provider app settings and try again.',
+        'OAuth sign-in failed before OpenHuman 钉钉 received authorization. Check the provider app settings and try again.',
     });
   });
 });

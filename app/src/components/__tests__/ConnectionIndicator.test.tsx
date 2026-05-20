@@ -7,7 +7,7 @@ import ConnectionIndicator from '../ConnectionIndicator';
 describe('ConnectionIndicator', () => {
   it('renders connected state with override prop', () => {
     renderWithProviders(<ConnectionIndicator status="connected" />);
-    expect(screen.getByText(/Connected to OpenHuman AI/)).toBeInTheDocument();
+    expect(screen.getByText(/Connected to OpenHuman 钉钉 AI/)).toBeInTheDocument();
   });
 
   it('renders disconnected state', () => {
@@ -23,7 +23,7 @@ describe('ConnectionIndicator', () => {
   it('renders as a pill badge', () => {
     renderWithProviders(<ConnectionIndicator status="connected" />);
     // The indicator renders as an inline pill — status text is visible
-    expect(screen.getByText(/Connected to OpenHuman AI/)).toBeInTheDocument();
+    expect(screen.getByText(/Connected to OpenHuman 钉钉 AI/)).toBeInTheDocument();
   });
 
   it('falls back to connectivity store when no override', () => {
@@ -36,7 +36,7 @@ describe('ConnectionIndicator', () => {
 
   // ---- Store-driven branches (lines 43, 50, 57, 67) ----
 
-  it('shows "Connected to OpenHuman AI" when blocking=ok (line 43)', () => {
+  it('shows "Connected to OpenHuman 钉钉 AI" when blocking=ok (line 43)', () => {
     renderWithProviders(<ConnectionIndicator />, {
       preloadedState: {
         connectivity: {
@@ -47,7 +47,7 @@ describe('ConnectionIndicator', () => {
         },
       },
     });
-    expect(screen.getByText(/Connected to OpenHuman AI/)).toBeInTheDocument();
+    expect(screen.getByText(/Connected to OpenHuman 钉钉 AI/)).toBeInTheDocument();
   });
 
   it('shows "Offline" when blocking=internet-offline (line 50)', () => {

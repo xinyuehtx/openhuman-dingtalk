@@ -131,9 +131,9 @@ const id3: TranslationMap = {
   'bootCheck.chooseCoreMode': 'Pilih Runtime',
   'bootCheck.connectToCore': 'Hubungkan ke Runtime Anda',
   'bootCheck.desktopDescription':
-    'OpenHuman memerlukan runtime untuk berpikir. Pilih di mana runtime harus berada.',
+    'OpenHuman 钉钉 memerlukan runtime untuk berpikir. Pilih di mana runtime harus berada.',
   'bootCheck.webDescription':
-    'Di web, OpenHuman terhubung ke runtime yang Anda kendalikan. Masukkan URL dan token autentikasi di bawah, atau ambil aplikasi desktop untuk menjalankannya langsung di mesin Anda.',
+    'Di web, OpenHuman 钉钉 terhubung ke runtime yang Anda kendalikan. Masukkan URL dan token autentikasi di bawah, atau ambil aplikasi desktop untuk menjalankannya langsung di mesin Anda.',
   'bootCheck.preferDesktop': 'Lebih suka menyimpan semuanya di perangkat Anda sendiri?',
   'bootCheck.downloadDesktop': 'Dapatkan Aplikasi Desktop',
   'bootCheck.localRecommended': 'Jalankan Secara Lokal (Direkomendasikan)',
@@ -160,7 +160,7 @@ const id3: TranslationMap = {
   'bootCheck.quit': 'Keluar',
   'bootCheck.legacyDetected': 'Runtime Latar Belakang Lama Terdeteksi',
   'bootCheck.legacyDescription':
-    'Daemon OpenHuman yang diinstal terpisah sudah berjalan di perangkat ini. Kami perlu membersihkannya sebelum runtime bawaan dapat mengambil alih.',
+    'Daemon OpenHuman 钉钉 yang diinstal terpisah sudah berjalan di perangkat ini. Kami perlu membersihkannya sebelum runtime bawaan dapat mengambil alih.',
   'bootCheck.removing': 'Menghapus...',
   'bootCheck.removeContinue': 'Hapus dan Lanjutkan',
   'bootCheck.localNeedsRestart': 'Runtime Lokal Perlu Dimulai Ulang',
@@ -268,7 +268,7 @@ const id3: TranslationMap = {
   'accounts.webviewHost.timeoutHint': 'Petunjuk waktu habis',
   'app.connectionBadge.composio': 'Composio',
   'app.connectionBadge.messaging': 'Pesan',
-  'app.connectionIndicator.connected': 'Terhubung ke OpenHuman AI 🚀',
+  'app.connectionIndicator.connected': 'Terhubung ke OpenHuman 钉钉 AI 🚀',
   'app.connectionIndicator.connecting': 'Menghubungkan',
   'app.connectionIndicator.coreOffline': 'Core offline',
   'app.connectionIndicator.disconnected': 'Terputus',
@@ -313,7 +313,7 @@ const id3: TranslationMap = {
   'app.openhumanLink.notifications.send': 'Kirim notifikasi tes',
   'app.openhumanLink.notifications.sendFailed': 'Tidak bisa mengirim: {error}',
   'app.openhumanLink.notifications.sent':
-    'Notifikasi uji telah dikirim. Jika Anda tidak menerimanya, buka System Settings → Notifications → OpenHuman, aktifkan Allow Notifications, dan atur Banner Style ke Persistent.',
+    'Notifikasi uji telah dikirim. Jika Anda tidak menerimanya, buka System Settings → Notifications → OpenHuman 钉钉, aktifkan Allow Notifications, dan atur Banner Style ke Persistent.',
   'app.openhumanLink.skipForNow': 'Lewati untuk sekarang',
   'app.openhumanLink.telegramUnavailable': 'Telegram tidak tersedia',
   'app.openhumanLink.title.accounts': 'Hubungkan aplikasi Anda',
@@ -325,7 +325,7 @@ const id3: TranslationMap = {
   'app.persistRehydration.heading': 'Judul',
   'app.persistRehydration.resetCta': 'Mereset...',
   'app.persistRehydration.resetting': 'Mereset...',
-  'app.routeLoading.initializing': 'Menginisialisasi OpenHuman...',
+  'app.routeLoading.initializing': 'Menginisialisasi OpenHuman 钉钉...',
   'app.update.currentlyOn': '{version}',
   'app.update.errorFallback': 'Terjadi kesalahan saat memperbarui.',
   'app.update.header.default': 'Perbarui',

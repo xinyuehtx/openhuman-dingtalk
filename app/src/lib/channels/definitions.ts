@@ -17,7 +17,7 @@ export const STATUS_STYLES: Record<ChannelConnectionStatus, { label: string; cla
 
 /** Human-readable labels for auth modes. */
 export const AUTH_MODE_LABELS: Record<string, string> = {
-  managed_dm: 'Login with OpenHuman',
+  managed_dm: 'Login with OpenHuman 钉钉',
   oauth: 'OAuth Sign-in',
   bot_token: 'Use your own Bot Token',
   api_key: 'Use your own API Key',
@@ -33,7 +33,7 @@ export const FALLBACK_DEFINITIONS: ChannelDefinition[] = [
     auth_modes: [
       {
         mode: 'managed_dm',
-        description: 'Message the OpenHuman Telegram bot directly.',
+        description: 'Message the OpenHuman 钉钉 Telegram bot directly.',
         fields: [],
         auth_action: 'telegram_managed_dm',
       },
@@ -90,13 +90,13 @@ export const FALLBACK_DEFINITIONS: ChannelDefinition[] = [
       },
       {
         mode: 'oauth',
-        description: 'Install the OpenHuman bot to your Discord server via OAuth.',
+        description: 'Install the OpenHuman 钉钉 bot to your Discord server via OAuth.',
         fields: [],
         auth_action: 'discord_oauth',
       },
       {
         mode: 'managed_dm',
-        description: 'Link your personal Discord account to the OpenHuman bot.',
+        description: 'Link your personal Discord account to the OpenHuman 钉钉 bot.',
         fields: [],
         auth_action: 'discord_managed_link',
       },

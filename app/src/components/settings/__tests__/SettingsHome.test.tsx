@@ -184,7 +184,7 @@ describe('SettingsHome', () => {
       const user = userEvent.setup();
       mockClearAllAppData.mockRejectedValueOnce(
         new Error(
-          'Failed to remove C:\\Users\\me\\.openhuman because it is locked by another OpenHuman window or process. Close all OpenHuman windows and try again.'
+          'Failed to remove C:\\Users\\me\\.openhuman because it is locked by another OpenHuman 钉钉 window or process. Close all OpenHuman 钉钉 windows and try again.'
         )
       );
       renderSettingsHome();
@@ -194,7 +194,7 @@ describe('SettingsHome', () => {
       await user.click(confirmButtons[confirmButtons.length - 1]);
 
       expect(
-        await screen.findByText(/locked by another OpenHuman window or process/)
+        await screen.findByText(/locked by another OpenHuman 钉钉 window or process/)
       ).toBeInTheDocument();
     });
 

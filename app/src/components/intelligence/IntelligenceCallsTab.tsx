@@ -28,7 +28,7 @@ const PLACEHOLDER_URL = 'https://meet.google.com/abc-defg-hij';
 export default function IntelligenceCallsTab({ onToast }: Props) {
   const { t } = useT();
   const [meetUrl, setMeetUrl] = useState('');
-  const [displayName, setDisplayName] = useState('OpenHuman Agent');
+  const [displayName, setDisplayName] = useState('OpenHuman 钉钉 Agent');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeCalls, setActiveCalls] = useState<ActiveCall[]>([]);

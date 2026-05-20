@@ -96,14 +96,14 @@ const ReferralRewardsSection = () => {
   const handleShare = async () => {
     if (!referralCodeToCopy) return;
     const shareText = [
-      'Join me on OpenHuman.',
+      'Join me on OpenHuman 钉钉.',
       `Referral code: ${referralCodeToCopy}`,
-      `Download OpenHuman: ${LATEST_APP_DOWNLOAD_URL}`,
+      `Download OpenHuman 钉钉: ${LATEST_APP_DOWNLOAD_URL}`,
     ].join('\n');
 
     try {
       if (navigator.share) {
-        await navigator.share({ title: 'OpenHuman', text: shareText });
+        await navigator.share({ title: 'OpenHuman 钉钉', text: shareText });
       } else {
         await navigator.clipboard.writeText(shareText);
         setCopyHint(t('common.copied'));

@@ -429,7 +429,7 @@ export async function aiGetConfig(): Promise<AIPreview> {
   return {
     soul: {
       raw: '',
-      name: 'OpenHuman',
+      name: 'OpenHuman 钉钉',
       description: 'Agent',
       personalityPreview: [],
       safetyRulesPreview: [],

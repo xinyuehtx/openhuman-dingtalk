@@ -196,7 +196,7 @@ describe('OAuthProviderButton', () => {
     });
 
     expect(screen.getByRole('alert')).toHaveTextContent(
-      'Twitter/X sign-in could not start. Check that the Twitter OAuth app callback URL, client ID/secret, and requested scopes match the OpenHuman backend, then try again.'
+      'Twitter/X sign-in could not start. Check that the Twitter OAuth app callback URL, client ID/secret, and requested scopes match the OpenHuman 钉钉 backend, then try again.'
     );
     expect(screen.getByRole('button', { name: 'Twitter' })).toBeEnabled();
     expect(console.error).toHaveBeenCalledWith(

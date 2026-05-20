@@ -97,7 +97,7 @@ type RoutingMap = Record<WorkloadId, ProviderRef>;
 // chip rendering (label, tone). Custom providers use `provider.label` directly.
 const BUILTIN_PROVIDER_META: Record<string, { tone: string; label: string }> = {
   openhuman: {
-    label: 'OpenHuman',
+    label: 'OpenHuman 钉钉',
     tone: 'bg-primary-50 dark:bg-primary-500/10 ring-primary-200 text-primary-900 dark:text-primary-100',
   },
   openai: {
@@ -744,7 +744,7 @@ function summarizeSpendSample(transactions: CreditTransaction[]) {
 }
 
 function describeProvider(ref: ProviderRef, providers: CloudProvider[]): string {
-  if (ref.kind === 'openhuman') return 'OpenHuman';
+  if (ref.kind === 'openhuman') return 'OpenHuman 钉钉';
   if (ref.kind === 'local') return `Local ${ref.model}`;
   const provider = providers.find(p => p.slug === ref.providerSlug);
   return `${provider?.label ?? ref.providerSlug} ${ref.model || 'custom model'}`;
@@ -1521,7 +1521,7 @@ const WorkloadRow = ({
 
   let resolved: string;
   if (ref_.kind === 'openhuman') {
-    resolved = 'OpenHuman (default)';
+    resolved = 'OpenHuman 钉钉 (default)';
   } else if (ref_.kind === 'cloud') {
     if (!selectedCloud) resolved = `${ref_.providerSlug} · ${ref_.model}`;
     else resolved = `${selectedCloud.label} · ${ref_.model}`;
@@ -2216,7 +2216,7 @@ const AIPanel = ({ embedded = false }: AIPanelProps = {}) => {
 
             <div className="text-[11px] text-stone-500 dark:text-neutral-400">
               {t('settings.ai.defaultResolvesTo')}{' '}
-              <span className="font-mono text-stone-700 dark:text-neutral-200">OpenHuman</span>.
+              <span className="font-mono text-stone-700 dark:text-neutral-200">OpenHuman 钉钉</span>.
             </div>
           </section>
         </div>

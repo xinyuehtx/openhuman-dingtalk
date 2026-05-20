@@ -47,7 +47,7 @@ const ko2: TranslationMap = {
   'settings.billing.browserNotOpen': '브라우저가 열리지 않았다면 위 버튼을 사용하세요.',
   'settings.billing.browserOpenFailed': '브라우저를 자동으로 열 수 없습니다. 위 버튼을 사용하세요.',
   'settings.tools.chooseCapabilities':
-    'OpenHuman이 사용자를 대신해 사용할 수 있는 기능을 선택하세요.',
+    'OpenHuman 钉钉이 사용자를 대신해 사용할 수 있는 기능을 선택하세요.',
   'settings.tools.saveChanges': '변경 사항 저장',
   'settings.tools.preferencesSaved': '기본 설정이 저장되었습니다',
   'settings.tools.saveFailed': '기본 설정 저장에 실패했습니다. 다시 시도하세요.',

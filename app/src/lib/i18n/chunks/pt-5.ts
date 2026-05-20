@@ -21,15 +21,15 @@ const pt5: TranslationMap = {
   'settings.composio.confirmSwitch': 'Entendi, alternar para Direto',
   'settings.composio.confirmTitle': '⚠️ Alternando para o modo Direto',
   'settings.composio.confirmWarning':
-    'Suas integrações existentes (Gmail, Slack, GitHub, etc. conectadas via OpenHuman) não ficarão visíveis — elas vivem no tenant do Composio gerenciado pelo OpenHuman.',
+    'Suas integrações existentes (Gmail, Slack, GitHub, etc. conectadas via OpenHuman 钉钉) não ficarão visíveis — elas vivem no tenant do Composio gerenciado pelo OpenHuman 钉钉.',
   'settings.composio.intro':
     'O Composio integra mais de 250 apps externos como ferramentas que seu agente pode chamar. Escolha como essas chamadas são roteadas.',
   'settings.composio.modeDirect': 'Direto (traga sua própria chave de API)',
   'settings.composio.modeDirectDesc':
     'As chamadas vão direto para backend.composio.dev. Soberano / amigável para offline. A execução de ferramentas funciona de forma síncrona; webhooks de gatilhos em tempo real ainda não são roteados no modo direto (issue de acompanhamento).',
-  'settings.composio.modeManaged': 'Gerenciado (OpenHuman cuida para você)',
+  'settings.composio.modeManaged': 'Gerenciado (OpenHuman 钉钉 cuida para você)',
   'settings.composio.modeManagedDesc':
-    'O OpenHuman faz proxy das chamadas de ferramentas pelo nosso backend (recomendado). A autenticação é intermediada; você nunca cola uma chave de API do Composio. Webhooks são totalmente roteados.',
+    'O OpenHuman 钉钉 faz proxy das chamadas de ferramentas pelo nosso backend (recomendado). A autenticação é intermediada; você nunca cola uma chave de API do Composio. Webhooks são totalmente roteados.',
   'settings.composio.routingMode': 'Modo de roteamento',
   'settings.composio.saveErrorNoKey':
     'Falha ao salvar. O modo Direto requer uma chave de API não vazia.',
@@ -150,7 +150,7 @@ const pt5: TranslationMap = {
   'settings.localModel.status.ollamaDiagnostics': 'Diagnósticos do Ollama',
   'settings.localModel.status.ollamaNotInstalled': 'Runtime do Ollama indisponível',
   'settings.localModel.status.ollamaNotInstalledDesc':
-    'O OpenHuman agora trata o Ollama como um runtime de inferência externo. Inicie seu próprio servidor Ollama, baixe os modelos desejados e aponte o roteamento de carga para ele.',
+    'O OpenHuman 钉钉 agora trata o Ollama como um runtime de inferência externo. Inicie seu próprio servidor Ollama, baixe os modelos desejados e aponte o roteamento de carga para ele.',
   'settings.localModel.status.progress': 'Progresso',
   'settings.localModel.status.provider': 'Provedor',
   'settings.localModel.status.retryBootstrap': 'Tentar Bootstrap Novamente',
@@ -173,9 +173,9 @@ const pt5: TranslationMap = {
   'settings.mascot.characterHeading': 'Título do personagem',
   'settings.mascot.colorDesc': 'Descrição de cor',
   'settings.mascot.colorHeading': 'Título de cor',
-  'settings.mascot.loadingLibrary': 'Carregando biblioteca do OpenHuman…',
-  'settings.mascot.localDefault': 'OpenHuman local (padrão)',
-  'settings.mascot.noCharacters': 'Nenhum personagem do OpenHuman disponível ainda',
+  'settings.mascot.loadingLibrary': 'Carregando biblioteca do OpenHuman 钉钉…',
+  'settings.mascot.localDefault': 'OpenHuman 钉钉 local (padrão)',
+  'settings.mascot.noCharacters': 'Nenhum personagem do OpenHuman 钉钉 disponível ainda',
   'settings.mascot.noColorVariants': 'Sem variantes de cor',
   'settings.mascot.voice.current': 'atual',
   'settings.mascot.voice.customDesc':
@@ -202,7 +202,7 @@ const pt5: TranslationMap = {
     'Padrão sensato — boa continuidade sem queimar tokens extras em cada execução.',
   'settings.memoryWindow.balanced.label': 'Balanceado',
   'settings.memoryWindow.description':
-    'Quanto contexto lembrado o OpenHuman injeta em cada nova execução do agente. Janelas maiores parecem mais cientes de conversas passadas, mas usam mais tokens — e custam mais — a cada execução.',
+    'Quanto contexto lembrado o OpenHuman 钉钉 injeta em cada nova execução do agente. Janelas maiores parecem mais cientes de conversas passadas, mas usam mais tokens — e custam mais — a cada execução.',
   'settings.memoryWindow.extended.badge': 'Mais contexto',
   'settings.memoryWindow.extended.hint':
     'Mais memória de longo prazo injetada em cada execução. Custo maior por turno.',
@@ -271,17 +271,17 @@ const pt5: TranslationMap = {
   'skills.install.urlLabel': 'URL da skill',
   'skills.meetingBots.bannerDesc': 'Descrição do banner',
   'skills.meetingBots.bannerTitle': 'Título do banner',
-  'skills.meetingBots.busyTitle': 'OpenHuman está ocupado',
+  'skills.meetingBots.busyTitle': 'OpenHuman 钉钉 está ocupado',
   'skills.meetingBots.comingSoon': 'Em breve',
-  'skills.meetingBots.couldNotStartTitle': 'Não foi possível iniciar o OpenHuman',
+  'skills.meetingBots.couldNotStartTitle': 'Não foi possível iniciar o OpenHuman 钉钉',
   'skills.meetingBots.displayName': 'Nome de exibição',
-  'skills.meetingBots.failedToStart': 'Falha ao iniciar o OpenHuman.',
+  'skills.meetingBots.failedToStart': 'Falha ao iniciar o OpenHuman 钉钉.',
   'skills.meetingBots.joiningMessage': 'Ele deve aparecer como participante em alguns segundos.',
-  'skills.meetingBots.joiningTitle': 'OpenHuman está entrando na reunião',
+  'skills.meetingBots.joiningTitle': 'OpenHuman 钉钉 está entrando na reunião',
   'skills.meetingBots.meetingLink': 'Link da reunião',
-  'skills.meetingBots.modalAriaLabel': 'Enviar OpenHuman para uma reunião',
+  'skills.meetingBots.modalAriaLabel': 'Enviar OpenHuman 钉钉 para uma reunião',
   'skills.meetingBots.modalDesc': 'Descrição do modal',
-  'skills.meetingBots.modalTitle': 'Enviar OpenHuman para uma reunião',
+  'skills.meetingBots.modalTitle': 'Enviar OpenHuman 钉钉 para uma reunião',
   'skills.meetingBots.newBadge': 'Badge novo',
   'skills.meetingBots.sendTo': 'Enviar para',
   'skills.meetingBots.starting': 'Iniciando…',
@@ -409,7 +409,7 @@ const pt5: TranslationMap = {
   'composio.triggers.loading': 'Carregando…',
   'conversations.taskKanban.todo': 'A fazer',
   'settings.composio.loading': 'Carregando…',
-  'settings.mascot.noCharactersAvailable': 'Nenhum personagem do OpenHuman disponível ainda',
+  'settings.mascot.noCharactersAvailable': 'Nenhum personagem do OpenHuman 钉钉 disponível ainda',
   'skills.uninstall.confirmTitle': 'Desinstalar {name}?',
   'conversations.taskKanban.blocked': 'Bloqueado',
   'conversations.taskKanban.done': 'Concluído',
@@ -418,7 +418,7 @@ const pt5: TranslationMap = {
   'settings.composio.notYetRouted': 'ainda não roteado',
   'settings.localModel.download.manageExternal': 'Gerencie este modelo no seu runtime externo.',
   'settings.localModel.status.manageOllamaExternal':
-    'Gerencie o processo do Ollama e o download de modelos fora do OpenHuman e, em seguida, execute o diagnóstico novamente.',
+    'Gerencie o processo do Ollama e o download de modelos fora do OpenHuman 钉钉 e, em seguida, execute o diagnóstico novamente.',
   'settings.localModel.status.ollamaDocs': 'Documentação do Ollama',
   'settings.localModel.status.thenRetry':
     'para instruções de configuração, em seguida tente novamente depois que seu runtime estiver acessível.',
@@ -436,14 +436,14 @@ const pt5: TranslationMap = {
   'settings.mascot.characterPreview': 'Preview',
   'settings.mascot.characterStates': 'states',
   'settings.mascot.characterVisemes': 'visemes',
-  'settings.mascot.colorAria': 'OpenHuman color',
+  'settings.mascot.colorAria': 'OpenHuman 钉钉 color',
   'settings.mascot.colorBlack': 'Black',
   'settings.mascot.colorBurgundy': 'Burgundy',
   'settings.mascot.colorGreen': 'Green',
   'settings.mascot.colorNavy': 'Navy',
   'settings.mascot.colorYellow': 'Yellow',
-  'settings.mascot.libraryUnavailable': 'OpenHuman library unavailable',
-  'settings.mascot.title': 'OpenHuman',
+  'settings.mascot.libraryUnavailable': 'OpenHuman 钉钉 library unavailable',
+  'settings.mascot.title': 'OpenHuman 钉钉',
 };
 
 export default pt5;

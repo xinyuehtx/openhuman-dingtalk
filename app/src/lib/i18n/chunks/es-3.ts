@@ -134,9 +134,9 @@ const es3: TranslationMap = {
   'bootCheck.chooseCoreMode': 'Seleccionar un runtime',
   'bootCheck.connectToCore': 'Conectar a tu runtime',
   'bootCheck.desktopDescription':
-    'OpenHuman necesita un runtime para funcionar. Elige dónde debe vivir.',
+    'OpenHuman 钉钉 necesita un runtime para funcionar. Elige dónde debe vivir.',
   'bootCheck.webDescription':
-    'En la web, OpenHuman se conecta a un runtime que tú controlas. Ingresa su URL y token de autenticación abajo, o descarga la app de escritorio para ejecutar uno en tu máquina.',
+    'En la web, OpenHuman 钉钉 se conecta a un runtime que tú controlas. Ingresa su URL y token de autenticación abajo, o descarga la app de escritorio para ejecutar uno en tu máquina.',
   'bootCheck.preferDesktop': '¿Prefieres tener todo en tu propio dispositivo?',
   'bootCheck.downloadDesktop': 'Obtener la app de escritorio',
   'bootCheck.localRecommended': 'Ejecutar localmente (Recomendado)',
@@ -163,7 +163,7 @@ const es3: TranslationMap = {
   'bootCheck.quit': 'Salir',
   'bootCheck.legacyDetected': 'Runtime en segundo plano legacy detectado',
   'bootCheck.legacyDescription':
-    'Un daemon de OpenHuman instalado por separado ya está corriendo en este dispositivo. Necesitamos eliminarlo antes de que el runtime integrado pueda tomar el control.',
+    'Un daemon de OpenHuman 钉钉 instalado por separado ya está corriendo en este dispositivo. Necesitamos eliminarlo antes de que el runtime integrado pueda tomar el control.',
   'bootCheck.removing': 'Eliminando…',
   'bootCheck.removeContinue': 'Eliminar y continuar',
   'bootCheck.localNeedsRestart': 'El runtime local necesita reiniciarse',
@@ -270,7 +270,7 @@ const es3: TranslationMap = {
   'accounts.webviewHost.timeoutHint': 'Pista de tiempo agotado',
   'app.connectionBadge.composio': 'Composio',
   'app.connectionBadge.messaging': 'Mensajería',
-  'app.connectionIndicator.connected': 'Conectado a OpenHuman AI 🚀',
+  'app.connectionIndicator.connected': 'Conectado a OpenHuman 钉钉 AI 🚀',
   'app.connectionIndicator.connecting': 'Conectando',
   'app.connectionIndicator.coreOffline': 'Core sin conexión',
   'app.connectionIndicator.disconnected': 'Desconectado',
@@ -315,7 +315,7 @@ const es3: TranslationMap = {
   'app.openhumanLink.notifications.send': 'Enviar notificación de prueba',
   'app.openhumanLink.notifications.sendFailed': 'No se pudo enviar: {error}',
   'app.openhumanLink.notifications.sent':
-    'Notificación de prueba enviada. Si no la recibiste, ve a Ajustes del sistema → Notificaciones → OpenHuman, activa Permitir notificaciones y configura el estilo de banner como Persistente.',
+    'Notificación de prueba enviada. Si no la recibiste, ve a Ajustes del sistema → Notificaciones → OpenHuman 钉钉, activa Permitir notificaciones y configura el estilo de banner como Persistente.',
   'app.openhumanLink.skipForNow': 'Omitir por ahora',
   'app.openhumanLink.telegramUnavailable': 'Telegram no disponible',
   'app.openhumanLink.title.accounts': 'Conecta tus apps',
@@ -327,7 +327,7 @@ const es3: TranslationMap = {
   'app.persistRehydration.heading': 'Encabezado',
   'app.persistRehydration.resetCta': 'Restableciendo…',
   'app.persistRehydration.resetting': 'Restableciendo…',
-  'app.routeLoading.initializing': 'Inicializando OpenHuman...',
+  'app.routeLoading.initializing': 'Inicializando OpenHuman 钉钉...',
   'app.update.currentlyOn': '{version}',
   'app.update.errorFallback': 'Algo salió mal durante la actualización.',
   'app.update.header.default': 'Actualización',

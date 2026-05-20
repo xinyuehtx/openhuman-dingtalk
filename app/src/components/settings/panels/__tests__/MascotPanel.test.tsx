@@ -62,7 +62,7 @@ describe('MascotPanel', () => {
 
   it('renders a radio swatch for each supported color', () => {
     renderPanel();
-    expect(screen.getByRole('radiogroup', { name: 'OpenHuman color' })).toBeInTheDocument();
+    expect(screen.getByRole('radiogroup', { name: 'OpenHuman 钉钉 color' })).toBeInTheDocument();
     for (const label of ['Yellow', 'Burgundy', 'Black', 'Navy', 'Green']) {
       expect(screen.getByRole('radio', { name: label })).toBeInTheDocument();
     }
@@ -174,14 +174,14 @@ describe('MascotPanel — mascotSlice rehydrate guard', () => {
       renderPanel();
       expect(await screen.findByTestId('backend-mascot-yellow')).toBeInTheDocument();
       // Default-row (local) sentinel
-      expect(screen.getByText(/Local OpenHuman/)).toBeInTheDocument();
+      expect(screen.getByText(/Local OpenHuman 钉钉/)).toBeInTheDocument();
     });
 
     it('shows a friendly empty state when the library is empty', async () => {
       fetchMascotListMock.mockResolvedValueOnce([]);
       renderPanel();
       expect(
-        await screen.findByText(/No OpenHuman characters are available yet/i)
+        await screen.findByText(/No OpenHuman 钉钉 characters are available yet/i)
       ).toBeInTheDocument();
     });
 
@@ -189,7 +189,7 @@ describe('MascotPanel — mascotSlice rehydrate guard', () => {
       fetchMascotListMock.mockRejectedValueOnce(new Error('offline'));
       renderPanel();
       expect(
-        await screen.findByText(/OpenHuman library unavailable: offline/i)
+        await screen.findByText(/OpenHuman 钉钉 library unavailable: offline/i)
       ).toBeInTheDocument();
     });
 
@@ -218,7 +218,7 @@ describe('MascotPanel — mascotSlice rehydrate guard', () => {
       fetchMascotListMock.mockResolvedValueOnce([summary]);
       getCachedMascotDetailMock.mockResolvedValueOnce(detail);
       renderPanel(store);
-      const localRow = await screen.findByText(/Local OpenHuman/);
+      const localRow = await screen.findByText(/Local OpenHuman 钉钉/);
       fireEvent.click(localRow);
       expect(store.getState().mascot.selectedMascotId).toBeNull();
     });

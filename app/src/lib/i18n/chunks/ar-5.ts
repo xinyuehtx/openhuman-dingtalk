@@ -19,15 +19,15 @@ const ar5: TranslationMap = {
   'settings.composio.confirmSwitch': 'أفهم، التبديل إلى المباشر',
   'settings.composio.confirmTitle': '⚠️ التبديل إلى الوضع المباشر',
   'settings.composio.confirmWarning':
-    'تكاملاتك الحالية (Gmail، Slack، GitHub، إلخ المرتبطة عبر OpenHuman) لن تكون مرئية — فهي موجودة في مستأجر Composio المُدار من OpenHuman.',
+    'تكاملاتك الحالية (Gmail، Slack، GitHub، إلخ المرتبطة عبر OpenHuman 钉钉) لن تكون مرئية — فهي موجودة في مستأجر Composio المُدار من OpenHuman 钉钉.',
   'settings.composio.intro':
     'يُدمج Composio أكثر من 250 تطبيقًا خارجيًا كأدوات يمكن للوكيل استدعاؤها. اختر كيفية توجيه هذه الاستدعاءات.',
   'settings.composio.modeDirect': 'مباشر (استخدم مفتاح API الخاص بك)',
   'settings.composio.modeDirectDesc':
     'تذهب الاستدعاءات إلى backend.composio.dev مباشرةً. سيادي / مناسب للعمل دون اتصال. تنفيذ الأدوات يعمل بشكل متزامن؛ مشغّلات الـ webhooks الفورية لم تُوجَّه بعد في الوضع المباشر (مشكلة متابعة).',
-  'settings.composio.modeManaged': 'مُدار (OpenHuman يتولى الأمر نيابةً عنك)',
+  'settings.composio.modeManaged': 'مُدار (OpenHuman 钉钉 يتولى الأمر نيابةً عنك)',
   'settings.composio.modeManagedDesc':
-    'يقوم OpenHuman بتمرير استدعاءات الأدوات عبر خادمنا الخلفي (موصى به). تتم وساطة المصادقة؛ لن تلصق مفتاح Composio API. الـ webhooks مُوجَّهة بالكامل.',
+    'يقوم OpenHuman 钉钉 بتمرير استدعاءات الأدوات عبر خادمنا الخلفي (موصى به). تتم وساطة المصادقة؛ لن تلصق مفتاح Composio API. الـ webhooks مُوجَّهة بالكامل.',
   'settings.composio.routingMode': 'وضع التوجيه',
   'settings.composio.saveErrorNoKey': 'فشل الحفظ. الوضع المباشر يتطلب مفتاح API غير فارغ.',
   'settings.composio.saving': 'جارٍ الحفظ…',
@@ -143,7 +143,7 @@ const ar5: TranslationMap = {
   'settings.localModel.status.ollamaDiagnostics': 'تشخيص Ollama',
   'settings.localModel.status.ollamaNotInstalled': 'وقت تشغيل Ollama غير متاح',
   'settings.localModel.status.ollamaNotInstalledDesc':
-    'يعامل OpenHuman الآن Ollama كوقت تشغيل استدلال خارجي. شغّل خادم Ollama الخاص بك، وحمّل النماذج التي تريدها، ووجّه توجيه الأحمال إليه.',
+    'يعامل OpenHuman 钉钉 الآن Ollama كوقت تشغيل استدلال خارجي. شغّل خادم Ollama الخاص بك، وحمّل النماذج التي تريدها، ووجّه توجيه الأحمال إليه.',
   'settings.localModel.status.progress': 'التقدم',
   'settings.localModel.status.provider': 'المزود',
   'settings.localModel.status.retryBootstrap': 'إعادة محاولة التمهيد',
@@ -166,9 +166,9 @@ const ar5: TranslationMap = {
   'settings.mascot.characterHeading': 'عنوان الشخصية',
   'settings.mascot.colorDesc': 'وصف اللون',
   'settings.mascot.colorHeading': 'عنوان اللون',
-  'settings.mascot.loadingLibrary': 'جارٍ تحميل مكتبة OpenHuman…',
-  'settings.mascot.localDefault': 'OpenHuman المحلي (افتراضي)',
-  'settings.mascot.noCharacters': 'لا توجد شخصيات OpenHuman متاحة بعد',
+  'settings.mascot.loadingLibrary': 'جارٍ تحميل مكتبة OpenHuman 钉钉…',
+  'settings.mascot.localDefault': 'OpenHuman 钉钉 المحلي (افتراضي)',
+  'settings.mascot.noCharacters': 'لا توجد شخصيات OpenHuman 钉钉 متاحة بعد',
   'settings.mascot.noColorVariants': 'لا توجد ألوان متاحة',
   'settings.mascot.voice.current': 'الحالي',
   'settings.mascot.voice.customDesc':
@@ -194,7 +194,7 @@ const ar5: TranslationMap = {
     'افتراضي معقول — استمرارية جيدة دون استهلاك رموز إضافية في كل تشغيل.',
   'settings.memoryWindow.balanced.label': 'متوازن',
   'settings.memoryWindow.description':
-    'مقدار السياق المحفوظ الذي يحقنه OpenHuman في كل تشغيل وكيل جديد. النوافذ الأكبر تشعر بإدراك أكثر للمحادثات السابقة لكنها تستخدم رموزًا أكثر — وتكلّف أكثر — في كل تشغيل.',
+    'مقدار السياق المحفوظ الذي يحقنه OpenHuman 钉钉 في كل تشغيل وكيل جديد. النوافذ الأكبر تشعر بإدراك أكثر للمحادثات السابقة لكنها تستخدم رموزًا أكثر — وتكلّف أكثر — في كل تشغيل.',
   'settings.memoryWindow.extended.badge': 'سياق أكثر',
   'settings.memoryWindow.extended.hint':
     'حقن ذاكرة طويلة المدى أكثر في كل تشغيل. تكلفة رموز أعلى لكل دور.',
@@ -263,17 +263,17 @@ const ar5: TranslationMap = {
   'skills.install.urlLabel': 'رابط المهارة',
   'skills.meetingBots.bannerDesc': 'وصف اللافتة',
   'skills.meetingBots.bannerTitle': 'عنوان اللافتة',
-  'skills.meetingBots.busyTitle': 'OpenHuman مشغول',
+  'skills.meetingBots.busyTitle': 'OpenHuman 钉钉 مشغول',
   'skills.meetingBots.comingSoon': 'قريبًا',
-  'skills.meetingBots.couldNotStartTitle': 'تعذّر بدء OpenHuman',
+  'skills.meetingBots.couldNotStartTitle': 'تعذّر بدء OpenHuman 钉钉',
   'skills.meetingBots.displayName': 'الاسم المعروض',
-  'skills.meetingBots.failedToStart': 'فشل تشغيل OpenHuman.',
+  'skills.meetingBots.failedToStart': 'فشل تشغيل OpenHuman 钉钉.',
   'skills.meetingBots.joiningMessage': 'يجب أن يظهر كمشارك في غضون ثوانٍ.',
-  'skills.meetingBots.joiningTitle': 'OpenHuman ينضم إلى الاجتماع',
+  'skills.meetingBots.joiningTitle': 'OpenHuman 钉钉 ينضم إلى الاجتماع',
   'skills.meetingBots.meetingLink': 'رابط الاجتماع',
-  'skills.meetingBots.modalAriaLabel': 'إرسال OpenHuman إلى اجتماع',
+  'skills.meetingBots.modalAriaLabel': 'إرسال OpenHuman 钉钉 إلى اجتماع',
   'skills.meetingBots.modalDesc': 'وصف النافذة',
-  'skills.meetingBots.modalTitle': 'إرسال OpenHuman إلى اجتماع',
+  'skills.meetingBots.modalTitle': 'إرسال OpenHuman 钉钉 إلى اجتماع',
   'skills.meetingBots.newBadge': 'شارة جديدة',
   'skills.meetingBots.sendTo': 'إرسال إلى',
   'skills.meetingBots.starting': 'جارٍ البدء…',
@@ -400,7 +400,7 @@ const ar5: TranslationMap = {
   'composio.triggers.loading': 'جارٍ التحميل…',
   'conversations.taskKanban.todo': 'للتنفيذ',
   'settings.composio.loading': 'جارٍ التحميل…',
-  'settings.mascot.noCharactersAvailable': 'لا توجد شخصيات OpenHuman متاحة بعد',
+  'settings.mascot.noCharactersAvailable': 'لا توجد شخصيات OpenHuman 钉钉 متاحة بعد',
   'skills.uninstall.confirmTitle': 'إلغاء تثبيت {name}؟',
   'conversations.taskKanban.blocked': 'محظور',
   'conversations.taskKanban.done': 'مكتمل',
@@ -410,7 +410,7 @@ const ar5: TranslationMap = {
   'settings.localModel.download.manageExternal':
     'إدارة هذا النموذج في وقت التشغيل الخارجي الخاص بك.',
   'settings.localModel.status.manageOllamaExternal':
-    'أدِر عملية Ollama وعمليات تحميل النماذج خارج OpenHuman، ثم أعد تشغيل التشخيصات.',
+    'أدِر عملية Ollama وعمليات تحميل النماذج خارج OpenHuman 钉钉، ثم أعد تشغيل التشخيصات.',
   'settings.localModel.status.ollamaDocs': 'وثائق Ollama',
   'settings.localModel.status.thenRetry':
     'للحصول على تعليمات الإعداد، ثم أعد المحاولة عندما يصبح وقت التشغيل قابلاً للوصول.',
@@ -428,14 +428,14 @@ const ar5: TranslationMap = {
   'settings.mascot.characterPreview': 'Preview',
   'settings.mascot.characterStates': 'states',
   'settings.mascot.characterVisemes': 'visemes',
-  'settings.mascot.colorAria': 'OpenHuman color',
+  'settings.mascot.colorAria': 'OpenHuman 钉钉 color',
   'settings.mascot.colorBlack': 'Black',
   'settings.mascot.colorBurgundy': 'Burgundy',
   'settings.mascot.colorGreen': 'Green',
   'settings.mascot.colorNavy': 'Navy',
   'settings.mascot.colorYellow': 'Yellow',
-  'settings.mascot.libraryUnavailable': 'OpenHuman library unavailable',
-  'settings.mascot.title': 'OpenHuman',
+  'settings.mascot.libraryUnavailable': 'OpenHuman 钉钉 library unavailable',
+  'settings.mascot.title': 'OpenHuman 钉钉',
 };
 
 export default ar5;

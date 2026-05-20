@@ -40,7 +40,7 @@ describe('ServiceBlockingGate', () => {
     );
 
     await waitFor(() => expect(screen.getByText('App Content')).toBeInTheDocument());
-    expect(screen.queryByText('OpenHuman core is unavailable')).not.toBeInTheDocument();
+    expect(screen.queryByText('OpenHuman 钉钉 core is unavailable')).not.toBeInTheDocument();
   });
 
   it('shows recovery prompt when daemon retries are exhausted', async () => {
@@ -53,7 +53,7 @@ describe('ServiceBlockingGate', () => {
       </ServiceBlockingGate>
     );
 
-    expect(screen.getByText('OpenHuman core is unavailable')).toBeInTheDocument();
+    expect(screen.getByText('OpenHuman 钉钉 core is unavailable')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Download Latest Version' })).toBeInTheDocument();
   });
 

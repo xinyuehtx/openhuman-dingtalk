@@ -155,7 +155,7 @@ const en1: TranslationMap = {
   'clearData.failed': 'Failed to clear data and logout. Please try again.',
   'clearData.failedLogout': 'Failed to log out. Please try again.',
   'clearData.failedPersist': 'Failed to clear persisted app state. Please try again.',
-  'welcome.title': 'Welcome to OpenHuman',
+  'welcome.title': 'Welcome to OpenHuman 钉钉',
   'welcome.subtitle':
     'Your personal AI super intelligence. Private, simple and extremely powerful.',
   'welcome.connectPrompt': 'Configure RPC URL (Advanced)',
@@ -172,7 +172,7 @@ const en1: TranslationMap = {
     'Your device is connected. Keep the app running to keep the connection alive. Message your agent with the button below.',
   'home.statusBackendOnly': 'Reconnecting to backend… your agent will be available again shortly.',
   'home.statusCoreUnreachable':
-    "Local core sidecar isn't responding. The OpenHuman background process may have crashed or failed to start.",
+    "Local core sidecar isn't responding. The OpenHuman 钉钉 background process may have crashed or failed to start.",
   'home.statusInternetOffline':
     'Your device is offline right now. Check your network or restart the app to reconnect.',
   'home.restartCore': 'Restart Core',
@@ -224,7 +224,7 @@ const en1: TranslationMap = {
   'rewards.referralCode': 'Your referral code',
   'rewards.copyCode': 'Copy code',
   'rewards.share': 'Share',
-  'onboarding.welcome': "Hi. I'm OpenHuman.",
+  'onboarding.welcome': "Hi. I'm OpenHuman 钉钉.",
   'onboarding.welcomeDesc':
     'Your super-intelligent AI assistant that runs on your computer. Private, simple, and extremely powerful.',
   'onboarding.context': 'Context Gathering',
@@ -236,14 +236,14 @@ const en1: TranslationMap = {
   'onboarding.referral': 'Referral',
   'onboarding.referralDesc': 'Apply a referral code if you have one.',
   'onboarding.finish': 'Finish Setup',
-  'onboarding.finishDesc': "You're all set! Start using OpenHuman.",
+  'onboarding.finishDesc': "You're all set! Start using OpenHuman 钉钉.",
   'onboarding.skip': 'Skip',
   'onboarding.getStarted': 'Get Started',
-  'onboarding.runtimeChoice.title': 'How would you like to run OpenHuman?',
+  'onboarding.runtimeChoice.title': 'How would you like to run OpenHuman 钉钉?',
   'onboarding.runtimeChoice.subtitle':
     'Pick the setup that fits you best. You can change this later in Settings.',
   'onboarding.runtimeChoice.cloud.title': 'Simple',
-  'onboarding.runtimeChoice.cloud.tagline': 'Let OpenHuman manage everything for you.',
+  'onboarding.runtimeChoice.cloud.tagline': 'Let OpenHuman 钉钉 manage everything for you.',
   'onboarding.runtimeChoice.cloud.f1': 'Built-in security',
   'onboarding.runtimeChoice.cloud.f2': 'Token compression to stretch your usage further',
   'onboarding.runtimeChoice.cloud.f3': 'One subscription, every model included',
@@ -279,7 +279,7 @@ const en1: TranslationMap = {
   'onboarding.custom.stepperMemory': 'Memory',
   'onboarding.custom.stepCounter': 'Step {n} of {total}',
   'onboarding.custom.defaultTitle': 'Default',
-  'onboarding.custom.defaultSubtitle': 'Let OpenHuman manage it for you.',
+  'onboarding.custom.defaultSubtitle': 'Let OpenHuman 钉钉 manage it for you.',
   'onboarding.custom.configureTitle': 'Configure',
   'onboarding.custom.configureSubtitle': "I'll pick what to use.",
   'onboarding.custom.progressAriaLabel': 'Onboarding progress',
@@ -293,33 +293,33 @@ const en1: TranslationMap = {
   'onboarding.custom.inference.subtitle':
     'Which language model should answer your questions and run your agents?',
   'onboarding.custom.inference.defaultDesc':
-    'OpenHuman routes every workload to a sensible default model. No keys, no setup.',
+    'OpenHuman 钉钉 routes every workload to a sensible default model. No keys, no setup.',
   'onboarding.custom.inference.configureDesc':
     'Bring your own OpenAI or Anthropic key. We use it for every text-based workload.',
   'onboarding.custom.voice.title': 'Voice',
   'onboarding.custom.voice.subtitle': 'Speech-to-text and text-to-speech for voice mode.',
   'onboarding.custom.voice.defaultDesc':
-    'OpenHuman ships with managed STT/TTS that just works. Nothing to wire up.',
+    'OpenHuman 钉钉 ships with managed STT/TTS that just works. Nothing to wire up.',
   'onboarding.custom.voice.configureDesc':
     'Use your own ElevenLabs / OpenAI Whisper / etc. Configure in Settings › Voice.',
   'onboarding.custom.oauth.title': 'Connections (OAuth)',
   'onboarding.custom.oauth.subtitle':
     'Gmail, Slack, Notion, and other connected services that need OAuth.',
   'onboarding.custom.oauth.defaultDesc':
-    'OpenHuman runs a managed Composio workspace. One click to connect each service later.',
+    'OpenHuman 钉钉 runs a managed Composio workspace. One click to connect each service later.',
   'onboarding.custom.oauth.configureDesc':
     'Bring your own Composio account / API key. Configure in Settings › Connections.',
   'onboarding.custom.search.title': 'Web Search',
-  'onboarding.custom.search.subtitle': 'How OpenHuman searches the web on your behalf.',
+  'onboarding.custom.search.subtitle': 'How OpenHuman 钉钉 searches the web on your behalf.',
   'onboarding.custom.search.defaultDesc':
-    'OpenHuman uses a managed search backend. No keys needed.',
+    'OpenHuman 钉钉 uses a managed search backend. No keys needed.',
   'onboarding.custom.search.configureDesc':
     'Bring your own search provider key (Tavily, Brave, etc.). Configure in Settings › Tools.',
   'onboarding.custom.memory.title': 'Memory',
   'onboarding.custom.memory.subtitle':
-    'How OpenHuman remembers your context, preferences, and prior conversations.',
+    'How OpenHuman 钉钉 remembers your context, preferences, and prior conversations.',
   'onboarding.custom.memory.defaultDesc':
-    'OpenHuman manages memory storage and retrieval automatically. Nothing to set up.',
+    'OpenHuman 钉钉 manages memory storage and retrieval automatically. Nothing to set up.',
   'onboarding.custom.memory.configureDesc':
     'Inspect, export, or wipe memory yourself. Configure in Settings › Memory.',
   'accounts.addAccount': 'Add Account',
@@ -379,7 +379,7 @@ const en1: TranslationMap = {
   'misc.downloading': 'Downloading...',
   'misc.installing': 'Installing...',
   'misc.beta':
-    'OpenHuman is in early beta. Feel free to share feedback or report any bugs you run into — every report helps us ship faster.',
+    'OpenHuman 钉钉 is in early beta. Feel free to share feedback or report any bugs you run into — every report helps us ship faster.',
   'misc.betaFeedback': 'Send feedback',
   'mnemonic.title': 'Recovery Phrase',
   'mnemonic.warning': 'Write down these words in order and store them somewhere safe.',
@@ -401,11 +401,11 @@ const en1: TranslationMap = {
   'privacy.anonymizedAnalytics': 'Anonymized Analytics',
   'privacy.shareAnonymizedData': 'Share Anonymized Usage Data',
   'privacy.shareAnonymizedDataDesc':
-    'Help improve OpenHuman by sharing anonymous crash reports and usage analytics. All data is fully anonymized — no personal data, messages, wallet keys, or session information is ever collected.',
+    'Help improve OpenHuman 钉钉 by sharing anonymous crash reports and usage analytics. All data is fully anonymized — no personal data, messages, wallet keys, or session information is ever collected.',
   'privacy.meetingFollowUps': 'Meeting follow-ups',
   'privacy.autoHandoffMeet': 'Auto-handoff Google Meet transcripts to the orchestrator',
   'privacy.autoHandoffMeetDesc':
-    "When a Google Meet call ends, OpenHuman's orchestrator can read the transcript and may take actions like drafting messages, scheduling follow-ups, or posting summaries to your connected Slack workspace. Off by default.",
+    "When a Google Meet call ends, OpenHuman 钉钉's orchestrator can read the transcript and may take actions like drafting messages, scheduling follow-ups, or posting summaries to your connected Slack workspace. Off by default.",
   'privacy.analyticsDisclaimer':
     'All analytics and bug reports are fully anonymized. When enabled, we collect only crash information, device type, and the file location of errors. We never access your messages, session data, wallet keys, API keys, or any personally identifiable information. You can change this setting at any time.',
   'settings.about.version': 'Version',

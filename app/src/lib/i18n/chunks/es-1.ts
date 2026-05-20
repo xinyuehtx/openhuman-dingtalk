@@ -124,7 +124,7 @@ const es1: TranslationMap = {
   'clearData.failedLogout': 'No se pudo cerrar sesión. Inténtalo de nuevo.',
   'clearData.failedPersist':
     'No se pudo borrar el estado persistido de la app. Inténtalo de nuevo.',
-  'welcome.title': 'Bienvenido a OpenHuman',
+  'welcome.title': 'Bienvenido a OpenHuman 钉钉',
   'welcome.subtitle':
     'Tu super inteligencia artificial personal. Privada, simple y extremadamente poderosa.',
   'welcome.connectPrompt': 'Configurar URL de RPC (Avanzado)',
@@ -142,7 +142,7 @@ const es1: TranslationMap = {
   'home.statusBackendOnly':
     'Reconectando al backend… tu agente estará disponible nuevamente en breve.',
   'home.statusCoreUnreachable':
-    'El proceso en segundo plano de OpenHuman no responde. Es posible que haya fallado o no haya podido iniciarse.',
+    'El proceso en segundo plano de OpenHuman 钉钉 no responde. Es posible que haya fallado o no haya podido iniciarse.',
   'home.statusInternetOffline':
     'Tu dispositivo está sin conexión. Verifica tu red o reinicia la app para reconectar.',
   'home.restartCore': 'Reiniciar core',
@@ -194,7 +194,7 @@ const es1: TranslationMap = {
   'rewards.referralCode': 'Tu código de referido',
   'rewards.copyCode': 'Copiar código',
   'rewards.share': 'Compartir',
-  'onboarding.welcome': 'Hola. Soy OpenHuman.',
+  'onboarding.welcome': 'Hola. Soy OpenHuman 钉钉.',
   'onboarding.welcomeDesc':
     'Tu asistente de IA superinteligente que corre en tu computadora. Privado, simple y extremadamente poderoso.',
   'onboarding.context': 'Recopilación de contexto',
@@ -206,14 +206,14 @@ const es1: TranslationMap = {
   'onboarding.referral': 'Referido',
   'onboarding.referralDesc': 'Ingresa un código de referido si tienes uno.',
   'onboarding.finish': 'Finalizar configuración',
-  'onboarding.finishDesc': '¡Todo listo! Empieza a usar OpenHuman.',
+  'onboarding.finishDesc': '¡Todo listo! Empieza a usar OpenHuman 钉钉.',
   'onboarding.skip': 'Omitir',
   'onboarding.getStarted': 'Empezar',
-  'onboarding.runtimeChoice.title': '¿Cómo quieres ejecutar OpenHuman?',
+  'onboarding.runtimeChoice.title': '¿Cómo quieres ejecutar OpenHuman 钉钉?',
   'onboarding.runtimeChoice.subtitle':
     'Elige la configuración que mejor se adapte a ti. Puedes cambiarlo más tarde en Configuración.',
   'onboarding.runtimeChoice.cloud.title': 'Simple',
-  'onboarding.runtimeChoice.cloud.tagline': 'Deja que OpenHuman lo gestione todo por ti.',
+  'onboarding.runtimeChoice.cloud.tagline': 'Deja que OpenHuman 钉钉 lo gestione todo por ti.',
   'onboarding.runtimeChoice.cloud.f1': 'Seguridad integrada',
   'onboarding.runtimeChoice.cloud.f2': 'Compresión de tokens para aprovechar más tu uso',
   'onboarding.runtimeChoice.cloud.f3': 'Una suscripción, todos los modelos incluidos',
@@ -249,7 +249,7 @@ const es1: TranslationMap = {
   'onboarding.custom.stepperMemory': 'Memoria',
   'onboarding.custom.stepCounter': 'Paso {n} de {total}',
   'onboarding.custom.defaultTitle': 'Por defecto',
-  'onboarding.custom.defaultSubtitle': 'Deja que OpenHuman lo gestione por ti.',
+  'onboarding.custom.defaultSubtitle': 'Deja que OpenHuman 钉钉 lo gestione por ti.',
   'onboarding.custom.configureTitle': 'Configurar',
   'onboarding.custom.configureSubtitle': 'Yo elijo qué usar.',
   'onboarding.custom.progressAriaLabel': 'Progreso del onboarding',
@@ -263,33 +263,33 @@ const es1: TranslationMap = {
   'onboarding.custom.inference.subtitle':
     '¿Qué modelo de lenguaje debe responder tus preguntas y ejecutar tus agentes?',
   'onboarding.custom.inference.defaultDesc':
-    'OpenHuman dirige cada carga de trabajo a un modelo predeterminado adecuado. Sin claves, sin configuración.',
+    'OpenHuman 钉钉 dirige cada carga de trabajo a un modelo predeterminado adecuado. Sin claves, sin configuración.',
   'onboarding.custom.inference.configureDesc':
     'Usa tu propia clave de OpenAI o Anthropic. La usamos para todas las cargas de trabajo basadas en texto.',
   'onboarding.custom.voice.title': 'Voz',
   'onboarding.custom.voice.subtitle': 'Texto a voz y voz a texto para el modo de voz.',
   'onboarding.custom.voice.defaultDesc':
-    'OpenHuman incluye STT/TTS gestionado que funciona de inmediato. Sin nada que configurar.',
+    'OpenHuman 钉钉 incluye STT/TTS gestionado que funciona de inmediato. Sin nada que configurar.',
   'onboarding.custom.voice.configureDesc':
     'Usa tu propio ElevenLabs / OpenAI Whisper / etc. Configura en Configuración › Voz.',
   'onboarding.custom.oauth.title': 'Conexiones (OAuth)',
   'onboarding.custom.oauth.subtitle':
     'Gmail, Slack, Notion y otros servicios conectados que necesitan OAuth.',
   'onboarding.custom.oauth.defaultDesc':
-    'OpenHuman ejecuta un espacio de trabajo de Composio gestionado. Un clic para conectar cada servicio más tarde.',
+    'OpenHuman 钉钉 ejecuta un espacio de trabajo de Composio gestionado. Un clic para conectar cada servicio más tarde.',
   'onboarding.custom.oauth.configureDesc':
     'Usa tu propia cuenta / clave API de Composio. Configura en Configuración › Conexiones.',
   'onboarding.custom.search.title': 'Búsqueda web',
-  'onboarding.custom.search.subtitle': 'Cómo OpenHuman busca en la web en tu nombre.',
+  'onboarding.custom.search.subtitle': 'Cómo OpenHuman 钉钉 busca en la web en tu nombre.',
   'onboarding.custom.search.defaultDesc':
-    'OpenHuman usa un backend de búsqueda gestionado. Sin claves necesarias.',
+    'OpenHuman 钉钉 usa un backend de búsqueda gestionado. Sin claves necesarias.',
   'onboarding.custom.search.configureDesc':
     'Usa tu propia clave de proveedor de búsqueda (Tavily, Brave, etc.). Configura en Configuración › Herramientas.',
   'onboarding.custom.memory.title': 'Memoria',
   'onboarding.custom.memory.subtitle':
-    'Cómo OpenHuman recuerda tu contexto, preferencias y conversaciones anteriores.',
+    'Cómo OpenHuman 钉钉 recuerda tu contexto, preferencias y conversaciones anteriores.',
   'onboarding.custom.memory.defaultDesc':
-    'OpenHuman gestiona el almacenamiento y la recuperación de memoria automáticamente. Sin nada que configurar.',
+    'OpenHuman 钉钉 gestiona el almacenamiento y la recuperación de memoria automáticamente. Sin nada que configurar.',
   'onboarding.custom.memory.configureDesc':
     'Inspecciona, exporta o borra la memoria tú mismo. Configura en Configuración › Memoria.',
   'accounts.addAccount': 'Agregar cuenta',
@@ -350,7 +350,7 @@ const es1: TranslationMap = {
   'misc.downloading': 'Descargando...',
   'misc.installing': 'Instalando...',
   'misc.beta':
-    'OpenHuman está en beta temprana. No dudes en compartir comentarios o reportar cualquier error que encuentres — cada reporte nos ayuda a mejorar más rápido.',
+    'OpenHuman 钉钉 está en beta temprana. No dudes en compartir comentarios o reportar cualquier error que encuentres — cada reporte nos ayuda a mejorar más rápido.',
   'misc.betaFeedback': 'Enviar comentarios',
   'mnemonic.title': 'Frase de recuperación',
   'mnemonic.warning': 'Escribe estas palabras en orden y guárdalas en un lugar seguro.',
@@ -373,12 +373,12 @@ const es1: TranslationMap = {
   'privacy.anonymizedAnalytics': 'Análisis anonimizado',
   'privacy.shareAnonymizedData': 'Compartir datos de uso anonimizados',
   'privacy.shareAnonymizedDataDesc':
-    'Ayuda a mejorar OpenHuman compartiendo informes de errores anónimos y análisis de uso. Todos los datos son completamente anonimizados — nunca se recopilan datos personales, mensajes, claves de billetera ni información de sesión.',
+    'Ayuda a mejorar OpenHuman 钉钉 compartiendo informes de errores anónimos y análisis de uso. Todos los datos son completamente anonimizados — nunca se recopilan datos personales, mensajes, claves de billetera ni información de sesión.',
   'privacy.meetingFollowUps': 'Seguimientos de reuniones',
   'privacy.autoHandoffMeet':
     'Transferencia automática de transcripciones de Google Meet al orquestador',
   'privacy.autoHandoffMeetDesc':
-    'Cuando termina una llamada de Google Meet, el orquestador de OpenHuman puede leer la transcripción y tomar acciones como redactar mensajes, programar seguimientos o publicar resúmenes en tu espacio de Slack conectado. Desactivado por defecto.',
+    'Cuando termina una llamada de Google Meet, el orquestador de OpenHuman 钉钉 puede leer la transcripción y tomar acciones como redactar mensajes, programar seguimientos o publicar resúmenes en tu espacio de Slack conectado. Desactivado por defecto.',
   'privacy.analyticsDisclaimer':
     'Todos los análisis e informes de errores son completamente anonimizados. Cuando está activado, recopilamos solo información de errores, tipo de dispositivo y la ubicación del archivo de los errores. Nunca accedemos a tus mensajes, datos de sesión, claves de billetera, claves API ni ninguna información de identificación personal. Puedes cambiar esta configuración en cualquier momento.',
   'settings.about.version': 'Versión',

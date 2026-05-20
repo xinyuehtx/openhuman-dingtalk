@@ -132,9 +132,9 @@ const bn3: TranslationMap = {
   'bootCheck.chooseCoreMode': 'একটি রানটাইম বেছে নিন',
   'bootCheck.connectToCore': 'আপনার রানটাইমে সংযুক্ত হন',
   'bootCheck.desktopDescription':
-    'OpenHuman চিন্তা করতে একটি রানটাইম প্রয়োজন। এটি কোথায় থাকবে তা বেছে নিন।',
+    'OpenHuman 钉钉 চিন্তা করতে একটি রানটাইম প্রয়োজন। এটি কোথায় থাকবে তা বেছে নিন।',
   'bootCheck.webDescription':
-    'ওয়েবে, OpenHuman আপনার নিয়ন্ত্রণে একটি রানটাইমে সংযুক্ত হয়। নিচে এর URL ও অথ টোকেন দিন, অথবা সরাসরি আপনার মেশিনে চালাতে ডেস্কটপ অ্যাপ নিন।',
+    'ওয়েবে, OpenHuman 钉钉 আপনার নিয়ন্ত্রণে একটি রানটাইমে সংযুক্ত হয়। নিচে এর URL ও অথ টোকেন দিন, অথবা সরাসরি আপনার মেশিনে চালাতে ডেস্কটপ অ্যাপ নিন।',
   'bootCheck.preferDesktop': 'সব নিজের ডিভাইসে রাখতে চান?',
   'bootCheck.downloadDesktop': 'ডেস্কটপ অ্যাপ নিন',
   'bootCheck.localRecommended': 'লোকালি চালান (প্রস্তাবিত)',
@@ -160,7 +160,7 @@ const bn3: TranslationMap = {
   'bootCheck.quit': 'প্রস্থান',
   'bootCheck.legacyDetected': 'লেগ্যাসি ব্যাকগ্রাউন্ড রানটাইম শনাক্ত হয়েছে',
   'bootCheck.legacyDescription':
-    'এই ডিভাইসে আলাদাভাবে ইনস্টল করা একটি OpenHuman ডেমন ইতিমধ্যে চলছে। বিল্ট-ইন রানটাইম নিয়ন্ত্রণ নেওয়ার আগে এটি সরাতে হবে।',
+    'এই ডিভাইসে আলাদাভাবে ইনস্টল করা একটি OpenHuman 钉钉 ডেমন ইতিমধ্যে চলছে। বিল্ট-ইন রানটাইম নিয়ন্ত্রণ নেওয়ার আগে এটি সরাতে হবে।',
   'bootCheck.removing': 'সরানো হচ্ছে…',
   'bootCheck.removeContinue': 'সরান ও চালিয়ে যান',
   'bootCheck.localNeedsRestart': 'লোকাল রানটাইম রিস্টার্ট প্রয়োজন',
@@ -267,7 +267,7 @@ const bn3: TranslationMap = {
   'accounts.webviewHost.timeoutHint': 'টাইমআউট হিন্ট',
   'app.connectionBadge.composio': 'Composio',
   'app.connectionBadge.messaging': 'মেসেজিং',
-  'app.connectionIndicator.connected': 'OpenHuman AI-এ সংযুক্ত 🚀',
+  'app.connectionIndicator.connected': 'OpenHuman 钉钉 AI-এ সংযুক্ত 🚀',
   'app.connectionIndicator.connecting': 'সংযোগ হচ্ছে',
   'app.connectionIndicator.coreOffline': 'কোর অফলাইন',
   'app.connectionIndicator.disconnected': 'সংযোগ বিচ্ছিন্ন',
@@ -311,7 +311,7 @@ const bn3: TranslationMap = {
   'app.openhumanLink.notifications.send': 'পরীক্ষা বিজ্ঞপ্তি পাঠান',
   'app.openhumanLink.notifications.sendFailed': 'পাঠানো যায়নি: {error}',
   'app.openhumanLink.notifications.sent':
-    'টেস্ট নোটিফিকেশন পাঠানো হয়েছে। যদি না পেয়ে থাকেন, System Settings → Notifications → OpenHuman-এ যান, Allow Notifications চালু করুন, এবং Banner Style-কে Persistent-এ সেট করুন।',
+    'টেস্ট নোটিফিকেশন পাঠানো হয়েছে। যদি না পেয়ে থাকেন, System Settings → Notifications → OpenHuman 钉钉-এ যান, Allow Notifications চালু করুন, এবং Banner Style-কে Persistent-এ সেট করুন।',
   'app.openhumanLink.skipForNow': 'এখনের জন্য এড়িয়ে যান',
   'app.openhumanLink.telegramUnavailable': 'Telegram পাওয়া যাচ্ছে না',
   'app.openhumanLink.title.accounts': 'আপনার অ্যাপ সংযুক্ত করুন',
@@ -323,7 +323,7 @@ const bn3: TranslationMap = {
   'app.persistRehydration.heading': 'শিরোনাম',
   'app.persistRehydration.resetCta': 'রিসেট হচ্ছে…',
   'app.persistRehydration.resetting': 'রিসেট হচ্ছে…',
-  'app.routeLoading.initializing': 'OpenHuman শুরু হচ্ছে...',
+  'app.routeLoading.initializing': 'OpenHuman 钉钉 শুরু হচ্ছে...',
   'app.update.currentlyOn': '{version}',
   'app.update.errorFallback': 'আপডেটের সময় কিছু একটা ভুল হয়েছে।',
   'app.update.header.default': 'আপডেট',

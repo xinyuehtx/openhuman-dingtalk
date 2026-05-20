@@ -20,15 +20,15 @@ const id5: TranslationMap = {
   'settings.composio.confirmSwitch': 'Saya mengerti, beralih ke Direct',
   'settings.composio.confirmTitle': '⚠️ Beralih ke mode Direct',
   'settings.composio.confirmWarning':
-    'Integrasi Anda yang sudah ada (Gmail, Slack, GitHub, dll. yang terhubung melalui OpenHuman) tidak akan terlihat — mereka berada di tenant Composio yang dikelola OpenHuman.',
+    'Integrasi Anda yang sudah ada (Gmail, Slack, GitHub, dll. yang terhubung melalui OpenHuman 钉钉) tidak akan terlihat — mereka berada di tenant Composio yang dikelola OpenHuman 钉钉.',
   'settings.composio.intro':
     'Composio mengintegrasikan 250+ aplikasi eksternal sebagai tool yang dapat dipanggil agen Anda. Pilih cara pemanggilan tool tersebut dirutekan.',
   'settings.composio.modeDirect': 'Langsung (bawa API key Anda sendiri)',
   'settings.composio.modeDirectDesc':
     'Panggilan langsung ke backend.composio.dev. Berdaulat / ramah offline. Eksekusi tool berjalan sinkron; webhook trigger real-time belum dirutekan dalam mode direct (isu lanjutan).',
-  'settings.composio.modeManaged': 'Terkelola (OpenHuman menanganinya untuk Anda)',
+  'settings.composio.modeManaged': 'Terkelola (OpenHuman 钉钉 menanganinya untuk Anda)',
   'settings.composio.modeManagedDesc':
-    'OpenHuman mem-proxy pemanggilan tool melalui backend kami (disarankan). Autentikasi dibrokerkan; Anda tidak perlu menempel API key Composio. Webhook dirutekan sepenuhnya.',
+    'OpenHuman 钉钉 mem-proxy pemanggilan tool melalui backend kami (disarankan). Autentikasi dibrokerkan; Anda tidak perlu menempel API key Composio. Webhook dirutekan sepenuhnya.',
   'settings.composio.routingMode': 'Mode routing',
   'settings.composio.saveErrorNoKey':
     'Gagal menyimpan. Mode Direct memerlukan API key yang tidak kosong.',
@@ -147,7 +147,7 @@ const id5: TranslationMap = {
   'settings.localModel.status.ollamaDiagnostics': 'Diagnostik Ollama',
   'settings.localModel.status.ollamaNotInstalled': 'Runtime Ollama tidak tersedia',
   'settings.localModel.status.ollamaNotInstalledDesc':
-    'OpenHuman kini memperlakukan Ollama sebagai runtime inferensi eksternal. Jalankan server Ollama Anda sendiri, tarik model yang diinginkan, lalu arahkan routing workload ke sana.',
+    'OpenHuman 钉钉 kini memperlakukan Ollama sebagai runtime inferensi eksternal. Jalankan server Ollama Anda sendiri, tarik model yang diinginkan, lalu arahkan routing workload ke sana.',
   'settings.localModel.status.progress': 'Progres',
   'settings.localModel.status.provider': 'Penyedia',
   'settings.localModel.status.retryBootstrap': 'Coba Ulang Bootstrap',
@@ -170,9 +170,9 @@ const id5: TranslationMap = {
   'settings.mascot.characterHeading': 'Judul karakter',
   'settings.mascot.colorDesc': 'Deskripsi warna',
   'settings.mascot.colorHeading': 'Judul warna',
-  'settings.mascot.loadingLibrary': 'Memuat perpustakaan OpenHuman...',
-  'settings.mascot.localDefault': 'OpenHuman Lokal (default)',
-  'settings.mascot.noCharacters': 'Belum ada karakter OpenHuman yang tersedia',
+  'settings.mascot.loadingLibrary': 'Memuat perpustakaan OpenHuman 钉钉...',
+  'settings.mascot.localDefault': 'OpenHuman 钉钉 Lokal (default)',
+  'settings.mascot.noCharacters': 'Belum ada karakter OpenHuman 钉钉 yang tersedia',
   'settings.mascot.noColorVariants': 'Tidak ada varian warna',
   'settings.mascot.voice.current': 'saat ini',
   'settings.mascot.voice.customDesc':
@@ -199,7 +199,7 @@ const id5: TranslationMap = {
     'Default yang masuk akal — kontinuitas yang baik tanpa membakar token tambahan di setiap run.',
   'settings.memoryWindow.balanced.label': 'Seimbang',
   'settings.memoryWindow.description':
-    'Seberapa banyak konteks yang diingat OpenHuman dimasukkan ke setiap run agen baru. Jendela yang lebih besar terasa lebih sadar akan percakapan sebelumnya, tetapi menggunakan lebih banyak token — dan biaya lebih mahal — di setiap run.',
+    'Seberapa banyak konteks yang diingat OpenHuman 钉钉 dimasukkan ke setiap run agen baru. Jendela yang lebih besar terasa lebih sadar akan percakapan sebelumnya, tetapi menggunakan lebih banyak token — dan biaya lebih mahal — di setiap run.',
   'settings.memoryWindow.extended.badge': 'Lebih banyak konteks',
   'settings.memoryWindow.extended.hint':
     'Lebih banyak memori jangka panjang yang dimasukkan ke setiap run. Biaya token per giliran lebih tinggi.',
@@ -268,17 +268,17 @@ const id5: TranslationMap = {
   'skills.install.urlLabel': 'URL skill',
   'skills.meetingBots.bannerDesc': 'Deskripsi banner',
   'skills.meetingBots.bannerTitle': 'Judul banner',
-  'skills.meetingBots.busyTitle': 'OpenHuman sedang sibuk',
+  'skills.meetingBots.busyTitle': 'OpenHuman 钉钉 sedang sibuk',
   'skills.meetingBots.comingSoon': 'Segera hadir',
-  'skills.meetingBots.couldNotStartTitle': 'Tidak bisa memulai OpenHuman',
+  'skills.meetingBots.couldNotStartTitle': 'Tidak bisa memulai OpenHuman 钉钉',
   'skills.meetingBots.displayName': 'Nama tampilan',
-  'skills.meetingBots.failedToStart': 'Gagal memulai OpenHuman.',
+  'skills.meetingBots.failedToStart': 'Gagal memulai OpenHuman 钉钉.',
   'skills.meetingBots.joiningMessage': 'Seharusnya muncul sebagai peserta dalam beberapa detik.',
-  'skills.meetingBots.joiningTitle': 'OpenHuman bergabung ke rapat',
+  'skills.meetingBots.joiningTitle': 'OpenHuman 钉钉 bergabung ke rapat',
   'skills.meetingBots.meetingLink': 'Tautan rapat',
-  'skills.meetingBots.modalAriaLabel': 'Kirim OpenHuman ke rapat',
+  'skills.meetingBots.modalAriaLabel': 'Kirim OpenHuman 钉钉 ke rapat',
   'skills.meetingBots.modalDesc': 'Deskripsi modal',
-  'skills.meetingBots.modalTitle': 'Kirim OpenHuman ke rapat',
+  'skills.meetingBots.modalTitle': 'Kirim OpenHuman 钉钉 ke rapat',
   'skills.meetingBots.newBadge': 'Lencana baru',
   'skills.meetingBots.sendTo': 'Kirim ke',
   'skills.meetingBots.starting': 'Memulai...',
@@ -407,7 +407,7 @@ const id5: TranslationMap = {
   'composio.triggers.loading': 'Memuat…',
   'conversations.taskKanban.todo': 'Akan dikerjakan',
   'settings.composio.loading': 'Memuat…',
-  'settings.mascot.noCharactersAvailable': 'Belum ada karakter OpenHuman yang tersedia',
+  'settings.mascot.noCharactersAvailable': 'Belum ada karakter OpenHuman 钉钉 yang tersedia',
   'skills.uninstall.confirmTitle': 'Copot {name}?',
   'conversations.taskKanban.blocked': 'Terhambat',
   'conversations.taskKanban.done': 'Selesai',
@@ -416,7 +416,7 @@ const id5: TranslationMap = {
   'settings.composio.notYetRouted': 'belum dirutekan',
   'settings.localModel.download.manageExternal': 'Kelola model ini di runtime eksternal Anda.',
   'settings.localModel.status.manageOllamaExternal':
-    'Kelola proses Ollama dan unduhan model di luar OpenHuman, lalu jalankan ulang diagnostik.',
+    'Kelola proses Ollama dan unduhan model di luar OpenHuman 钉钉, lalu jalankan ulang diagnostik.',
   'settings.localModel.status.ollamaDocs': 'Dokumentasi Ollama',
   'settings.localModel.status.thenRetry':
     'untuk instruksi pengaturan, lalu coba lagi setelah runtime Anda dapat dijangkau.',
@@ -434,14 +434,14 @@ const id5: TranslationMap = {
   'settings.mascot.characterPreview': 'Preview',
   'settings.mascot.characterStates': 'states',
   'settings.mascot.characterVisemes': 'visemes',
-  'settings.mascot.colorAria': 'OpenHuman color',
+  'settings.mascot.colorAria': 'OpenHuman 钉钉 color',
   'settings.mascot.colorBlack': 'Black',
   'settings.mascot.colorBurgundy': 'Burgundy',
   'settings.mascot.colorGreen': 'Green',
   'settings.mascot.colorNavy': 'Navy',
   'settings.mascot.colorYellow': 'Yellow',
-  'settings.mascot.libraryUnavailable': 'OpenHuman library unavailable',
-  'settings.mascot.title': 'OpenHuman',
+  'settings.mascot.libraryUnavailable': 'OpenHuman 钉钉 library unavailable',
+  'settings.mascot.title': 'OpenHuman 钉钉',
 };
 
 export default id5;

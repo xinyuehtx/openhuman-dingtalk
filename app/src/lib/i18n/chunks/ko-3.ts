@@ -130,9 +130,9 @@ const ko3: TranslationMap = {
   'bootCheck.chooseCoreMode': '런타임 선택',
   'bootCheck.connectToCore': '런타임에 연결',
   'bootCheck.desktopDescription':
-    'OpenHuman은 생각하기 위한 런타임이 필요합니다. 어디에서 실행할지 선택하세요.',
+    'OpenHuman 钉钉은 생각하기 위한 런타임이 필요합니다. 어디에서 실행할지 선택하세요.',
   'bootCheck.webDescription':
-    '웹에서 OpenHuman은 사용자가 제어하는 런타임에 연결됩니다. 아래에 URL과 인증 토큰을 입력하거나, 데스크톱 앱을 받아 이 컴퓨터에서 바로 실행하세요.',
+    '웹에서 OpenHuman 钉钉은 사용자가 제어하는 런타임에 연결됩니다. 아래에 URL과 인증 토큰을 입력하거나, 데스크톱 앱을 받아 이 컴퓨터에서 바로 실행하세요.',
   'bootCheck.preferDesktop': '모든 것을 자신의 기기에 보관하고 싶으신가요?',
   'bootCheck.downloadDesktop': '데스크톱 앱 받기',
   'bootCheck.localRecommended': '로컬에서 실행(추천)',
@@ -158,7 +158,7 @@ const ko3: TranslationMap = {
   'bootCheck.quit': '종료',
   'bootCheck.legacyDetected': '레거시 백그라운드 런타임 감지됨',
   'bootCheck.legacyDescription':
-    '별도로 설치된 OpenHuman 데몬이 이 기기에서 이미 실행 중입니다. 내장 런타임이 대신 실행되기 전에 이를 정리해야 합니다.',
+    '별도로 설치된 OpenHuman 钉钉 데몬이 이 기기에서 이미 실행 중입니다. 내장 런타임이 대신 실행되기 전에 이를 정리해야 합니다.',
   'bootCheck.removing': '제거 중…',
   'bootCheck.removeContinue': '제거하고 계속',
   'bootCheck.localNeedsRestart': '로컬 런타임을 다시 시작해야 함',
@@ -265,7 +265,7 @@ const ko3: TranslationMap = {
   'accounts.webviewHost.timeoutHint': '시간 초과 힌트',
   'app.connectionBadge.composio': 'Composio',
   'app.connectionBadge.messaging': '메시징',
-  'app.connectionIndicator.connected': 'OpenHuman AI에 연결됨 🚀',
+  'app.connectionIndicator.connected': 'OpenHuman 钉钉 AI에 연결됨 🚀',
   'app.connectionIndicator.connecting': '연결 중',
   'app.connectionIndicator.coreOffline': '코어 오프라인',
   'app.connectionIndicator.disconnected': '연결 해제됨',
@@ -310,7 +310,7 @@ const ko3: TranslationMap = {
   'app.openhumanLink.notifications.send': '테스트 알림 보내기',
   'app.openhumanLink.notifications.sendFailed': '보낼 수 없습니다: {error}',
   'app.openhumanLink.notifications.sent':
-    '테스트 알림이 전송되었습니다. 받지 못했다면 시스템 설정 → 알림 → OpenHuman으로 이동해 알림 허용을 켜고 배너 스타일을 지속으로 설정하세요.',
+    '테스트 알림이 전송되었습니다. 받지 못했다면 시스템 설정 → 알림 → OpenHuman 钉钉으로 이동해 알림 허용을 켜고 배너 스타일을 지속으로 설정하세요.',
   'app.openhumanLink.skipForNow': '지금은 건너뛰기',
   'app.openhumanLink.telegramUnavailable': 'Telegram을 사용할 수 없음',
   'app.openhumanLink.title.accounts': '앱 연결',
@@ -322,7 +322,7 @@ const ko3: TranslationMap = {
   'app.persistRehydration.heading': '제목',
   'app.persistRehydration.resetCta': '초기화 중…',
   'app.persistRehydration.resetting': '초기화 중…',
-  'app.routeLoading.initializing': 'OpenHuman 초기화 중...',
+  'app.routeLoading.initializing': 'OpenHuman 钉钉 초기화 중...',
   'app.update.currentlyOn': '{version}',
   'app.update.errorFallback': '업데이트 중 문제가 발생했습니다.',
   'app.update.header.default': '업데이트',

@@ -47,7 +47,7 @@ const ar2: TranslationMap = {
   'settings.billing.browserNotOpen': 'إذا لم يفتح متصفحك، استخدم الزر أعلاه.',
   'settings.billing.browserOpenFailed': 'تعذّر فتح المتصفح تلقائيًا. استخدم الزر أعلاه.',
   'settings.tools.chooseCapabilities':
-    'اختر الإمكانات التي يمكن لـ OpenHuman استخدامها نيابةً عنك.',
+    'اختر الإمكانات التي يمكن لـ OpenHuman 钉钉 استخدامها نيابةً عنك.',
   'settings.tools.saveChanges': 'حفظ التغييرات',
   'settings.tools.preferencesSaved': 'تم حفظ التفضيلات',
   'settings.tools.saveFailed': 'فشل حفظ التفضيلات. حاول مرة أخرى.',
@@ -378,7 +378,7 @@ const ar2: TranslationMap = {
   'devOptions.menuMessagingDesc':
     'Configure Telegram/Discord auth modes and default channel routing',
   'devOptions.menuTools': 'Tools',
-  'devOptions.menuToolsDesc': 'Enable or disable capabilities OpenHuman can use on your behalf',
+  'devOptions.menuToolsDesc': 'Enable or disable capabilities OpenHuman 钉钉 can use on your behalf',
   'devOptions.menuAgentChat': 'Agent Chat',
   'devOptions.menuAgentChatDesc': 'Test agent conversation with model and temperature overrides',
   'devOptions.menuCronJobs': 'Cron Jobs',

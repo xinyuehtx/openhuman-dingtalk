@@ -17,4 +17,4 @@ export const ONBOARDING_WELCOME_THREAD_LABEL = 'onboarding';
  * /chat with something to respond to.
  */
 export const TOUR_WELCOME_MESSAGE =
-  "Hey! Welcome to OpenHuman 👋 You just finished setting up, and I'm here whenever you need me. Ask me anything, get summaries from your connected apps, or just say hi — what would you like to explore first?";
+  "Hey! Welcome to OpenHuman 钉钉 👋 You just finished setting up, and I'm here whenever you need me. Ask me anything, get summaries from your connected apps, or just say hi — what would you like to explore first?";

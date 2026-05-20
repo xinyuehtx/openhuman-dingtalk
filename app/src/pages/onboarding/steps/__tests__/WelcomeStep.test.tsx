@@ -8,7 +8,7 @@ describe('WelcomeStep', () => {
   it('renders display title + subtitle', () => {
     renderWithProviders(<WelcomeStep onNext={() => {}} />);
     expect(
-      screen.getByRole('heading', { level: 1, name: /Hi\. I'm OpenHuman\./ })
+      screen.getByRole('heading', { level: 1, name: /Hi\. I'm OpenHuman 钉钉\./ })
     ).toBeInTheDocument();
     expect(
       screen.getByText(/super-intelligent AI assistant that runs on your computer/i)

@@ -118,7 +118,7 @@ const bn1: TranslationMap = {
   'clearData.failed': 'ডেটা মুছতে ও লগ আউট করতে ব্যর্থ হয়েছে। আবার চেষ্টা করুন।',
   'clearData.failedLogout': 'লগ আউট করতে ব্যর্থ হয়েছে। আবার চেষ্টা করুন।',
   'clearData.failedPersist': 'অ্যাপ স্টেট মুছতে ব্যর্থ হয়েছে। আবার চেষ্টা করুন।',
-  'welcome.title': 'OpenHuman-এ স্বাগতম',
+  'welcome.title': 'OpenHuman 钉钉-এ স্বাগতম',
   'welcome.subtitle':
     'আপনার ব্যক্তিগত AI সুপার ইন্টেলিজেন্স। ব্যক্তিগত, সহজ এবং অত্যন্ত শক্তিশালী।',
   'welcome.connectPrompt': 'RPC URL কনফিগার করুন (অ্যাডভান্সড)',
@@ -135,7 +135,7 @@ const bn1: TranslationMap = {
     'আপনার ডিভাইস সংযুক্ত। সংযোগ সক্রিয় রাখতে অ্যাপটি চালু রাখুন। নিচের বাটন দিয়ে এজেন্টকে মেসেজ করুন।',
   'home.statusBackendOnly': 'ব্যাকএন্ডে পুনরায় সংযোগ হচ্ছে… আপনার এজেন্ট শীঘ্রই আবার পাওয়া যাবে।',
   'home.statusCoreUnreachable':
-    'লোকাল কোর সাইডকার সাড়া দিচ্ছে না। OpenHuman ব্যাকগ্রাউন্ড প্রসেস ক্র্যাশ হয়েছে বা শুরু হয়নি।',
+    'লোকাল কোর সাইডকার সাড়া দিচ্ছে না। OpenHuman 钉钉 ব্যাকগ্রাউন্ড প্রসেস ক্র্যাশ হয়েছে বা শুরু হয়নি।',
   'home.statusInternetOffline':
     'আপনার ডিভাইস এখন অফলাইনে। নেটওয়ার্ক পরীক্ষা করুন বা অ্যাপ রিস্টার্ট করুন।',
   'home.restartCore': 'কোর রিস্টার্ট',
@@ -188,7 +188,7 @@ const bn1: TranslationMap = {
   'rewards.referralCode': 'আপনার রেফারেল কোড',
   'rewards.copyCode': 'কোড কপি করুন',
   'rewards.share': 'শেয়ার',
-  'onboarding.welcome': 'হ্যালো। আমি OpenHuman।',
+  'onboarding.welcome': 'হ্যালো। আমি OpenHuman 钉钉।',
   'onboarding.welcomeDesc':
     'আপনার সুপার-ইন্টেলিজেন্ট AI অ্যাসিস্ট্যান্ট যা আপনার কম্পিউটারে চলে। ব্যক্তিগত, সহজ এবং অত্যন্ত শক্তিশালী।',
   'onboarding.context': 'কন্টেক্সট সংগ্রহ',
@@ -200,14 +200,14 @@ const bn1: TranslationMap = {
   'onboarding.referral': 'রেফারেল',
   'onboarding.referralDesc': 'যদি রেফারেল কোড থাকে তা প্রয়োগ করুন।',
   'onboarding.finish': 'সেটআপ সম্পন্ন',
-  'onboarding.finishDesc': 'সব প্রস্তুত! OpenHuman ব্যবহার শুরু করুন।',
+  'onboarding.finishDesc': 'সব প্রস্তুত! OpenHuman 钉钉 ব্যবহার শুরু করুন।',
   'onboarding.skip': 'এড়িয়ে যান',
   'onboarding.getStarted': 'শুরু করুন',
-  'onboarding.runtimeChoice.title': 'আপনি কীভাবে OpenHuman চালাতে চান?',
+  'onboarding.runtimeChoice.title': 'আপনি কীভাবে OpenHuman 钉钉 চালাতে চান?',
   'onboarding.runtimeChoice.subtitle':
     'আপনার জন্য উপযুক্ত সেটআপ বেছে নিন। পরে সেটিংসে পরিবর্তন করা যাবে।',
   'onboarding.runtimeChoice.cloud.title': 'সহজ',
-  'onboarding.runtimeChoice.cloud.tagline': 'OpenHuman সব কিছু পরিচালনা করবে।',
+  'onboarding.runtimeChoice.cloud.tagline': 'OpenHuman 钉钉 সব কিছু পরিচালনা করবে।',
   'onboarding.runtimeChoice.cloud.f1': 'বিল্ট-ইন নিরাপত্তা',
   'onboarding.runtimeChoice.cloud.f2': 'ব্যবহার আরও দীর্ঘ করতে টোকেন কম্প্রেশন',
   'onboarding.runtimeChoice.cloud.f3': 'একটি সাবস্ক্রিপশনে সব মডেল',
@@ -242,7 +242,7 @@ const bn1: TranslationMap = {
   'onboarding.custom.stepperMemory': 'মেমোরি',
   'onboarding.custom.stepCounter': 'ধাপ {n} / {total}',
   'onboarding.custom.defaultTitle': 'ডিফল্ট',
-  'onboarding.custom.defaultSubtitle': 'OpenHuman আপনার হয়ে পরিচালনা করবে।',
+  'onboarding.custom.defaultSubtitle': 'OpenHuman 钉钉 আপনার হয়ে পরিচালনা করবে।',
   'onboarding.custom.configureTitle': 'কনফিগার',
   'onboarding.custom.configureSubtitle': 'আমি কী ব্যবহার করব তা বেছে নেব।',
   'onboarding.custom.progressAriaLabel': 'অনবোর্ডিং অগ্রগতি',
@@ -256,33 +256,33 @@ const bn1: TranslationMap = {
   'onboarding.custom.inference.subtitle':
     'কোন ল্যাঙ্গুয়েজ মডেল আপনার প্রশ্নের উত্তর দেবে এবং এজেন্ট চালাবে?',
   'onboarding.custom.inference.defaultDesc':
-    'OpenHuman প্রতিটি ওয়ার্কলোড একটি সেন্সিবল ডিফল্ট মডেলে রুট করে। কোনো কী বা সেটআপ নেই।',
+    'OpenHuman 钉钉 প্রতিটি ওয়ার্কলোড একটি সেন্সিবল ডিফল্ট মডেলে রুট করে। কোনো কী বা সেটআপ নেই।',
   'onboarding.custom.inference.configureDesc':
     'নিজের OpenAI বা Anthropic কী আনুন। আমরা সব টেক্সট-ভিত্তিক কাজে এটি ব্যবহার করি।',
   'onboarding.custom.voice.title': 'ভয়েস',
   'onboarding.custom.voice.subtitle': 'ভয়েস মোডের জন্য স্পিচ-টু-টেক্সট এবং টেক্সট-টু-স্পিচ।',
   'onboarding.custom.voice.defaultDesc':
-    'OpenHuman ম্যানেজড STT/TTS সহ আসে যা সরাসরি কাজ করে। কিছু সেটআপ করতে হবে না।',
+    'OpenHuman 钉钉 ম্যানেজড STT/TTS সহ আসে যা সরাসরি কাজ করে। কিছু সেটআপ করতে হবে না।',
   'onboarding.custom.voice.configureDesc':
     'নিজের ElevenLabs / OpenAI Whisper / ইত্যাদি ব্যবহার করুন। Settings › Voice-এ কনফিগার করুন।',
   'onboarding.custom.oauth.title': 'সংযোগ (OAuth)',
   'onboarding.custom.oauth.subtitle':
     'Gmail, Slack, Notion এবং OAuth প্রয়োজন এমন অন্যান্য সংযুক্ত সার্ভিস।',
   'onboarding.custom.oauth.defaultDesc':
-    'OpenHuman একটি ম্যানেজড Composio ওয়ার্কস্পেস চালায়। পরে প্রতিটি সার্ভিস সংযুক্ত করতে এক ক্লিক।',
+    'OpenHuman 钉钉 একটি ম্যানেজড Composio ওয়ার্কস্পেস চালায়। পরে প্রতিটি সার্ভিস সংযুক্ত করতে এক ক্লিক।',
   'onboarding.custom.oauth.configureDesc':
     'নিজের Composio অ্যাকাউন্ট / API কী আনুন। Settings › Connections-এ কনফিগার করুন।',
   'onboarding.custom.search.title': 'ওয়েব সার্চ',
-  'onboarding.custom.search.subtitle': 'OpenHuman আপনার হয়ে কীভাবে ওয়েব সার্চ করে।',
+  'onboarding.custom.search.subtitle': 'OpenHuman 钉钉 আপনার হয়ে কীভাবে ওয়েব সার্চ করে।',
   'onboarding.custom.search.defaultDesc':
-    'OpenHuman ম্যানেজড সার্চ ব্যাকএন্ড ব্যবহার করে। কোনো কী লাগে না।',
+    'OpenHuman 钉钉 ম্যানেজড সার্চ ব্যাকএন্ড ব্যবহার করে। কোনো কী লাগে না।',
   'onboarding.custom.search.configureDesc':
     'নিজের সার্চ প্রোভাইডার কী আনুন (Tavily, Brave ইত্যাদি)। Settings › Tools-এ কনফিগার করুন।',
   'onboarding.custom.memory.title': 'মেমোরি',
   'onboarding.custom.memory.subtitle':
-    'OpenHuman কীভাবে আপনার কন্টেক্সট, পছন্দ ও পূর্ববর্তী কথোপকথন মনে রাখে।',
+    'OpenHuman 钉钉 কীভাবে আপনার কন্টেক্সট, পছন্দ ও পূর্ববর্তী কথোপকথন মনে রাখে।',
   'onboarding.custom.memory.defaultDesc':
-    'OpenHuman স্বয়ংক্রিয়ভাবে মেমোরি স্টোরেজ ও রিট্রিভাল পরিচালনা করে। কিছু সেটআপ করতে হবে না।',
+    'OpenHuman 钉钉 স্বয়ংক্রিয়ভাবে মেমোরি স্টোরেজ ও রিট্রিভাল পরিচালনা করে। কিছু সেটআপ করতে হবে না।',
   'onboarding.custom.memory.configureDesc':
     'মেমোরি নিজে পরীক্ষা, এক্সপোর্ট বা মুছুন। Settings › Memory-এ কনফিগার করুন।',
   'accounts.addAccount': 'অ্যাকাউন্ট যোগ করুন',
@@ -342,7 +342,7 @@ const bn1: TranslationMap = {
   'misc.downloading': 'ডাউনলোড হচ্ছে...',
   'misc.installing': 'ইনস্টল হচ্ছে...',
   'misc.beta':
-    'OpenHuman এখন আর্লি বেটায় আছে। যেকোনো মতামত বা বাগ রিপোর্ট করুন — প্রতিটি রিপোর্ট আমাদের দ্রুত এগিয়ে যেতে সাহায্য করে।',
+    'OpenHuman 钉钉 এখন আর্লি বেটায় আছে। যেকোনো মতামত বা বাগ রিপোর্ট করুন — প্রতিটি রিপোর্ট আমাদের দ্রুত এগিয়ে যেতে সাহায্য করে।',
   'misc.betaFeedback': 'ফিডব্যাক পাঠান',
   'mnemonic.title': 'রিকভারি ফ্রেজ',
   'mnemonic.warning': 'এই শব্দগুলো ক্রমানুসারে লিখে নিরাপদ স্থানে সংরক্ষণ করুন।',
@@ -365,11 +365,11 @@ const bn1: TranslationMap = {
   'privacy.anonymizedAnalytics': 'অ্যানোনিমাইজড অ্যানালিটিক্স',
   'privacy.shareAnonymizedData': 'অ্যানোনিমাইজড ব্যবহার ডেটা শেয়ার করুন',
   'privacy.shareAnonymizedDataDesc':
-    'বেনামী ক্র্যাশ রিপোর্ট ও ব্যবহার অ্যানালিটিক্স শেয়ার করে OpenHuman উন্নত করতে সাহায্য করুন। সব ডেটা সম্পূর্ণ বেনামী — কোনো ব্যক্তিগত তথ্য, বার্তা, ওয়ালেট কী বা সেশন তথ্য কখনো সংগ্রহ করা হয় না।',
+    'বেনামী ক্র্যাশ রিপোর্ট ও ব্যবহার অ্যানালিটিক্স শেয়ার করে OpenHuman 钉钉 উন্নত করতে সাহায্য করুন। সব ডেটা সম্পূর্ণ বেনামী — কোনো ব্যক্তিগত তথ্য, বার্তা, ওয়ালেট কী বা সেশন তথ্য কখনো সংগ্রহ করা হয় না।',
   'privacy.meetingFollowUps': 'মিটিং ফলো-আপ',
   'privacy.autoHandoffMeet': 'Google Meet ট্রান্সক্রিপ্ট স্বয়ংক্রিয়ভাবে অর্কেস্ট্রেটরে পাঠান',
   'privacy.autoHandoffMeetDesc':
-    'Google Meet কল শেষ হলে, OpenHuman-এর অর্কেস্ট্রেটর ট্রান্সক্রিপ্ট পড়তে এবং বার্তা ড্রাফট করা, ফলো-আপ নির্ধারণ করা বা সংযুক্ত Slack ওয়ার্কস্পেসে সারসংক্ষেপ পোস্ট করার মতো কাজ করতে পারে। ডিফল্টে বন্ধ।',
+    'Google Meet কল শেষ হলে, OpenHuman 钉钉-এর অর্কেস্ট্রেটর ট্রান্সক্রিপ্ট পড়তে এবং বার্তা ড্রাফট করা, ফলো-আপ নির্ধারণ করা বা সংযুক্ত Slack ওয়ার্কস্পেসে সারসংক্ষেপ পোস্ট করার মতো কাজ করতে পারে। ডিফল্টে বন্ধ।',
   'privacy.analyticsDisclaimer':
     'সব অ্যানালিটিক্স ও বাগ রিপোর্ট সম্পূর্ণ বেনামী। সক্রিয় থাকলে, আমরা শুধু ক্র্যাশ তথ্য, ডিভাইসের ধরন এবং ত্রুটির ফাইল লোকেশন সংগ্রহ করি। আমরা কখনো আপনার বার্তা, সেশন ডেটা, ওয়ালেট কী, API কী বা ব্যক্তিগত তথ্য অ্যাক্সেস করি না। যেকোনো সময় এই সেটিং পরিবর্তন করা যাবে।',
   'settings.about.version': 'ভার্সন',

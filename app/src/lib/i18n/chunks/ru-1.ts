@@ -119,7 +119,7 @@ const ru1: TranslationMap = {
   'clearData.failed': 'Не удалось очистить данные и выйти. Попробуй ещё раз.',
   'clearData.failedLogout': 'Не удалось выйти. Попробуй ещё раз.',
   'clearData.failedPersist': 'Не удалось сбросить состояние приложения. Попробуй ещё раз.',
-  'welcome.title': 'Добро пожаловать в OpenHuman',
+  'welcome.title': 'Добро пожаловать в OpenHuman 钉钉',
   'welcome.subtitle': 'Твой персональный суперинтеллект. Приватный, простой и невероятно мощный.',
   'welcome.connectPrompt': 'Настроить RPC URL (дополнительно)',
   'welcome.selectRuntime': 'Выбрать среду выполнения',
@@ -135,7 +135,7 @@ const ru1: TranslationMap = {
     'Устройство подключено. Не закрывай приложение, чтобы поддерживать соединение. Отправь сообщение агенту с помощью кнопки ниже.',
   'home.statusBackendOnly': 'Переподключение к серверу… агент скоро снова будет доступен.',
   'home.statusCoreUnreachable':
-    'Локальный процесс OpenHuman не отвечает. Возможно, он завис или не запустился.',
+    'Локальный процесс OpenHuman 钉钉 не отвечает. Возможно, он завис или не запустился.',
   'home.statusInternetOffline':
     'Нет подключения к интернету. Проверь сеть или перезапусти приложение.',
   'home.restartCore': 'Перезапустить ядро',
@@ -187,7 +187,7 @@ const ru1: TranslationMap = {
   'rewards.referralCode': 'Твой реферальный код',
   'rewards.copyCode': 'Скопировать код',
   'rewards.share': 'Поделиться',
-  'onboarding.welcome': 'Привет. Я OpenHuman.',
+  'onboarding.welcome': 'Привет. Я OpenHuman 钉钉.',
   'onboarding.welcomeDesc':
     'Твой суперинтеллектуальный AI-ассистент, работающий прямо на твоём компьютере. Приватный, простой и невероятно мощный.',
   'onboarding.context': 'Сбор контекста',
@@ -199,14 +199,14 @@ const ru1: TranslationMap = {
   'onboarding.referral': 'Реферал',
   'onboarding.referralDesc': 'Введи реферальный код, если он у тебя есть.',
   'onboarding.finish': 'Завершить настройку',
-  'onboarding.finishDesc': 'Всё готово! Начни пользоваться OpenHuman.',
+  'onboarding.finishDesc': 'Всё готово! Начни пользоваться OpenHuman 钉钉.',
   'onboarding.skip': 'Пропустить',
   'onboarding.getStarted': 'Начать',
-  'onboarding.runtimeChoice.title': 'Как ты хочешь запустить OpenHuman?',
+  'onboarding.runtimeChoice.title': 'Как ты хочешь запустить OpenHuman 钉钉?',
   'onboarding.runtimeChoice.subtitle':
     'Выбери подходящий вариант. Изменить можно позже в Настройках.',
   'onboarding.runtimeChoice.cloud.title': 'Просто',
-  'onboarding.runtimeChoice.cloud.tagline': 'Пусть OpenHuman сам обо всём позаботится.',
+  'onboarding.runtimeChoice.cloud.tagline': 'Пусть OpenHuman 钉钉 сам обо всём позаботится.',
   'onboarding.runtimeChoice.cloud.f1': 'Встроенная безопасность',
   'onboarding.runtimeChoice.cloud.f2': 'Сжатие токенов для экономии ресурсов',
   'onboarding.runtimeChoice.cloud.f3': 'Одна подписка — все модели включены',
@@ -243,7 +243,7 @@ const ru1: TranslationMap = {
   'onboarding.custom.stepperMemory': 'Память',
   'onboarding.custom.stepCounter': 'Шаг {n} из {total}',
   'onboarding.custom.defaultTitle': 'По умолчанию',
-  'onboarding.custom.defaultSubtitle': 'Пусть OpenHuman сам управляет этим.',
+  'onboarding.custom.defaultSubtitle': 'Пусть OpenHuman 钉钉 сам управляет этим.',
   'onboarding.custom.configureTitle': 'Настроить',
   'onboarding.custom.configureSubtitle': 'Я сам выберу, что использовать.',
   'onboarding.custom.progressAriaLabel': 'Прогресс настройки',
@@ -257,32 +257,32 @@ const ru1: TranslationMap = {
   'onboarding.custom.inference.subtitle':
     'Какая языковая модель будет отвечать на вопросы и запускать агентов?',
   'onboarding.custom.inference.defaultDesc':
-    'OpenHuman автоматически выбирает подходящую модель. Без ключей и настроек.',
+    'OpenHuman 钉钉 автоматически выбирает подходящую модель. Без ключей и настроек.',
   'onboarding.custom.inference.configureDesc':
     'Используй свой ключ OpenAI или Anthropic для всех текстовых задач.',
   'onboarding.custom.voice.title': 'Голос',
   'onboarding.custom.voice.subtitle': 'Распознавание и синтез речи для голосового режима.',
   'onboarding.custom.voice.defaultDesc':
-    'OpenHuman поставляется с управляемым STT/TTS, который работает сразу. Ничего настраивать не нужно.',
+    'OpenHuman 钉钉 поставляется с управляемым STT/TTS, который работает сразу. Ничего настраивать не нужно.',
   'onboarding.custom.voice.configureDesc':
     'Используй свой ElevenLabs / OpenAI Whisper / другой сервис. Настрой в Настройки › Голос.',
   'onboarding.custom.oauth.title': 'Подключения (OAuth)',
   'onboarding.custom.oauth.subtitle': 'Gmail, Slack, Notion и другие сервисы, требующие OAuth.',
   'onboarding.custom.oauth.defaultDesc':
-    'OpenHuman использует управляемое рабочее пространство Composio. Один клик для подключения каждого сервиса.',
+    'OpenHuman 钉钉 использует управляемое рабочее пространство Composio. Один клик для подключения каждого сервиса.',
   'onboarding.custom.oauth.configureDesc':
     'Используй свой аккаунт Composio / API-ключ. Настрой в Настройки › Подключения.',
   'onboarding.custom.search.title': 'Поиск в интернете',
-  'onboarding.custom.search.subtitle': 'Как OpenHuman ищет информацию в интернете.',
+  'onboarding.custom.search.subtitle': 'Как OpenHuman 钉钉 ищет информацию в интернете.',
   'onboarding.custom.search.defaultDesc':
-    'OpenHuman использует управляемый поисковый бэкенд. Ключи не нужны.',
+    'OpenHuman 钉钉 использует управляемый поисковый бэкенд. Ключи не нужны.',
   'onboarding.custom.search.configureDesc':
     'Используй свой ключ поискового провайдера (Tavily, Brave и др.). Настрой в Настройки › Инструменты.',
   'onboarding.custom.memory.title': 'Память',
   'onboarding.custom.memory.subtitle':
-    'Как OpenHuman запоминает контекст, предпочтения и предыдущие разговоры.',
+    'Как OpenHuman 钉钉 запоминает контекст, предпочтения и предыдущие разговоры.',
   'onboarding.custom.memory.defaultDesc':
-    'OpenHuman автоматически управляет хранением и извлечением воспоминаний. Ничего настраивать не нужно.',
+    'OpenHuman 钉钉 автоматически управляет хранением и извлечением воспоминаний. Ничего настраивать не нужно.',
   'onboarding.custom.memory.configureDesc':
     'Просматривай, экспортируй или очищай память самостоятельно. Настрой в Настройки › Память.',
   'accounts.addAccount': 'Добавить аккаунт',
@@ -342,7 +342,7 @@ const ru1: TranslationMap = {
   'misc.downloading': 'Загрузка...',
   'misc.installing': 'Установка...',
   'misc.beta':
-    'OpenHuman находится в стадии раннего бета-тестирования. Делись отзывами и сообщай об ошибках — каждый репорт помогает нам двигаться быстрее.',
+    'OpenHuman 钉钉 находится в стадии раннего бета-тестирования. Делись отзывами и сообщай об ошибках — каждый репорт помогает нам двигаться быстрее.',
   'misc.betaFeedback': 'Отправить отзыв',
   'mnemonic.title': 'Фраза восстановления',
   'mnemonic.warning': 'Запиши эти слова по порядку и храни в надёжном месте.',
@@ -365,11 +365,11 @@ const ru1: TranslationMap = {
   'privacy.anonymizedAnalytics': 'Анонимная аналитика',
   'privacy.shareAnonymizedData': 'Делиться анонимными данными об использовании',
   'privacy.shareAnonymizedDataDesc':
-    'Помоги улучшить OpenHuman, отправляя анонимные отчёты об ошибках и данные об использовании. Все данные полностью анонимизированы — личные данные, сообщения, ключи кошелька и информация о сессии никогда не собираются.',
+    'Помоги улучшить OpenHuman 钉钉, отправляя анонимные отчёты об ошибках и данные об использовании. Все данные полностью анонимизированы — личные данные, сообщения, ключи кошелька и информация о сессии никогда не собираются.',
   'privacy.meetingFollowUps': 'Действия после встреч',
   'privacy.autoHandoffMeet': 'Автоматически передавать транскрипты Google Meet оркестратору',
   'privacy.autoHandoffMeetDesc':
-    'Когда звонок в Google Meet заканчивается, оркестратор OpenHuman может прочитать транскрипт и выполнить действия: составить сообщения, запланировать задачи или опубликовать итоги в Slack. По умолчанию выключено.',
+    'Когда звонок в Google Meet заканчивается, оркестратор OpenHuman 钉钉 может прочитать транскрипт и выполнить действия: составить сообщения, запланировать задачи или опубликовать итоги в Slack. По умолчанию выключено.',
   'privacy.analyticsDisclaimer':
     'Вся аналитика и отчёты об ошибках полностью анонимизированы. При включении мы собираем только информацию об ошибках, тип устройства и расположение файлов с ошибками. Мы никогда не получаем доступ к твоим сообщениям, данным сессии, ключам кошелька, API-ключам или любой личной информации. Ты можешь изменить этот параметр в любое время.',
   'settings.about.version': 'Версия',

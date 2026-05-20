@@ -20,15 +20,15 @@ const ru5: TranslationMap = {
   'settings.composio.confirmSwitch': 'Понятно, переключить на «Прямой»',
   'settings.composio.confirmTitle': '⚠️ Переключение на прямой режим',
   'settings.composio.confirmWarning':
-    'Ваши существующие интеграции (Gmail, Slack, GitHub и т. д., привязанные через OpenHuman) не будут видны — они находятся в управляемом OpenHuman тенанте Composio.',
+    'Ваши существующие интеграции (Gmail, Slack, GitHub и т. д., привязанные через OpenHuman 钉钉) не будут видны — они находятся в управляемом OpenHuman 钉钉 тенанте Composio.',
   'settings.composio.intro':
     'Composio интегрирует 250+ внешних приложений как инструменты, которые может вызывать ваш агент. Выберите способ маршрутизации этих вызовов.',
   'settings.composio.modeDirect': 'Прямой (собственный API-ключ)',
   'settings.composio.modeDirectDesc':
     'Вызовы идут напрямую на backend.composio.dev. Суверенно и подходит для офлайн. Выполнение инструментов работает синхронно; вебхуки триггеров в реальном времени пока не маршрутизируются в прямом режиме (см. отдельную задачу).',
-  'settings.composio.modeManaged': 'Управляемый (OpenHuman управляет за тебя)',
+  'settings.composio.modeManaged': 'Управляемый (OpenHuman 钉钉 управляет за тебя)',
   'settings.composio.modeManagedDesc':
-    'OpenHuman проксирует вызовы инструментов через наш бэкенд (рекомендуется). Авторизация брокеруется; вам не нужно вставлять API-ключ Composio. Вебхуки полностью маршрутизируются.',
+    'OpenHuman 钉钉 проксирует вызовы инструментов через наш бэкенд (рекомендуется). Авторизация брокеруется; вам не нужно вставлять API-ключ Composio. Вебхуки полностью маршрутизируются.',
   'settings.composio.routingMode': 'Режим маршрутизации',
   'settings.composio.saveErrorNoKey':
     'Не удалось сохранить. Прямой режим требует непустой API-ключ.',
@@ -147,7 +147,7 @@ const ru5: TranslationMap = {
   'settings.localModel.status.ollamaDiagnostics': 'Диагностика Ollama',
   'settings.localModel.status.ollamaNotInstalled': 'Среда выполнения Ollama недоступна',
   'settings.localModel.status.ollamaNotInstalledDesc':
-    'OpenHuman теперь рассматривает Ollama как внешнюю среду инференса. Запустите собственный сервер Ollama, загрузите нужные модели и направьте маршрутизацию нагрузки на него.',
+    'OpenHuman 钉钉 теперь рассматривает Ollama как внешнюю среду инференса. Запустите собственный сервер Ollama, загрузите нужные модели и направьте маршрутизацию нагрузки на него.',
   'settings.localModel.status.progress': 'Прогресс',
   'settings.localModel.status.provider': 'Провайдер',
   'settings.localModel.status.retryBootstrap': 'Повторить Bootstrap',
@@ -170,9 +170,9 @@ const ru5: TranslationMap = {
   'settings.mascot.characterHeading': 'Персонаж',
   'settings.mascot.colorDesc': 'Описание цвета',
   'settings.mascot.colorHeading': 'Цвет',
-  'settings.mascot.loadingLibrary': 'Загрузка библиотеки OpenHuman…',
-  'settings.mascot.localDefault': 'Локальный OpenHuman (по умолчанию)',
-  'settings.mascot.noCharacters': 'Персонажи OpenHuman пока недоступны',
+  'settings.mascot.loadingLibrary': 'Загрузка библиотеки OpenHuman 钉钉…',
+  'settings.mascot.localDefault': 'Локальный OpenHuman 钉钉 (по умолчанию)',
+  'settings.mascot.noCharacters': 'Персонажи OpenHuman 钉钉 пока недоступны',
   'settings.mascot.noColorVariants': 'Нет цветовых вариантов',
   'settings.mascot.voice.current': 'текущий',
   'settings.mascot.voice.customDesc':
@@ -199,7 +199,7 @@ const ru5: TranslationMap = {
     'Разумное значение по умолчанию — хорошая непрерывность без лишних трат токенов на каждом запуске.',
   'settings.memoryWindow.balanced.label': 'Сбалансированный',
   'settings.memoryWindow.description':
-    'Сколько запомненного контекста OpenHuman добавляет в каждый новый запуск агента. Более широкие окна дают ощущение лучшей памяти о прошлых разговорах, но используют больше токенов — и стоят дороже — на каждом запуске.',
+    'Сколько запомненного контекста OpenHuman 钉钉 добавляет в каждый новый запуск агента. Более широкие окна дают ощущение лучшей памяти о прошлых разговорах, но используют больше токенов — и стоят дороже — на каждом запуске.',
   'settings.memoryWindow.extended.badge': 'Больше контекста',
   'settings.memoryWindow.extended.hint':
     'Больше долгосрочной памяти на каждый запуск. Выше расход токенов за ход.',
@@ -268,17 +268,17 @@ const ru5: TranslationMap = {
   'skills.install.urlLabel': 'URL навыка',
   'skills.meetingBots.bannerDesc': 'Описание баннера',
   'skills.meetingBots.bannerTitle': 'Заголовок баннера',
-  'skills.meetingBots.busyTitle': 'OpenHuman занят',
+  'skills.meetingBots.busyTitle': 'OpenHuman 钉钉 занят',
   'skills.meetingBots.comingSoon': 'Скоро',
-  'skills.meetingBots.couldNotStartTitle': 'Не удалось запустить OpenHuman',
+  'skills.meetingBots.couldNotStartTitle': 'Не удалось запустить OpenHuman 钉钉',
   'skills.meetingBots.displayName': 'Отображаемое имя',
-  'skills.meetingBots.failedToStart': 'Не удалось запустить OpenHuman.',
+  'skills.meetingBots.failedToStart': 'Не удалось запустить OpenHuman 钉钉.',
   'skills.meetingBots.joiningMessage': 'Он должен появиться как участник через несколько секунд.',
-  'skills.meetingBots.joiningTitle': 'OpenHuman подключается к встрече',
+  'skills.meetingBots.joiningTitle': 'OpenHuman 钉钉 подключается к встрече',
   'skills.meetingBots.meetingLink': 'Ссылка на встречу',
-  'skills.meetingBots.modalAriaLabel': 'Отправить OpenHuman на встречу',
+  'skills.meetingBots.modalAriaLabel': 'Отправить OpenHuman 钉钉 на встречу',
   'skills.meetingBots.modalDesc': 'Описание окна',
-  'skills.meetingBots.modalTitle': 'Отправить OpenHuman на встречу',
+  'skills.meetingBots.modalTitle': 'Отправить OpenHuman 钉钉 на встречу',
   'skills.meetingBots.newBadge': 'Новое',
   'skills.meetingBots.sendTo': 'Отправить',
   'skills.meetingBots.starting': 'Запуск…',
@@ -406,7 +406,7 @@ const ru5: TranslationMap = {
   'composio.triggers.loading': 'Загрузка…',
   'conversations.taskKanban.todo': 'К выполнению',
   'settings.composio.loading': 'Загрузка…',
-  'settings.mascot.noCharactersAvailable': 'Персонажи OpenHuman пока недоступны',
+  'settings.mascot.noCharactersAvailable': 'Персонажи OpenHuman 钉钉 пока недоступны',
   'skills.uninstall.confirmTitle': 'Удалить {name}?',
   'conversations.taskKanban.blocked': 'Заблокировано',
   'conversations.taskKanban.done': 'Готово',
@@ -416,7 +416,7 @@ const ru5: TranslationMap = {
   'settings.localModel.download.manageExternal':
     'Управляйте этой моделью во внешней среде выполнения.',
   'settings.localModel.status.manageOllamaExternal':
-    'Управляйте процессом Ollama и загрузкой моделей вне OpenHuman, затем повторите диагностику.',
+    'Управляйте процессом Ollama и загрузкой моделей вне OpenHuman 钉钉, затем повторите диагностику.',
   'settings.localModel.status.ollamaDocs': 'Документация Ollama',
   'settings.localModel.status.thenRetry':
     'для инструкций по настройке, затем повторите, когда среда выполнения станет доступна.',
@@ -434,14 +434,14 @@ const ru5: TranslationMap = {
   'settings.mascot.characterPreview': 'Preview',
   'settings.mascot.characterStates': 'states',
   'settings.mascot.characterVisemes': 'visemes',
-  'settings.mascot.colorAria': 'OpenHuman color',
+  'settings.mascot.colorAria': 'OpenHuman 钉钉 color',
   'settings.mascot.colorBlack': 'Black',
   'settings.mascot.colorBurgundy': 'Burgundy',
   'settings.mascot.colorGreen': 'Green',
   'settings.mascot.colorNavy': 'Navy',
   'settings.mascot.colorYellow': 'Yellow',
-  'settings.mascot.libraryUnavailable': 'OpenHuman library unavailable',
-  'settings.mascot.title': 'OpenHuman',
+  'settings.mascot.libraryUnavailable': 'OpenHuman 钉钉 library unavailable',
+  'settings.mascot.title': 'OpenHuman 钉钉',
 };
 
 export default ru5;

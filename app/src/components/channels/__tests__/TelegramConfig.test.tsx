@@ -29,13 +29,13 @@ afterEach(() => {
 describe('TelegramConfig', () => {
   it('renders auth mode labels', () => {
     renderWithProviders(<TelegramConfig definition={telegramDef} />);
-    expect(screen.getByText('Login with OpenHuman')).toBeInTheDocument();
+    expect(screen.getByText('Login with OpenHuman 钉钉')).toBeInTheDocument();
   });
 
   it('renders both auth modes', () => {
     renderWithProviders(<TelegramConfig definition={telegramDef} />);
     expect(screen.getAllByText(/Bot Token/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText('Login with OpenHuman')).toBeInTheDocument();
+    expect(screen.getByText('Login with OpenHuman 钉钉')).toBeInTheDocument();
   });
 
   it('shows credential fields for bot_token mode', () => {

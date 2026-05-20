@@ -25,13 +25,13 @@ describe('joinMeetingViaMascotBot', () => {
     const res = await joinMeetingViaMascotBot({
       platform: 'gmeet',
       meetUrl: '  https://meet.google.com/abc-defg-hij  ',
-      displayName: '  OpenHuman  ',
+      displayName: '  OpenHuman 钉钉  ',
     });
     expect(res).toEqual({ success: true });
     expect(postMock).toHaveBeenCalledWith('/mascots/join-meeting', {
       platform: 'gmeet',
       meetUrl: 'https://meet.google.com/abc-defg-hij',
-      displayName: 'OpenHuman',
+      displayName: 'OpenHuman 钉钉',
     });
   });
 

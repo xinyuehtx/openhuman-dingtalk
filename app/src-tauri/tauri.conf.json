@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "OpenHuman",
-  "version": "0.54.2",
+  "version": "0.54.3",
   "identifier": "com.openhuman.app",
   "build": {
     "beforeDevCommand": "pnpm run dev",
@@ -13,7 +13,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "OpenHuman",
+        "title": "OpenHuman 钉钉",
         "width": 1000,
         "height": 800,
         "visible": false,

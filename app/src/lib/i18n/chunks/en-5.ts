@@ -20,15 +20,15 @@ const en5: TranslationMap = {
   'settings.composio.confirmSwitch': 'I understand, switch to Direct',
   'settings.composio.confirmTitle': '⚠️ Switching to Direct mode',
   'settings.composio.confirmWarning':
-    "Your existing integrations (Gmail, Slack, GitHub, etc. linked through OpenHuman) won't be visible — they live in the OpenHuman-managed Composio tenant.",
+    "Your existing integrations (Gmail, Slack, GitHub, etc. linked through OpenHuman 钉钉) won't be visible — they live in the OpenHuman 钉钉-managed Composio tenant.",
   'settings.composio.intro':
     'Composio integrates 250+ external apps as tools your agent can call. Choose how those tool calls are routed.',
   'settings.composio.modeDirect': 'Direct (bring your own API key)',
   'settings.composio.modeDirectDesc':
     'Calls go to backend.composio.dev directly. Sovereign / offline-friendly. Tool execution works synchronously; real-time trigger webhooks are not yet routed in direct mode (follow-up issue).',
-  'settings.composio.modeManaged': 'Managed (OpenHuman handles it for you)',
+  'settings.composio.modeManaged': 'Managed (OpenHuman 钉钉 handles it for you)',
   'settings.composio.modeManagedDesc':
-    'OpenHuman proxies tool calls through our backend (recommended). Auth is brokered; you never paste a Composio API key. Webhooks are fully routed.',
+    'OpenHuman 钉钉 proxies tool calls through our backend (recommended). Auth is brokered; you never paste a Composio API key. Webhooks are fully routed.',
   'settings.composio.routingMode': 'Routing mode',
   'settings.composio.saveErrorNoKey': 'Failed to save. Direct mode requires a non-empty API key.',
   'settings.composio.saving': 'Saving…',
@@ -145,7 +145,7 @@ const en5: TranslationMap = {
   'settings.localModel.status.ollamaDiagnostics': 'Ollama Diagnostics',
   'settings.localModel.status.ollamaNotInstalled': 'Ollama runtime unavailable',
   'settings.localModel.status.ollamaNotInstalledDesc':
-    'OpenHuman now treats Ollama as an external inference runtime. Start your own Ollama server, pull the models you want, and point workload routing at it.',
+    'OpenHuman 钉钉 now treats Ollama as an external inference runtime. Start your own Ollama server, pull the models you want, and point workload routing at it.',
   'settings.localModel.status.progress': 'Progress',
   'settings.localModel.status.provider': 'Provider',
   'settings.localModel.status.retryBootstrap': 'Retry Bootstrap',
@@ -168,9 +168,9 @@ const en5: TranslationMap = {
   'settings.mascot.characterHeading': 'Character heading',
   'settings.mascot.colorDesc': 'Color desc',
   'settings.mascot.colorHeading': 'Color heading',
-  'settings.mascot.loadingLibrary': 'Loading OpenHuman library…',
-  'settings.mascot.localDefault': 'Local OpenHuman (default)',
-  'settings.mascot.noCharacters': 'No OpenHuman characters are available yet',
+  'settings.mascot.loadingLibrary': 'Loading OpenHuman 钉钉 library…',
+  'settings.mascot.localDefault': 'Local OpenHuman 钉钉 (default)',
+  'settings.mascot.noCharacters': 'No OpenHuman 钉钉 characters are available yet',
   'settings.mascot.noColorVariants': 'No color variants',
   'settings.mascot.voice.current': 'current',
   'settings.mascot.voice.customDesc':
@@ -197,7 +197,7 @@ const en5: TranslationMap = {
     'Sensible default — good continuity without burning extra tokens on every run.',
   'settings.memoryWindow.balanced.label': 'Balanced',
   'settings.memoryWindow.description':
-    'How much remembered context OpenHuman injects into every new agent run. Larger windows feel more aware of past conversations but use more tokens — and cost more — on every run.',
+    'How much remembered context OpenHuman 钉钉 injects into every new agent run. Larger windows feel more aware of past conversations but use more tokens — and cost more — on every run.',
   'settings.memoryWindow.extended.badge': 'More context',
   'settings.memoryWindow.extended.hint':
     'More long-term memory injected into each run. Higher token cost per turn.',
@@ -265,20 +265,20 @@ const en5: TranslationMap = {
   'skills.install.title': 'Install skill from URL',
   'skills.install.urlLabel': 'Skill URL',
   'skills.meetingBots.bannerDesc':
-    'Drop a Google Meet link and OpenHuman joins as a guest, talks, listens, and waves back.',
-  'skills.meetingBots.bannerTitle': 'Send OpenHuman to a meeting',
-  'skills.meetingBots.busyTitle': 'OpenHuman is busy',
+    'Drop a Google Meet link and OpenHuman 钉钉 joins as a guest, talks, listens, and waves back.',
+  'skills.meetingBots.bannerTitle': 'Send OpenHuman 钉钉 to a meeting',
+  'skills.meetingBots.busyTitle': 'OpenHuman 钉钉 is busy',
   'skills.meetingBots.comingSoon': 'Coming soon',
-  'skills.meetingBots.couldNotStartTitle': 'Could not start OpenHuman',
+  'skills.meetingBots.couldNotStartTitle': 'Could not start OpenHuman 钉钉',
   'skills.meetingBots.displayName': 'Display name',
-  'skills.meetingBots.failedToStart': 'Failed to start OpenHuman.',
+  'skills.meetingBots.failedToStart': 'Failed to start OpenHuman 钉钉.',
   'skills.meetingBots.joiningMessage': 'It should appear as a participant in a few seconds.',
-  'skills.meetingBots.joiningTitle': 'OpenHuman is joining the meeting',
+  'skills.meetingBots.joiningTitle': 'OpenHuman 钉钉 is joining the meeting',
   'skills.meetingBots.meetingLink': 'Meeting link',
-  'skills.meetingBots.modalAriaLabel': 'Send OpenHuman to a meeting',
+  'skills.meetingBots.modalAriaLabel': 'Send OpenHuman 钉钉 to a meeting',
   'skills.meetingBots.modalDesc':
-    'OpenHuman joins as an anonymous guest, streams its video into the call, and replies via the agent.',
-  'skills.meetingBots.modalTitle': 'Send OpenHuman to a meeting',
+    'OpenHuman 钉钉 joins as an anonymous guest, streams its video into the call, and replies via the agent.',
+  'skills.meetingBots.modalTitle': 'Send OpenHuman 钉钉 to a meeting',
   'skills.meetingBots.newBadge': 'New',
   'skills.meetingBots.sendTo': 'Send to',
   'skills.meetingBots.starting': 'Starting…',
@@ -405,7 +405,7 @@ const en5: TranslationMap = {
   'composio.triggers.loading': 'Loading…',
   'conversations.taskKanban.todo': 'To do',
   'settings.composio.loading': 'Loading…',
-  'settings.mascot.noCharactersAvailable': 'No OpenHuman characters are available yet',
+  'settings.mascot.noCharactersAvailable': 'No OpenHuman 钉钉 characters are available yet',
   'skills.uninstall.confirmTitle': 'Uninstall {name}?',
   'conversations.taskKanban.blocked': 'Blocked',
   'conversations.taskKanban.done': 'Done',
@@ -414,7 +414,7 @@ const en5: TranslationMap = {
   'settings.composio.notYetRouted': 'not yet routed',
   'settings.localModel.download.manageExternal': 'Manage this model in your external runtime.',
   'settings.localModel.status.manageOllamaExternal':
-    'Manage the Ollama process and model pulls outside OpenHuman, then rerun diagnostics.',
+    'Manage the Ollama process and model pulls outside OpenHuman 钉钉, then rerun diagnostics.',
   'settings.localModel.status.ollamaDocs': 'Ollama docs',
   'settings.localModel.status.thenRetry':
     'for setup instructions, then retry after your runtime is reachable.',
@@ -432,14 +432,14 @@ const en5: TranslationMap = {
   'settings.mascot.characterPreview': 'Preview',
   'settings.mascot.characterStates': 'states',
   'settings.mascot.characterVisemes': 'visemes',
-  'settings.mascot.colorAria': 'OpenHuman color',
+  'settings.mascot.colorAria': 'OpenHuman 钉钉 color',
   'settings.mascot.colorBlack': 'Black',
   'settings.mascot.colorBurgundy': 'Burgundy',
   'settings.mascot.colorGreen': 'Green',
   'settings.mascot.colorNavy': 'Navy',
   'settings.mascot.colorYellow': 'Yellow',
-  'settings.mascot.libraryUnavailable': 'OpenHuman library unavailable',
-  'settings.mascot.title': 'OpenHuman',
+  'settings.mascot.libraryUnavailable': 'OpenHuman 钉钉 library unavailable',
+  'settings.mascot.title': 'OpenHuman 钉钉',
 };
 
 export default en5;

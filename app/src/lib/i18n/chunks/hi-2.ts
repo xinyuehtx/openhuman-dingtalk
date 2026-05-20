@@ -48,7 +48,7 @@ const hi2: TranslationMap = {
   'settings.billing.browserOpenFailed':
     'ब्राउज़र ऑटोमेटिकली नहीं खुल पाया। ऊपर वाला बटन इस्तेमाल करें।',
   'settings.tools.chooseCapabilities':
-    'चुनें कि OpenHuman आपकी तरफ से कौन सी कैपेबिलिटीज़ इस्तेमाल कर सकता है।',
+    'चुनें कि OpenHuman 钉钉 आपकी तरफ से कौन सी कैपेबिलिटीज़ इस्तेमाल कर सकता है।',
   'settings.tools.saveChanges': 'बदलाव सेव करें',
   'settings.tools.preferencesSaved': 'प्रेफरेंस सेव हो गई',
   'settings.tools.saveFailed': 'प्रेफरेंस सेव नहीं हो पाई। दोबारा कोशिश करें।',
@@ -387,7 +387,7 @@ const hi2: TranslationMap = {
   'devOptions.menuMessagingDesc':
     'Configure Telegram/Discord auth modes and default channel routing',
   'devOptions.menuTools': 'Tools',
-  'devOptions.menuToolsDesc': 'Enable or disable capabilities OpenHuman can use on your behalf',
+  'devOptions.menuToolsDesc': 'Enable or disable capabilities OpenHuman 钉钉 can use on your behalf',
   'devOptions.menuAgentChat': 'Agent Chat',
   'devOptions.menuAgentChatDesc': 'Test agent conversation with model and temperature overrides',
   'devOptions.menuCronJobs': 'Cron Jobs',

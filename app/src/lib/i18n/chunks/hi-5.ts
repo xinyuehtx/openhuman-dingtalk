@@ -20,15 +20,15 @@ const hi5: TranslationMap = {
   'settings.composio.confirmSwitch': 'मैं समझ गया, डायरेक्ट पर स्विच करें',
   'settings.composio.confirmTitle': '⚠️ डायरेक्ट मोड पर स्विच कर रहे हैं',
   'settings.composio.confirmWarning':
-    'आपके मौजूदा एकीकरण (Gmail, Slack, GitHub, आदि OpenHuman के माध्यम से लिंक किए गए) दिखाई नहीं देंगे — वे OpenHuman-प्रबंधित Composio टेनेंट में रहते हैं।',
+    'आपके मौजूदा एकीकरण (Gmail, Slack, GitHub, आदि OpenHuman 钉钉 के माध्यम से लिंक किए गए) दिखाई नहीं देंगे — वे OpenHuman 钉钉-प्रबंधित Composio टेनेंट में रहते हैं।',
   'settings.composio.intro':
     'Composio 250+ बाहरी ऐप्स को टूल्स के रूप में एकीकृत करता है जिन्हें आपका एजेंट कॉल कर सकता है। चुनें कि वे टूल कॉल कैसे रूट किए जाएँ।',
   'settings.composio.modeDirect': 'डायरेक्ट (अपनी API key लाएं)',
   'settings.composio.modeDirectDesc':
     'कॉल सीधे backend.composio.dev पर जाती हैं। संप्रभु / ऑफ़लाइन-अनुकूल। टूल निष्पादन सिंक्रोनस रूप से कार्य करता है; रीयल-टाइम ट्रिगर वेबहुक्स अभी डायरेक्ट मोड में रूट नहीं हैं (फॉलो-अप मुद्दा)।',
-  'settings.composio.modeManaged': 'मैनेज्ड (OpenHuman मैनेज करेगा)',
+  'settings.composio.modeManaged': 'मैनेज्ड (OpenHuman 钉钉 मैनेज करेगा)',
   'settings.composio.modeManagedDesc':
-    'OpenHuman हमारे बैकएंड के माध्यम से टूल कॉल्स को प्रॉक्सी करता है (अनुशंसित)। प्रमाणीकरण ब्रोकर किया जाता है; आप कभी भी Composio API कुंजी पेस्ट नहीं करते। वेबहुक्स पूरी तरह से रूट किए जाते हैं।',
+    'OpenHuman 钉钉 हमारे बैकएंड के माध्यम से टूल कॉल्स को प्रॉक्सी करता है (अनुशंसित)। प्रमाणीकरण ब्रोकर किया जाता है; आप कभी भी Composio API कुंजी पेस्ट नहीं करते। वेबहुक्स पूरी तरह से रूट किए जाते हैं।',
   'settings.composio.routingMode': 'रूटिंग मोड',
   'settings.composio.saveErrorNoKey':
     'सहेजने में विफल। डायरेक्ट मोड के लिए गैर-रिक्त API कुंजी आवश्यक है।',
@@ -147,7 +147,7 @@ const hi5: TranslationMap = {
   'settings.localModel.status.ollamaDiagnostics': 'Ollama डायग्नोस्टिक्स',
   'settings.localModel.status.ollamaNotInstalled': 'Ollama रनटाइम अनुपलब्ध',
   'settings.localModel.status.ollamaNotInstalledDesc':
-    'OpenHuman अब Ollama को एक बाहरी इन्फ़रेंस रनटाइम के रूप में मानता है। अपना खुद का Ollama सर्वर शुरू करें, अपने इच्छित मॉडल खींचें, और वर्कलोड रूटिंग को इसकी ओर इंगित करें।',
+    'OpenHuman 钉钉 अब Ollama को एक बाहरी इन्फ़रेंस रनटाइम के रूप में मानता है। अपना खुद का Ollama सर्वर शुरू करें, अपने इच्छित मॉडल खींचें, और वर्कलोड रूटिंग को इसकी ओर इंगित करें।',
   'settings.localModel.status.progress': 'प्रगति',
   'settings.localModel.status.provider': 'प्रोवाइडर',
   'settings.localModel.status.retryBootstrap': 'Bootstrap फिर से करें',
@@ -170,9 +170,9 @@ const hi5: TranslationMap = {
   'settings.mascot.characterHeading': 'कैरेक्टर शीर्षक',
   'settings.mascot.colorDesc': 'रंग विवरण',
   'settings.mascot.colorHeading': 'रंग शीर्षक',
-  'settings.mascot.loadingLibrary': 'OpenHuman लाइब्रेरी लोड हो रही है…',
-  'settings.mascot.localDefault': 'लोकल OpenHuman (डिफ़ॉल्ट)',
-  'settings.mascot.noCharacters': 'अभी तक कोई OpenHuman कैरेक्टर उपलब्ध नहीं है',
+  'settings.mascot.loadingLibrary': 'OpenHuman 钉钉 लाइब्रेरी लोड हो रही है…',
+  'settings.mascot.localDefault': 'लोकल OpenHuman 钉钉 (डिफ़ॉल्ट)',
+  'settings.mascot.noCharacters': 'अभी तक कोई OpenHuman 钉钉 कैरेक्टर उपलब्ध नहीं है',
   'settings.mascot.noColorVariants': 'कोई कलर वेरिएंट नहीं',
   'settings.mascot.voice.current': 'वर्तमान',
   'settings.mascot.voice.customDesc':
@@ -199,7 +199,7 @@ const hi5: TranslationMap = {
     'समझदारी भरा डिफ़ॉल्ट — हर रन पर अतिरिक्त टोकन खर्च किए बिना अच्छी निरंतरता।',
   'settings.memoryWindow.balanced.label': 'संतुलित',
   'settings.memoryWindow.description':
-    'OpenHuman हर नए एजेंट रन में कितना याद किया गया संदर्भ इंजेक्ट करता है। बड़ी विंडोज़ पिछली बातचीत के बारे में अधिक जागरूक लगती हैं लेकिन हर रन पर अधिक टोकन का उपयोग करती हैं — और अधिक लागत आती है।',
+    'OpenHuman 钉钉 हर नए एजेंट रन में कितना याद किया गया संदर्भ इंजेक्ट करता है। बड़ी विंडोज़ पिछली बातचीत के बारे में अधिक जागरूक लगती हैं लेकिन हर रन पर अधिक टोकन का उपयोग करती हैं — और अधिक लागत आती है।',
   'settings.memoryWindow.extended.badge': 'अधिक संदर्भ',
   'settings.memoryWindow.extended.hint':
     'प्रत्येक रन में अधिक दीर्घकालिक मेमोरी इंजेक्ट होती है। प्रति टर्न उच्च टोकन लागत।',
@@ -268,18 +268,18 @@ const hi5: TranslationMap = {
   'skills.install.urlLabel': 'स्किल URL',
   'skills.meetingBots.bannerDesc': 'बैनर विवरण',
   'skills.meetingBots.bannerTitle': 'बैनर शीर्षक',
-  'skills.meetingBots.busyTitle': 'OpenHuman व्यस्त है',
+  'skills.meetingBots.busyTitle': 'OpenHuman 钉钉 व्यस्त है',
   'skills.meetingBots.comingSoon': 'जल्द आ रहा है',
-  'skills.meetingBots.couldNotStartTitle': 'OpenHuman प्रारंभ नहीं हो सका',
+  'skills.meetingBots.couldNotStartTitle': 'OpenHuman 钉钉 प्रारंभ नहीं हो सका',
   'skills.meetingBots.displayName': 'डिस्प्ले नाम',
-  'skills.meetingBots.failedToStart': 'OpenHuman शुरू नहीं हो पाया।',
+  'skills.meetingBots.failedToStart': 'OpenHuman 钉钉 शुरू नहीं हो पाया।',
   'skills.meetingBots.joiningMessage':
     'कुछ सेकंड में यह मीटिंग में पार्टिसिपेंट के रूप में दिखेगा।',
-  'skills.meetingBots.joiningTitle': 'OpenHuman मीटिंग जॉइन कर रहा है',
+  'skills.meetingBots.joiningTitle': 'OpenHuman 钉钉 मीटिंग जॉइन कर रहा है',
   'skills.meetingBots.meetingLink': 'मीटिंग लिंक',
-  'skills.meetingBots.modalAriaLabel': 'OpenHuman को मीटिंग में भेजें',
+  'skills.meetingBots.modalAriaLabel': 'OpenHuman 钉钉 को मीटिंग में भेजें',
   'skills.meetingBots.modalDesc': 'मोडल विवरण',
-  'skills.meetingBots.modalTitle': 'OpenHuman को मीटिंग में भेजें',
+  'skills.meetingBots.modalTitle': 'OpenHuman 钉钉 को मीटिंग में भेजें',
   'skills.meetingBots.newBadge': 'नया',
   'skills.meetingBots.sendTo': 'भेजें',
   'skills.meetingBots.starting': 'शुरू हो रहा है…',
@@ -407,7 +407,7 @@ const hi5: TranslationMap = {
   'composio.triggers.loading': 'लोड हो रहा है…',
   'conversations.taskKanban.todo': 'करना है',
   'settings.composio.loading': 'लोड हो रहा है…',
-  'settings.mascot.noCharactersAvailable': 'अभी तक कोई OpenHuman कैरेक्टर उपलब्ध नहीं है',
+  'settings.mascot.noCharactersAvailable': 'अभी तक कोई OpenHuman 钉钉 कैरेक्टर उपलब्ध नहीं है',
   'skills.uninstall.confirmTitle': '{name} अनइंस्टॉल करें?',
   'conversations.taskKanban.blocked': 'अवरुद्ध',
   'conversations.taskKanban.done': 'पूर्ण',
@@ -416,7 +416,7 @@ const hi5: TranslationMap = {
   'settings.composio.notYetRouted': 'अभी तक रूट नहीं हुआ',
   'settings.localModel.download.manageExternal': 'इस मॉडल को अपने बाहरी रनटाइम में प्रबंधित करें।',
   'settings.localModel.status.manageOllamaExternal':
-    'OpenHuman के बाहर Ollama प्रक्रिया और मॉडल पुल प्रबंधित करें, फिर डायग्नोस्टिक्स पुनः चलाएँ।',
+    'OpenHuman 钉钉 के बाहर Ollama प्रक्रिया और मॉडल पुल प्रबंधित करें, फिर डायग्नोस्टिक्स पुनः चलाएँ।',
   'settings.localModel.status.ollamaDocs': 'Ollama दस्तावेज़',
   'settings.localModel.status.thenRetry':
     'सेटअप निर्देशों के लिए, फिर आपका रनटाइम पहुँच योग्य होने के बाद पुनः प्रयास करें।',
@@ -434,14 +434,14 @@ const hi5: TranslationMap = {
   'settings.mascot.characterPreview': 'Preview',
   'settings.mascot.characterStates': 'states',
   'settings.mascot.characterVisemes': 'visemes',
-  'settings.mascot.colorAria': 'OpenHuman color',
+  'settings.mascot.colorAria': 'OpenHuman 钉钉 color',
   'settings.mascot.colorBlack': 'Black',
   'settings.mascot.colorBurgundy': 'Burgundy',
   'settings.mascot.colorGreen': 'Green',
   'settings.mascot.colorNavy': 'Navy',
   'settings.mascot.colorYellow': 'Yellow',
-  'settings.mascot.libraryUnavailable': 'OpenHuman library unavailable',
-  'settings.mascot.title': 'OpenHuman',
+  'settings.mascot.libraryUnavailable': 'OpenHuman 钉钉 library unavailable',
+  'settings.mascot.title': 'OpenHuman 钉钉',
 };
 
 export default hi5;

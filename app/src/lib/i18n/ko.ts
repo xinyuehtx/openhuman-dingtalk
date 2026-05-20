@@ -135,7 +135,7 @@ const ko: TranslationMap = {
   'clearData.failedPersist': '저장된 앱 상태를 삭제하지 못했습니다. 다시 시도해 주세요.',
 
   // Welcome page
-  'welcome.title': 'OpenHuman에 오신 것을 환영합니다',
+  'welcome.title': 'OpenHuman 钉钉에 오신 것을 환영합니다',
   'welcome.subtitle': '개인용 AI 슈퍼 인텔리전스입니다. 비공개이며, 간단하고, 매우 강력합니다.',
   'welcome.connectPrompt': 'RPC URL 구성(고급)',
   'welcome.selectRuntime': '런타임 선택',
@@ -154,7 +154,7 @@ const ko: TranslationMap = {
   'home.statusBackendOnly':
     '백엔드에 다시 연결하는 중입니다… 곧 에이전트를 다시 사용할 수 있습니다.',
   'home.statusCoreUnreachable':
-    'OpenHuman 코어가 응답하지 않습니다. 백그라운드 프로세스가 중단되었거나 시작하지 못했을 수 있습니다.',
+    'OpenHuman 钉钉 코어가 응답하지 않습니다. 백그라운드 프로세스가 중단되었거나 시작하지 못했을 수 있습니다.',
   'home.statusInternetOffline':
     '현재 기기가 오프라인 상태입니다. 네트워크를 확인하거나 앱을 다시 시작하여 다시 연결하세요.',
   'home.restartCore': '코어 다시 시작',
@@ -218,7 +218,7 @@ const ko: TranslationMap = {
   'rewards.share': '공유',
 
   // Onboarding
-  'onboarding.welcome': '안녕하세요. 저는 OpenHuman입니다.',
+  'onboarding.welcome': '안녕하세요. 저는 OpenHuman 钉钉입니다.',
   'onboarding.welcomeDesc':
     '컴퓨터에서 실행되는 초지능 AI 어시스턴트입니다. 비공개이며, 간단하고, 매우 강력합니다.',
   'onboarding.context': '컨텍스트 수집',
@@ -230,16 +230,16 @@ const ko: TranslationMap = {
   'onboarding.referral': '추천',
   'onboarding.referralDesc': '추천 코드가 있다면 적용하세요.',
   'onboarding.finish': '설정 완료',
-  'onboarding.finishDesc': '모든 준비가 끝났습니다! OpenHuman을 사용해 보세요.',
+  'onboarding.finishDesc': '모든 준비가 끝났습니다! OpenHuman 钉钉을 사용해 보세요.',
   'onboarding.skip': '건너뛰기',
   'onboarding.getStarted': '시작하기',
 
   // Onboarding: runtime-choice step (Cloud vs Custom)
-  'onboarding.runtimeChoice.title': 'OpenHuman을 어떻게 실행하시겠습니까?',
+  'onboarding.runtimeChoice.title': 'OpenHuman 钉钉을 어떻게 실행하시겠습니까?',
   'onboarding.runtimeChoice.subtitle':
     '가장 잘 맞는 설정을 선택하세요. 나중에 설정에서 변경할 수 있습니다.',
   'onboarding.runtimeChoice.cloud.title': '간단 모드',
-  'onboarding.runtimeChoice.cloud.tagline': 'OpenHuman이 모든 것을 대신 관리하도록 합니다.',
+  'onboarding.runtimeChoice.cloud.tagline': 'OpenHuman 钉钉이 모든 것을 대신 관리하도록 합니다.',
   'onboarding.runtimeChoice.cloud.f1': '내장 보안',
   'onboarding.runtimeChoice.cloud.f2': '사용량을 더 오래 쓰기 위한 토큰 압축',
   'onboarding.runtimeChoice.cloud.f3': '하나의 구독으로 모든 모델 포함',
@@ -279,7 +279,7 @@ const ko: TranslationMap = {
   'onboarding.custom.stepperMemory': '메모리',
   'onboarding.custom.stepCounter': '{total}단계 중 {n}단계',
   'onboarding.custom.defaultTitle': '기본값',
-  'onboarding.custom.defaultSubtitle': 'OpenHuman이 대신 관리하도록 합니다.',
+  'onboarding.custom.defaultSubtitle': 'OpenHuman 钉钉이 대신 관리하도록 합니다.',
   'onboarding.custom.configureTitle': '구성',
   'onboarding.custom.configureSubtitle': '사용할 항목을 직접 선택합니다.',
   'onboarding.custom.progressAriaLabel': '온보딩 진행 상황',
@@ -295,7 +295,7 @@ const ko: TranslationMap = {
   'onboarding.custom.inference.subtitle':
     '어떤 언어 모델이 질문에 답하고 에이전트를 실행해야 하나요?',
   'onboarding.custom.inference.defaultDesc':
-    'OpenHuman은 모든 작업을 적절한 기본 모델로 라우팅합니다. 키도 필요 없고 설정도 필요 없습니다.',
+    'OpenHuman 钉钉은 모든 작업을 적절한 기본 모델로 라우팅합니다. 키도 필요 없고 설정도 필요 없습니다.',
   'onboarding.custom.inference.configureDesc':
     '직접 OpenAI 또는 Anthropic 키를 가져오세요. 모든 텍스트 기반 작업에 이 키를 사용합니다.',
   // Onboarding: Custom > Voice
@@ -303,7 +303,7 @@ const ko: TranslationMap = {
   'onboarding.custom.voice.subtitle':
     '음성 모드를 위한 음성-텍스트 변환 및 텍스트-음성 변환입니다.',
   'onboarding.custom.voice.defaultDesc':
-    'OpenHuman에는 바로 사용할 수 있는 관리형 STT/TTS가 포함되어 있습니다. 별도로 연결할 필요가 없습니다.',
+    'OpenHuman 钉钉에는 바로 사용할 수 있는 관리형 STT/TTS가 포함되어 있습니다. 별도로 연결할 필요가 없습니다.',
   'onboarding.custom.voice.configureDesc':
     '직접 ElevenLabs / OpenAI Whisper 등을 사용하세요. 설정 › 음성에서 구성할 수 있습니다.',
 
@@ -312,24 +312,24 @@ const ko: TranslationMap = {
   'onboarding.custom.oauth.subtitle':
     'OAuth가 필요한 Gmail, Slack, Notion 및 기타 연결 서비스입니다.',
   'onboarding.custom.oauth.defaultDesc':
-    'OpenHuman은 관리형 Composio 워크스페이스를 실행합니다. 나중에 각 서비스를 한 번의 클릭으로 연결할 수 있습니다.',
+    'OpenHuman 钉钉은 관리형 Composio 워크스페이스를 실행합니다. 나중에 각 서비스를 한 번의 클릭으로 연결할 수 있습니다.',
   'onboarding.custom.oauth.configureDesc':
     '직접 Composio 계정 또는 API 키를 가져오세요. 설정 › 연결에서 구성할 수 있습니다.',
 
   // Onboarding: Custom > Search
   'onboarding.custom.search.title': '웹 검색',
-  'onboarding.custom.search.subtitle': 'OpenHuman이 사용자를 대신해 웹을 검색하는 방식입니다.',
+  'onboarding.custom.search.subtitle': 'OpenHuman 钉钉이 사용자를 대신해 웹을 검색하는 방식입니다.',
   'onboarding.custom.search.defaultDesc':
-    'OpenHuman은 관리형 검색 백엔드를 사용합니다. 키가 필요 없습니다.',
+    'OpenHuman 钉钉은 관리형 검색 백엔드를 사용합니다. 키가 필요 없습니다.',
   'onboarding.custom.search.configureDesc':
     '직접 검색 제공업체 키(Tavily, Brave 등)를 가져오세요. 설정 › 도구에서 구성할 수 있습니다.',
 
   // Onboarding: Custom > Memory
   'onboarding.custom.memory.title': '메모리',
   'onboarding.custom.memory.subtitle':
-    'OpenHuman이 사용자의 컨텍스트, 선호도, 이전 대화를 기억하는 방식입니다.',
+    'OpenHuman 钉钉이 사용자의 컨텍스트, 선호도, 이전 대화를 기억하는 방식입니다.',
   'onboarding.custom.memory.defaultDesc':
-    'OpenHuman은 메모리 저장과 검색을 자동으로 관리합니다. 설정할 것이 없습니다.',
+    'OpenHuman 钉钉은 메모리 저장과 검색을 자동으로 관리합니다. 설정할 것이 없습니다.',
   'onboarding.custom.memory.configureDesc':
     '메모리를 직접 검사, 내보내기 또는 삭제할 수 있습니다. 설정 › 메모리에서 구성할 수 있습니다.',
 
@@ -403,7 +403,7 @@ const ko: TranslationMap = {
   'misc.downloading': '다운로드 중...',
   'misc.installing': '설치 중...',
   'misc.beta':
-    'OpenHuman은 초기 베타 버전입니다. 피드백을 공유하거나 발견한 버그를 신고해 주세요 — 모든 신고는 더 빠른 출시를 돕습니다.',
+    'OpenHuman 钉钉은 초기 베타 버전입니다. 피드백을 공유하거나 발견한 버그를 신고해 주세요 — 모든 신고는 더 빠른 출시를 돕습니다.',
   'misc.betaFeedback': '피드백 보내기',
 
   // Mnemonic / Recovery
@@ -430,11 +430,11 @@ const ko: TranslationMap = {
   'privacy.anonymizedAnalytics': '익명화된 분석',
   'privacy.shareAnonymizedData': '익명화된 사용 데이터 공유',
   'privacy.shareAnonymizedDataDesc':
-    '익명 충돌 보고서와 사용 분석을 공유하여 OpenHuman 개선을 도와주세요. 모든 데이터는 완전히 익명화되며, 개인 데이터, 메시지, 지갑 키 또는 세션 정보는 절대 수집되지 않습니다.',
+    '익명 충돌 보고서와 사용 분석을 공유하여 OpenHuman 钉钉 개선을 도와주세요. 모든 데이터는 완전히 익명화되며, 개인 데이터, 메시지, 지갑 키 또는 세션 정보는 절대 수집되지 않습니다.',
   'privacy.meetingFollowUps': '회의 후속 조치',
   'privacy.autoHandoffMeet': 'Google Meet transcript를 오케스트레이터에 자동 전달',
   'privacy.autoHandoffMeetDesc':
-    'Google Meet 통화가 끝나면 OpenHuman의 오케스트레이터가 transcript를 읽고 메시지 초안 작성, 후속 일정 예약, 연결된 Slack 워크스페이스에 요약 게시 같은 작업을 수행할 수 있습니다. 기본값은 꺼짐입니다.',
+    'Google Meet 통화가 끝나면 OpenHuman 钉钉의 오케스트레이터가 transcript를 읽고 메시지 초안 작성, 후속 일정 예약, 연결된 Slack 워크스페이스에 요약 게시 같은 작업을 수행할 수 있습니다. 기본값은 꺼짐입니다.',
   'privacy.analyticsDisclaimer':
     '모든 분석 및 버그 보고서는 완전히 익명화됩니다. 활성화하면 충돌 정보, 기기 유형, 오류 파일 위치만 수집합니다. 메시지, 세션 데이터, 지갑 키, API 키 또는 개인 식별 정보에는 절대 접근하지 않습니다. 이 설정은 언제든지 변경할 수 있습니다.',
 
@@ -502,7 +502,7 @@ const ko: TranslationMap = {
 
   // Settings: Tools
   'settings.tools.chooseCapabilities':
-    'OpenHuman이 사용자를 대신해 사용할 수 있는 기능을 선택하세요.',
+    'OpenHuman 钉钉이 사용자를 대신해 사용할 수 있는 기능을 선택하세요.',
   'settings.tools.saveChanges': '변경 사항 저장',
   'settings.tools.preferencesSaved': '기본 설정이 저장되었습니다',
   'settings.tools.saveFailed': '기본 설정 저장에 실패했습니다. 다시 시도하세요.',
@@ -1029,9 +1029,9 @@ const ko: TranslationMap = {
   'bootCheck.chooseCoreMode': '런타임 선택',
   'bootCheck.connectToCore': '런타임에 연결',
   'bootCheck.desktopDescription':
-    'OpenHuman은 생각하기 위한 런타임이 필요합니다. 어디에서 실행할지 선택하세요.',
+    'OpenHuman 钉钉은 생각하기 위한 런타임이 필요합니다. 어디에서 실행할지 선택하세요.',
   'bootCheck.webDescription':
-    '웹에서 OpenHuman은 사용자가 제어하는 런타임에 연결됩니다. 아래에 URL과 인증 토큰을 입력하거나, 데스크톱 앱을 받아 이 컴퓨터에서 바로 실행하세요.',
+    '웹에서 OpenHuman 钉钉은 사용자가 제어하는 런타임에 연결됩니다. 아래에 URL과 인증 토큰을 입력하거나, 데스크톱 앱을 받아 이 컴퓨터에서 바로 실행하세요.',
   'bootCheck.preferDesktop': '모든 것을 자신의 기기에 보관하고 싶으신가요?',
   'bootCheck.downloadDesktop': '데스크톱 앱 받기',
   'bootCheck.localRecommended': '로컬에서 실행(추천)',
@@ -1057,7 +1057,7 @@ const ko: TranslationMap = {
   'bootCheck.quit': '종료',
   'bootCheck.legacyDetected': '레거시 백그라운드 런타임 감지됨',
   'bootCheck.legacyDescription':
-    '별도로 설치된 OpenHuman 데몬이 이 기기에서 이미 실행 중입니다. 내장 런타임이 대신 실행되기 전에 이를 정리해야 합니다.',
+    '별도로 설치된 OpenHuman 钉钉 데몬이 이 기기에서 이미 실행 중입니다. 내장 런타임이 대신 실행되기 전에 이를 정리해야 합니다.',
   'bootCheck.removing': '제거 중…',
   'bootCheck.removeContinue': '제거하고 계속',
   'bootCheck.localNeedsRestart': '로컬 런타임을 다시 시작해야 함',
@@ -1196,7 +1196,7 @@ const ko: TranslationMap = {
   'accounts.webviewHost.timeoutHint': '시간 초과 힌트',
   'app.connectionBadge.composio': 'Composio',
   'app.connectionBadge.messaging': '메시징',
-  'app.connectionIndicator.connected': 'OpenHuman AI에 연결됨 🚀',
+  'app.connectionIndicator.connected': 'OpenHuman 钉钉 AI에 연결됨 🚀',
   'app.connectionIndicator.connecting': '연결 중',
   'app.connectionIndicator.coreOffline': '코어 오프라인',
   'app.connectionIndicator.disconnected': '연결 해제됨',
@@ -1213,7 +1213,7 @@ const ko: TranslationMap = {
   'app.localAiDownload.preparing': '준비 중...',
   'app.openhumanLink.accounts.continueWith': '{label} 로그인으로 계속',
   'app.openhumanLink.accounts.done': '완료',
-  'app.openhumanLink.accounts.intro': 'OpenHuman이 계정에 접근할 수 있도록 앱을 연결하세요.',
+  'app.openhumanLink.accounts.intro': 'OpenHuman 钉钉이 계정에 접근할 수 있도록 앱을 연결하세요.',
   'app.openhumanLink.accounts.webviewNote':
     '자격 증명은 이 기기에 보관되며 절대 공유되지 않습니다.',
   'app.openhumanLink.billing.openDashboard': '대시보드 열기',
@@ -1222,10 +1222,10 @@ const ko: TranslationMap = {
   'app.openhumanLink.billing.trialDesc': '체험 설명',
   'app.openhumanLink.defaultBody':
     '아직 팝업에서 준비되지 않았습니다. 완료되면 전체 설정 페이지를 여세요.',
-  'app.openhumanLink.discord.intro': 'Discord에서 OpenHuman 커뮤니티에 참여하세요.',
+  'app.openhumanLink.discord.intro': 'Discord에서 OpenHuman 钉钉 커뮤니티에 참여하세요.',
   'app.openhumanLink.discord.openInvite': '초대 링크 열기',
   'app.openhumanLink.discord.perk1': '새 기능 조기 이용',
-  'app.openhumanLink.discord.perk2': '다른 OpenHuman 사용자와 연결',
+  'app.openhumanLink.discord.perk2': '다른 OpenHuman 钉钉 사용자와 연결',
   'app.openhumanLink.discord.perk3': '팀에 직접 피드백 공유',
   'app.openhumanLink.discord.perk4': '커뮤니티 도움말 및 지원',
   'app.openhumanLink.done': '완료',
@@ -1234,15 +1234,15 @@ const ko: TranslationMap = {
   'app.openhumanLink.notifications.asking': 'OS에 요청 중…',
   'app.openhumanLink.notifications.blocked': '알림이 차단됨',
   'app.openhumanLink.notifications.blockedStep1': '시스템 설정 열기',
-  'app.openhumanLink.notifications.blockedStep2': '알림 → OpenHuman으로 이동',
+  'app.openhumanLink.notifications.blockedStep2': '알림 → OpenHuman 钉钉으로 이동',
   'app.openhumanLink.notifications.blockedStep3': '알림 허용 활성화',
-  'app.openhumanLink.notifications.intro': 'OpenHuman이 알림을 보낼 수 있도록 허용하세요.',
+  'app.openhumanLink.notifications.intro': 'OpenHuman 钉钉이 알림을 보낼 수 있도록 허용하세요.',
   'app.openhumanLink.notifications.promptHint': '시스템에서 권한을 요청하면 허용을 클릭하세요.',
   'app.openhumanLink.notifications.retry': '테스트 알림 다시 시도',
   'app.openhumanLink.notifications.send': '테스트 알림 보내기',
   'app.openhumanLink.notifications.sendFailed': '보낼 수 없습니다: {error}',
   'app.openhumanLink.notifications.sent':
-    '테스트 알림이 전송되었습니다. 받지 못했다면 시스템 설정 → 알림 → OpenHuman으로 이동해 알림 허용을 켜고 배너 스타일을 지속으로 설정하세요.',
+    '테스트 알림이 전송되었습니다. 받지 못했다면 시스템 설정 → 알림 → OpenHuman 钉钉으로 이동해 알림 허용을 켜고 배너 스타일을 지속으로 설정하세요.',
   'app.openhumanLink.skipForNow': '지금은 건너뛰기',
   'app.openhumanLink.telegramUnavailable': 'Telegram을 사용할 수 없음',
   'app.openhumanLink.title.accounts': '앱 연결',
@@ -1254,7 +1254,7 @@ const ko: TranslationMap = {
   'app.persistRehydration.heading': '데이터 복원 중',
   'app.persistRehydration.resetCta': '초기화 중…',
   'app.persistRehydration.resetting': '초기화 중…',
-  'app.routeLoading.initializing': 'OpenHuman 초기화 중...',
+  'app.routeLoading.initializing': 'OpenHuman 钉钉 초기화 중...',
   'app.update.currentlyOn': '{version}',
   'app.update.errorFallback': '업데이트 중 문제가 발생했습니다.',
   'app.update.header.default': '업데이트',
@@ -1336,7 +1336,7 @@ const ko: TranslationMap = {
   'composio.connect.permissionsDefault': '읽기 + 쓰기가 기본적으로 활성화됨',
   'composio.connect.permissionsNote': '노출할 수 있음',
   'composio.connect.permissionsNoteSuffix':
-    'OpenHuman 자체 에이전트 권한은 아래에서 읽기, 쓰기, 관리자 토글로 제어됩니다.',
+    'OpenHuman 钉钉 자체 에이전트 권한은 아래에서 읽기, 쓰기, 관리자 토글로 제어됩니다.',
   'composio.connect.reopenBrowser': '브라우저 다시 열기',
   'composio.connect.requestingUrl': '연결 URL 요청 중…',
   'composio.connect.retryConnection': '연결 다시 시도',
@@ -1368,7 +1368,7 @@ const ko: TranslationMap = {
   'daemon.serviceBlockingGate.retryFailed':
     '다시 시도에 실패했습니다. 최신 앱 빌드를 다운로드하고 다시 시도하세요.',
   'daemon.serviceBlockingGate.retrying': '다시 시도 중...',
-  'daemon.serviceBlockingGate.title': 'OpenHuman 코어를 사용할 수 없습니다',
+  'daemon.serviceBlockingGate.title': 'OpenHuman 钉钉 코어를 사용할 수 없습니다',
   'home.banners.discordSubtitle': '지원을 받고, 피드백을 공유하고, 커뮤니티를 만나보세요.',
   'home.banners.discordTitle': 'Discord 참여하기',
   'home.banners.earlyBirdDismiss': '얼리버드 배너 닫기',
@@ -1448,7 +1448,7 @@ const ko: TranslationMap = {
   'onboarding.contextGathering.title': '컨텍스트 수집',
   'openhuman.team_list_teams': '팀 목록 팀',
   'overlay.ariaAttention': '주의 메시지',
-  'overlay.ariaOrb': 'OpenHuman 오버레이',
+  'overlay.ariaOrb': 'OpenHuman 钉钉 오버레이',
   'overlay.ariaVoiceActive': '음성 입력 활성',
   'overlay.orbTitle': '드래그하여 이동 · 두 번 클릭하여 위치 초기화',
   'pages.settings.account.connections': '연결',
@@ -1494,7 +1494,7 @@ const ko: TranslationMap = {
   'rewards.community.discordStatusUnavailable': 'Discord 상태를 사용할 수 없음',
   'rewards.community.discordWaiting': 'Discord 대기 중…',
   'rewards.community.heroSubtitle': '친구를 추천하고 챌린지를 완료하여 크레딧을 받으세요.',
-  'rewards.community.heroTitle': 'OpenHuman으로 보상 받기',
+  'rewards.community.heroTitle': 'OpenHuman 钉钉으로 보상 받기',
   'rewards.community.joinDiscord': 'Discord 참여',
   'rewards.community.loadingRewards': '보상 불러오는 중…',
   'rewards.community.locked': '잠김',
@@ -1565,7 +1565,7 @@ const ko: TranslationMap = {
   'settings.ai.clearStoredKey': '저장된 키 지우기',
   'settings.ai.connectProvider': '연결',
   'settings.ai.customRouting': '사용자 지정 라우팅',
-  'settings.ai.defaultResolvesTo': 'OpenHuman',
+  'settings.ai.defaultResolvesTo': 'OpenHuman 钉钉',
   'settings.ai.discard': '취소',
   'settings.ai.editProvider': '{label} 편집',
   'settings.ai.llmProviders': 'LLM 제공업체',
@@ -1682,15 +1682,15 @@ const ko: TranslationMap = {
   'settings.composio.confirmSwitch': '이해했습니다. Direct로 전환',
   'settings.composio.confirmTitle': '⚠️ Direct 모드로 전환',
   'settings.composio.confirmWarning':
-    '기존 통합(Gmail, Slack, GitHub 등 OpenHuman을 통해 연결된 통합)은 표시되지 않습니다 — OpenHuman 관리형 Composio 테넌트에 있습니다.',
+    '기존 통합(Gmail, Slack, GitHub 등 OpenHuman 钉钉을 통해 연결된 통합)은 표시되지 않습니다 — OpenHuman 钉钉 관리형 Composio 테넌트에 있습니다.',
   'settings.composio.intro':
     'Composio는 에이전트가 호출할 수 있는 도구로 250개 이상의 외부 앱을 통합합니다. 이러한 도구 호출이 라우팅되는 방식을 선택하세요.',
   'settings.composio.modeDirect': 'Direct(직접 API 키 사용)',
   'settings.composio.modeDirectDesc':
     '호출이 backend.composio.dev로 직접 이동합니다. 독립적이고 오프라인 친화적입니다. 도구 실행은 동기식으로 작동하지만, 실시간 트리거 웹훅은 아직 Direct 모드에서 라우팅되지 않습니다(후속 이슈).',
-  'settings.composio.modeManaged': '관리형(OpenHuman이 대신 처리)',
+  'settings.composio.modeManaged': '관리형(OpenHuman 钉钉이 대신 처리)',
   'settings.composio.modeManagedDesc':
-    'OpenHuman이 백엔드를 통해 도구 호출을 프록시합니다(권장). 인증은 중개되며, Composio API 키를 붙여넣을 필요가 없습니다. 웹훅은 완전히 라우팅됩니다.',
+    'OpenHuman 钉钉이 백엔드를 통해 도구 호출을 프록시합니다(권장). 인증은 중개되며, Composio API 키를 붙여넣을 필요가 없습니다. 웹훅은 완전히 라우팅됩니다.',
   'settings.composio.routingMode': '라우팅 모드',
   'settings.composio.saveErrorNoKey':
     '저장에 실패했습니다. Direct 모드에는 비어 있지 않은 API 키가 필요합니다.',
@@ -1810,7 +1810,7 @@ const ko: TranslationMap = {
   'settings.localModel.status.ollamaDiagnostics': 'Ollama 진단',
   'settings.localModel.status.ollamaNotInstalled': 'Ollama 런타임을 사용할 수 없음',
   'settings.localModel.status.ollamaNotInstalledDesc':
-    'OpenHuman은 이제 Ollama를 외부 추론 런타임으로 취급합니다. 직접 Ollama 서버를 시작하고 원하는 모델을 가져온 뒤 작업 라우팅을 해당 서버로 지정하세요.',
+    'OpenHuman 钉钉은 이제 Ollama를 외부 추론 런타임으로 취급합니다. 직접 Ollama 서버를 시작하고 원하는 모델을 가져온 뒤 작업 라우팅을 해당 서버로 지정하세요.',
   'settings.localModel.status.progress': '진행률',
   'settings.localModel.status.provider': '제공업체',
   'settings.localModel.status.retryBootstrap': '부트스트랩 다시 시도',
@@ -1840,12 +1840,12 @@ const ko: TranslationMap = {
   'settings.appearance.helperText':
     '다크 모드는 전체 앱 — 채팅, 설정, 패널 — 을 어두운 팔레트로 전환합니다. "시스템과 일치"는 OS 외관을 따르며 실시간으로 업데이트됩니다.',
   'settings.mascot.active': '활성',
-  'settings.mascot.characterDesc': 'OpenHuman 캐릭터를 선택하세요.',
+  'settings.mascot.characterDesc': 'OpenHuman 钉钉 캐릭터를 선택하세요.',
   'settings.mascot.characterHeading': '캐릭터',
   'settings.mascot.characterPreview': '미리보기',
   'settings.mascot.characterStates': '상태',
   'settings.mascot.characterVisemes': '입 모양',
-  'settings.mascot.colorAria': 'OpenHuman 색상',
+  'settings.mascot.colorAria': 'OpenHuman 钉钉 색상',
   'settings.mascot.colorDesc': '캐릭터의 색상 테마를 선택하세요.',
   'settings.mascot.colorHeading': '색상',
   'settings.mascot.colorBlack': '검정',
@@ -1853,11 +1853,11 @@ const ko: TranslationMap = {
   'settings.mascot.colorGreen': '초록',
   'settings.mascot.colorNavy': '네이비',
   'settings.mascot.colorYellow': '노랑',
-  'settings.mascot.libraryUnavailable': 'OpenHuman 라이브러리를 사용할 수 없음',
-  'settings.mascot.title': 'OpenHuman',
-  'settings.mascot.loadingLibrary': 'OpenHuman 라이브러리 불러오는 중…',
-  'settings.mascot.localDefault': '로컬 OpenHuman(기본값)',
-  'settings.mascot.noCharacters': '아직 사용할 수 있는 OpenHuman 캐릭터가 없습니다',
+  'settings.mascot.libraryUnavailable': 'OpenHuman 钉钉 라이브러리를 사용할 수 없음',
+  'settings.mascot.title': 'OpenHuman 钉钉',
+  'settings.mascot.loadingLibrary': 'OpenHuman 钉钉 라이브러리 불러오는 중…',
+  'settings.mascot.localDefault': '로컬 OpenHuman 钉钉(기본값)',
+  'settings.mascot.noCharacters': '아직 사용할 수 있는 OpenHuman 钉钉 캐릭터가 없습니다',
   'settings.mascot.noColorVariants': '색상 변형 없음',
   'settings.mascot.voice.current': '현재',
   'settings.mascot.voice.customDesc':
@@ -1884,7 +1884,7 @@ const ko: TranslationMap = {
     '합리적인 기본값 — 매번 추가 토큰을 많이 쓰지 않으면서 좋은 연속성을 제공합니다.',
   'settings.memoryWindow.balanced.label': '균형',
   'settings.memoryWindow.description':
-    'OpenHuman이 새 에이전트 실행마다 주입하는 기억된 컨텍스트의 양입니다. 창이 클수록 과거 대화를 더 잘 인식하지만, 매 실행마다 더 많은 토큰을 사용하고 비용도 더 듭니다.',
+    'OpenHuman 钉钉이 새 에이전트 실행마다 주입하는 기억된 컨텍스트의 양입니다. 창이 클수록 과거 대화를 더 잘 인식하지만, 매 실행마다 더 많은 토큰을 사용하고 비용도 더 듭니다.',
   'settings.memoryWindow.extended.badge': '더 많은 컨텍스트',
   'settings.memoryWindow.extended.hint':
     '각 실행에 더 많은 장기 메모리를 주입합니다. 턴당 토큰 비용이 더 높습니다.',
@@ -1954,20 +1954,20 @@ const ko: TranslationMap = {
   'skills.install.title': 'URL에서 스킬 설치',
   'skills.install.urlLabel': '스킬 URL',
   'skills.meetingBots.bannerDesc':
-    'OpenHuman이 통화에 조용히 참여하여 메모와 후속 조치를 자동으로 처리합니다.',
-  'skills.meetingBots.bannerTitle': '다음 회의에 OpenHuman 보내기',
-  'skills.meetingBots.busyTitle': 'OpenHuman이 바쁩니다',
+    'OpenHuman 钉钉이 통화에 조용히 참여하여 메모와 후속 조치를 자동으로 처리합니다.',
+  'skills.meetingBots.bannerTitle': '다음 회의에 OpenHuman 钉钉 보내기',
+  'skills.meetingBots.busyTitle': 'OpenHuman 钉钉이 바쁩니다',
   'skills.meetingBots.comingSoon': '{label} 곧 제공 예정',
-  'skills.meetingBots.couldNotStartTitle': 'OpenHuman을 시작할 수 없습니다',
+  'skills.meetingBots.couldNotStartTitle': 'OpenHuman 钉钉을 시작할 수 없습니다',
   'skills.meetingBots.displayName': '표시 이름',
-  'skills.meetingBots.failedToStart': 'OpenHuman 시작에 실패했습니다.',
+  'skills.meetingBots.failedToStart': 'OpenHuman 钉钉 시작에 실패했습니다.',
   'skills.meetingBots.joiningMessage': '몇 초 안에 참가자로 표시될 것입니다.',
-  'skills.meetingBots.joiningTitle': 'OpenHuman이 회의에 참여하는 중',
+  'skills.meetingBots.joiningTitle': 'OpenHuman 钉钉이 회의에 참여하는 중',
   'skills.meetingBots.meetingLink': '회의 링크',
-  'skills.meetingBots.modalAriaLabel': 'OpenHuman을 회의에 보내기',
+  'skills.meetingBots.modalAriaLabel': 'OpenHuman 钉钉을 회의에 보내기',
   'skills.meetingBots.modalDesc':
-    'OpenHuman이 조용한 참가자로 참여하여 메모와 후속 조치를 도와줍니다.',
-  'skills.meetingBots.modalTitle': 'OpenHuman을 회의에 보내기',
+    'OpenHuman 钉钉이 조용한 참가자로 참여하여 메모와 후속 조치를 도와줍니다.',
+  'skills.meetingBots.modalTitle': 'OpenHuman 钉钉을 회의에 보내기',
   'skills.meetingBots.newBadge': '새 항목',
   'skills.meetingBots.sendTo': '{label}로 보내기',
   'skills.meetingBots.starting': '시작 중…',
@@ -2093,7 +2093,7 @@ const ko: TranslationMap = {
   'composio.triggers.loading': '불러오는 중…',
   'conversations.taskKanban.todo': '할 일',
   'settings.composio.loading': '불러오는 중…',
-  'settings.mascot.noCharactersAvailable': '아직 사용할 수 있는 OpenHuman 캐릭터가 없습니다',
+  'settings.mascot.noCharactersAvailable': '아직 사용할 수 있는 OpenHuman 钉钉 캐릭터가 없습니다',
   'skills.uninstall.confirmTitle': '{name}을(를) 제거하시겠습니까?',
   'conversations.taskKanban.blocked': '차단됨',
   'conversations.taskKanban.done': '완료',
@@ -2102,7 +2102,7 @@ const ko: TranslationMap = {
   'settings.composio.notYetRouted': '아직 라우팅되지 않음',
   'settings.localModel.download.manageExternal': '외부 런타임에서 이 모델을 관리하세요.',
   'settings.localModel.status.manageOllamaExternal':
-    'OpenHuman 외부에서 Ollama 프로세스와 모델 가져오기를 관리한 다음 진단을 다시 실행하세요.',
+    'OpenHuman 钉钉 외부에서 Ollama 프로세스와 모델 가져오기를 관리한 다음 진단을 다시 실행하세요.',
   'settings.localModel.status.ollamaDocs': 'Ollama 문서',
   'settings.localModel.status.thenRetry':
     '설정 지침을 확인한 다음 런타임에 연결할 수 있게 되면 다시 시도하세요.',

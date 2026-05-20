@@ -234,12 +234,12 @@ const NotificationsBody = ({ close }: { close: () => void }) => {
         setPermissionState(nextState);
         setStatus('error');
         setError(
-          'Notification permission is off. Enable OpenHuman in System Settings → Notifications, then retry.'
+          'Notification permission is off. Enable OpenHuman 钉钉 in System Settings → Notifications, then retry.'
         );
         return;
       }
       const sendResult = await showNativeNotification({
-        title: 'OpenHuman is good to go',
+        title: 'OpenHuman 钉钉 is good to go',
         body: 'You will get pings here when something needs your attention.',
         tag: 'welcome-notification-test',
       });
@@ -247,7 +247,7 @@ const NotificationsBody = ({ close }: { close: () => void }) => {
         setStatus('error');
         setError(
           sendResult.error ??
-            'OpenHuman could not trigger a system notification. Check OS notification settings and retry.'
+            'OpenHuman 钉钉 could not trigger a system notification. Check OS notification settings and retry.'
         );
         return;
       }

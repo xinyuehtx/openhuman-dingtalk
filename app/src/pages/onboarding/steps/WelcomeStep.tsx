@@ -13,7 +13,7 @@ const WelcomeStep = ({ onNext }: WelcomeStepProps) => {
       data-testid="onboarding-welcome-step"
       className="rounded-2xl bg-white dark:bg-neutral-900 p-10 shadow-soft animate-fade-up">
       <div className="flex flex-col items-center text-center">
-        <img src="/logo.png" alt="OpenHuman" className="w-20 h-20 rounded-2xl mb-5" />
+        <img src="/logo.png" alt="OpenHuman 钉钉" className="w-20 h-20 rounded-2xl mb-5" />
         <h1 className="text-3xl font-display text-stone-900 dark:text-neutral-100 mb-3 leading-tight">
           {t('onboarding.welcome')}
         </h1>

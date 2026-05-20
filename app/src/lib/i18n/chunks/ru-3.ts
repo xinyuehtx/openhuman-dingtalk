@@ -132,9 +132,9 @@ const ru3: TranslationMap = {
   'bootCheck.chooseCoreMode': 'Выбрать среду выполнения',
   'bootCheck.connectToCore': 'Подключиться к среде выполнения',
   'bootCheck.desktopDescription':
-    'OpenHuman нужна среда выполнения для работы. Выбери, где она должна находиться.',
+    'OpenHuman 钉钉 нужна среда выполнения для работы. Выбери, где она должна находиться.',
   'bootCheck.webDescription':
-    'В браузере OpenHuman подключается к среде выполнения под твоим управлением. Введи URL и токен авторизации, или скачай настольное приложение для локального запуска.',
+    'В браузере OpenHuman 钉钉 подключается к среде выполнения под твоим управлением. Введи URL и токен авторизации, или скачай настольное приложение для локального запуска.',
   'bootCheck.preferDesktop': 'Хочешь держать всё на своём устройстве?',
   'bootCheck.downloadDesktop': 'Скачать настольное приложение',
   'bootCheck.localRecommended': 'Запустить локально (рекомендуется)',
@@ -160,7 +160,7 @@ const ru3: TranslationMap = {
   'bootCheck.quit': 'Выйти',
   'bootCheck.legacyDetected': 'Обнаружена устаревшая фоновая среда',
   'bootCheck.legacyDescription':
-    'На этом устройстве уже запущен отдельно установленный демон OpenHuman. Нужно его убрать, прежде чем встроенная среда сможет взять управление.',
+    'На этом устройстве уже запущен отдельно установленный демон OpenHuman 钉钉. Нужно его убрать, прежде чем встроенная среда сможет взять управление.',
   'bootCheck.removing': 'Удаление…',
   'bootCheck.removeContinue': 'Удалить и продолжить',
   'bootCheck.localNeedsRestart': 'Требуется перезапуск локальной среды',
@@ -267,7 +267,7 @@ const ru3: TranslationMap = {
   'accounts.webviewHost.timeoutHint': 'Подсказка по таймауту',
   'app.connectionBadge.composio': 'Composio',
   'app.connectionBadge.messaging': 'Мессенджеры',
-  'app.connectionIndicator.connected': 'Подключено к OpenHuman AI 🚀',
+  'app.connectionIndicator.connected': 'Подключено к OpenHuman 钉钉 AI 🚀',
   'app.connectionIndicator.connecting': 'Подключение',
   'app.connectionIndicator.coreOffline': 'Ядро офлайн',
   'app.connectionIndicator.disconnected': 'Отключено',
@@ -312,7 +312,7 @@ const ru3: TranslationMap = {
   'app.openhumanLink.notifications.send': 'Отправить тестовое уведомление',
   'app.openhumanLink.notifications.sendFailed': 'Не удалось отправить: {error}',
   'app.openhumanLink.notifications.sent':
-    'Тестовое уведомление отправлено. Если вы его не получили, откройте «Системные настройки» → «Уведомления» → OpenHuman, включите «Разрешить уведомления» и установите стиль баннера «Постоянный».',
+    'Тестовое уведомление отправлено. Если вы его не получили, откройте «Системные настройки» → «Уведомления» → OpenHuman 钉钉, включите «Разрешить уведомления» и установите стиль баннера «Постоянный».',
   'app.openhumanLink.skipForNow': 'Пропустить',
   'app.openhumanLink.telegramUnavailable': 'Telegram недоступен',
   'app.openhumanLink.title.accounts': 'Подключи свои приложения',
@@ -324,7 +324,7 @@ const ru3: TranslationMap = {
   'app.persistRehydration.heading': 'Заголовок',
   'app.persistRehydration.resetCta': 'Сброс…',
   'app.persistRehydration.resetting': 'Сброс…',
-  'app.routeLoading.initializing': 'Инициализация OpenHuman...',
+  'app.routeLoading.initializing': 'Инициализация OpenHuman 钉钉...',
   'app.update.currentlyOn': '{version}',
   'app.update.errorFallback': 'Что-то пошло не так при обновлении.',
   'app.update.header.default': 'Обновление',

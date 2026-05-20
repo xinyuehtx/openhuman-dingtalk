@@ -87,7 +87,7 @@ const baseSettings = {
     {
       id: 'p_oh_x',
       slug: 'openhuman',
-      label: 'OpenHuman',
+      label: 'OpenHuman 钉钉',
       endpoint: 'https://api.openhuman.ai/v1',
       auth_style: 'openhuman_jwt' as const,
       has_api_key: false,

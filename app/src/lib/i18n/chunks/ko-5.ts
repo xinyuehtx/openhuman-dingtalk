@@ -19,15 +19,15 @@ const ko5: TranslationMap = {
   'settings.composio.confirmSwitch': '이해했습니다. Direct로 전환',
   'settings.composio.confirmTitle': '⚠️ Direct 모드로 전환',
   'settings.composio.confirmWarning':
-    '기존 통합(Gmail, Slack, GitHub 등 OpenHuman을 통해 연결된 통합)은 표시되지 않습니다 — OpenHuman 관리형 Composio 테넌트에 있습니다.',
+    '기존 통합(Gmail, Slack, GitHub 등 OpenHuman 钉钉을 통해 연결된 통합)은 표시되지 않습니다 — OpenHuman 钉钉 관리형 Composio 테넌트에 있습니다.',
   'settings.composio.intro':
     'Composio는 에이전트가 호출할 수 있는 도구로 250개 이상의 외부 앱을 통합합니다. 이러한 도구 호출이 라우팅되는 방식을 선택하세요.',
   'settings.composio.modeDirect': 'Direct(직접 API 키 사용)',
   'settings.composio.modeDirectDesc':
     '호출이 backend.composio.dev로 직접 이동합니다. 독립적이고 오프라인 친화적입니다. 도구 실행은 동기식으로 작동하지만, 실시간 트리거 웹훅은 아직 Direct 모드에서 라우팅되지 않습니다(후속 이슈).',
-  'settings.composio.modeManaged': '관리형(OpenHuman이 대신 처리)',
+  'settings.composio.modeManaged': '관리형(OpenHuman 钉钉이 대신 처리)',
   'settings.composio.modeManagedDesc':
-    'OpenHuman이 백엔드를 통해 도구 호출을 프록시합니다(권장). 인증은 중개되며, Composio API 키를 붙여넣을 필요가 없습니다. 웹훅은 완전히 라우팅됩니다.',
+    'OpenHuman 钉钉이 백엔드를 통해 도구 호출을 프록시합니다(권장). 인증은 중개되며, Composio API 키를 붙여넣을 필요가 없습니다. 웹훅은 완전히 라우팅됩니다.',
   'settings.composio.routingMode': '라우팅 모드',
   'settings.composio.saveErrorNoKey':
     '저장에 실패했습니다. Direct 모드에는 비어 있지 않은 API 키가 필요합니다.',
@@ -146,7 +146,7 @@ const ko5: TranslationMap = {
   'settings.localModel.status.ollamaDiagnostics': 'Ollama 진단',
   'settings.localModel.status.ollamaNotInstalled': 'Ollama 런타임을 사용할 수 없음',
   'settings.localModel.status.ollamaNotInstalledDesc':
-    'OpenHuman은 이제 Ollama를 외부 추론 런타임으로 취급합니다. 직접 Ollama 서버를 시작하고 원하는 모델을 가져온 뒤 작업 라우팅을 해당 서버로 지정하세요.',
+    'OpenHuman 钉钉은 이제 Ollama를 외부 추론 런타임으로 취급합니다. 직접 Ollama 서버를 시작하고 원하는 모델을 가져온 뒤 작업 라우팅을 해당 서버로 지정하세요.',
   'settings.localModel.status.progress': '진행률',
   'settings.localModel.status.provider': '제공업체',
   'settings.localModel.status.retryBootstrap': '부트스트랩 다시 시도',
@@ -169,9 +169,9 @@ const ko5: TranslationMap = {
   'settings.mascot.characterHeading': '캐릭터 제목',
   'settings.mascot.colorDesc': '색상 설명',
   'settings.mascot.colorHeading': '색상 제목',
-  'settings.mascot.loadingLibrary': 'OpenHuman 라이브러리 불러오는 중…',
-  'settings.mascot.localDefault': '로컬 OpenHuman(기본값)',
-  'settings.mascot.noCharacters': '아직 사용할 수 있는 OpenHuman 캐릭터가 없습니다',
+  'settings.mascot.loadingLibrary': 'OpenHuman 钉钉 라이브러리 불러오는 중…',
+  'settings.mascot.localDefault': '로컬 OpenHuman 钉钉(기본값)',
+  'settings.mascot.noCharacters': '아직 사용할 수 있는 OpenHuman 钉钉 캐릭터가 없습니다',
   'settings.mascot.noColorVariants': '색상 변형 없음',
   'settings.mascot.voice.current': '현재',
   'settings.mascot.voice.customDesc':
@@ -198,7 +198,7 @@ const ko5: TranslationMap = {
     '합리적인 기본값 — 매번 추가 토큰을 많이 쓰지 않으면서 좋은 연속성을 제공합니다.',
   'settings.memoryWindow.balanced.label': '균형',
   'settings.memoryWindow.description':
-    'OpenHuman이 새 에이전트 실행마다 주입하는 기억된 컨텍스트의 양입니다. 창이 클수록 과거 대화를 더 잘 인식하지만, 매 실행마다 더 많은 토큰을 사용하고 비용도 더 듭니다.',
+    'OpenHuman 钉钉이 새 에이전트 실행마다 주입하는 기억된 컨텍스트의 양입니다. 창이 클수록 과거 대화를 더 잘 인식하지만, 매 실행마다 더 많은 토큰을 사용하고 비용도 더 듭니다.',
   'settings.memoryWindow.extended.badge': '더 많은 컨텍스트',
   'settings.memoryWindow.extended.hint':
     '각 실행에 더 많은 장기 메모리를 주입합니다. 턴당 토큰 비용이 더 높습니다.',
@@ -266,20 +266,20 @@ const ko5: TranslationMap = {
   'skills.install.title': 'URL에서 스킬 설치',
   'skills.install.urlLabel': '스킬 URL',
   'skills.meetingBots.bannerDesc':
-    'Google Meet 링크를 넣으면 OpenHuman이 게스트로 참여하여 말하고, 듣고, 반응합니다.',
-  'skills.meetingBots.bannerTitle': 'OpenHuman을 회의에 보내기',
-  'skills.meetingBots.busyTitle': 'OpenHuman이 바쁩니다',
+    'Google Meet 링크를 넣으면 OpenHuman 钉钉이 게스트로 참여하여 말하고, 듣고, 반응합니다.',
+  'skills.meetingBots.bannerTitle': 'OpenHuman 钉钉을 회의에 보내기',
+  'skills.meetingBots.busyTitle': 'OpenHuman 钉钉이 바쁩니다',
   'skills.meetingBots.comingSoon': '곧 제공 예정',
-  'skills.meetingBots.couldNotStartTitle': 'OpenHuman을 시작할 수 없습니다',
+  'skills.meetingBots.couldNotStartTitle': 'OpenHuman 钉钉을 시작할 수 없습니다',
   'skills.meetingBots.displayName': '표시 이름',
-  'skills.meetingBots.failedToStart': 'OpenHuman 시작에 실패했습니다.',
+  'skills.meetingBots.failedToStart': 'OpenHuman 钉钉 시작에 실패했습니다.',
   'skills.meetingBots.joiningMessage': '몇 초 안에 참가자로 표시될 것입니다.',
-  'skills.meetingBots.joiningTitle': 'OpenHuman이 회의에 참여하는 중',
+  'skills.meetingBots.joiningTitle': 'OpenHuman 钉钉이 회의에 참여하는 중',
   'skills.meetingBots.meetingLink': '회의 링크',
-  'skills.meetingBots.modalAriaLabel': 'OpenHuman을 회의에 보내기',
+  'skills.meetingBots.modalAriaLabel': 'OpenHuman 钉钉을 회의에 보내기',
   'skills.meetingBots.modalDesc':
-    'OpenHuman이 익명 게스트로 참여하여 비디오를 통화에 스트리밍하고 에이전트를 통해 응답합니다.',
-  'skills.meetingBots.modalTitle': 'OpenHuman을 회의에 보내기',
+    'OpenHuman 钉钉이 익명 게스트로 참여하여 비디오를 통화에 스트리밍하고 에이전트를 통해 응답합니다.',
+  'skills.meetingBots.modalTitle': 'OpenHuman 钉钉을 회의에 보내기',
   'skills.meetingBots.newBadge': '새 항목',
   'skills.meetingBots.sendTo': '보내기',
   'skills.meetingBots.starting': '시작 중…',
@@ -408,7 +408,7 @@ const ko5: TranslationMap = {
   'composio.triggers.loading': '불러오는 중…',
   'conversations.taskKanban.todo': '할 일',
   'settings.composio.loading': '불러오는 중…',
-  'settings.mascot.noCharactersAvailable': '아직 사용할 수 있는 OpenHuman 캐릭터가 없습니다',
+  'settings.mascot.noCharactersAvailable': '아직 사용할 수 있는 OpenHuman 钉钉 캐릭터가 없습니다',
   'skills.uninstall.confirmTitle': '{name}을(를) 제거하시겠습니까?',
   'conversations.taskKanban.blocked': '차단됨',
   'conversations.taskKanban.done': '완료',
@@ -417,7 +417,7 @@ const ko5: TranslationMap = {
   'settings.composio.notYetRouted': '아직 라우팅되지 않음',
   'settings.localModel.download.manageExternal': '외부 런타임에서 이 모델을 관리하세요.',
   'settings.localModel.status.manageOllamaExternal':
-    'OpenHuman 외부에서 Ollama 프로세스와 모델 가져오기를 관리한 다음 진단을 다시 실행하세요.',
+    'OpenHuman 钉钉 외부에서 Ollama 프로세스와 모델 가져오기를 관리한 다음 진단을 다시 실행하세요.',
   'settings.localModel.status.ollamaDocs': 'Ollama 문서',
   'settings.localModel.status.thenRetry':
     '설정 지침을 확인한 다음 런타임에 연결할 수 있게 되면 다시 시도하세요.',
@@ -435,14 +435,14 @@ const ko5: TranslationMap = {
   'settings.mascot.characterPreview': '미리보기',
   'settings.mascot.characterStates': '상태',
   'settings.mascot.characterVisemes': '입 모양',
-  'settings.mascot.colorAria': 'OpenHuman 색상',
+  'settings.mascot.colorAria': 'OpenHuman 钉钉 색상',
   'settings.mascot.colorBlack': '검정',
   'settings.mascot.colorBurgundy': '버건디',
   'settings.mascot.colorGreen': '초록',
   'settings.mascot.colorNavy': '네이비',
   'settings.mascot.colorYellow': '노랑',
-  'settings.mascot.libraryUnavailable': 'OpenHuman 라이브러리를 사용할 수 없음',
-  'settings.mascot.title': 'OpenHuman',
+  'settings.mascot.libraryUnavailable': 'OpenHuman 钉钉 라이브러리를 사용할 수 없음',
+  'settings.mascot.title': 'OpenHuman 钉钉',
 };
 
 export default ko5;

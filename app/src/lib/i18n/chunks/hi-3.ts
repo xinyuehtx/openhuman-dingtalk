@@ -130,9 +130,9 @@ const hi3: TranslationMap = {
   'bootCheck.chooseCoreMode': 'रनटाइम चुनें',
   'bootCheck.connectToCore': 'अपने रनटाइम से कनेक्ट करें',
   'bootCheck.desktopDescription':
-    'OpenHuman को सोचने के लिए एक रनटाइम चाहिए। चुनें कि यह कहाँ रहे।',
+    'OpenHuman 钉钉 को सोचने के लिए एक रनटाइम चाहिए। चुनें कि यह कहाँ रहे।',
   'bootCheck.webDescription':
-    'वेब पर, OpenHuman आपके कंट्रोल के रनटाइम से कनेक्ट होता है। नीचे URL और auth टोकन डालें, या अपनी मशीन पर चलाने के लिए डेस्कटॉप ऐप लें।',
+    'वेब पर, OpenHuman 钉钉 आपके कंट्रोल के रनटाइम से कनेक्ट होता है। नीचे URL और auth टोकन डालें, या अपनी मशीन पर चलाने के लिए डेस्कटॉप ऐप लें।',
   'bootCheck.preferDesktop': 'सब अपने डिवाइस पर रखना चाहते हैं?',
   'bootCheck.downloadDesktop': 'डेस्कटॉप ऐप पाएं',
   'bootCheck.localRecommended': 'लोकल रन करें (सुझावित)',
@@ -159,7 +159,7 @@ const hi3: TranslationMap = {
   'bootCheck.quit': 'बंद करें',
   'bootCheck.legacyDetected': 'पुराना बैकग्राउंड रनटाइम मिला',
   'bootCheck.legacyDescription':
-    'इस डिवाइस पर अलग से इन्स्टॉल किया OpenHuman daemon पहले से चल रहा है। बिल्ट-इन रनटाइम शुरू होने से पहले इसे हटाना होगा।',
+    'इस डिवाइस पर अलग से इन्स्टॉल किया OpenHuman 钉钉 daemon पहले से चल रहा है। बिल्ट-इन रनटाइम शुरू होने से पहले इसे हटाना होगा।',
   'bootCheck.removing': 'हटाया जा रहा है…',
   'bootCheck.removeContinue': 'हटाएं और जारी रखें',
   'bootCheck.localNeedsRestart': 'लोकल रनटाइम को रीस्टार्ट चाहिए',
@@ -266,7 +266,7 @@ const hi3: TranslationMap = {
   'accounts.webviewHost.timeoutHint': 'टाइमआउट हिंट',
   'app.connectionBadge.composio': 'Composio',
   'app.connectionBadge.messaging': 'मैसेजिंग',
-  'app.connectionIndicator.connected': 'OpenHuman AI से कनेक्टेड 🚀',
+  'app.connectionIndicator.connected': 'OpenHuman 钉钉 AI से कनेक्टेड 🚀',
   'app.connectionIndicator.connecting': 'कनेक्ट हो रहा है',
   'app.connectionIndicator.coreOffline': 'कोर ऑफलाइन',
   'app.connectionIndicator.disconnected': 'डिसकनेक्टेड',
@@ -311,7 +311,7 @@ const hi3: TranslationMap = {
   'app.openhumanLink.notifications.send': 'टेस्ट नोटिफिकेशन भेजें',
   'app.openhumanLink.notifications.sendFailed': 'भेजा नहीं जा सका: {error}',
   'app.openhumanLink.notifications.sent':
-    'टेस्ट नोटिफ़िकेशन भेज दिया गया। यदि आपको प्राप्त नहीं हुआ, तो System Settings → Notifications → OpenHuman पर जाएँ, Allow Notifications चालू करें, और Banner Style को Persistent पर सेट करें।',
+    'टेस्ट नोटिफ़िकेशन भेज दिया गया। यदि आपको प्राप्त नहीं हुआ, तो System Settings → Notifications → OpenHuman 钉钉 पर जाएँ, Allow Notifications चालू करें, और Banner Style को Persistent पर सेट करें।',
   'app.openhumanLink.skipForNow': 'अभी के लिए स्किप करें',
   'app.openhumanLink.telegramUnavailable': 'Telegram उपलब्ध नहीं',
   'app.openhumanLink.title.accounts': 'अपने ऐप्स कनेक्ट करें',
@@ -323,7 +323,7 @@ const hi3: TranslationMap = {
   'app.persistRehydration.heading': 'शीर्षक',
   'app.persistRehydration.resetCta': 'रीसेट हो रहा है…',
   'app.persistRehydration.resetting': 'रीसेट हो रहा है…',
-  'app.routeLoading.initializing': 'OpenHuman आरंभ हो रहा है...',
+  'app.routeLoading.initializing': 'OpenHuman 钉钉 आरंभ हो रहा है...',
   'app.update.currentlyOn': '{version}',
   'app.update.errorFallback': 'अपडेट के दौरान कुछ गड़बड़ हो गई।',
   'app.update.header.default': 'अपडेट',
