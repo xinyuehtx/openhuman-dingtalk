@@ -55,7 +55,9 @@ for cmd in jq gh cargo pnpm; do
   command -v "$cmd" >/dev/null 2>&1 || { echo "[release-fork] missing required command: $cmd" >&2; exit 1; }
 done
 
-VERSION="$(jq -r .version app/package.json)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+VERSION="$(jq -r .version "$REPO_ROOT/app/package.json")"
 if [[ -z "$VERSION" || "$VERSION" == "null" ]]; then
   echo "[release-fork] could not read version from app/package.json" >&2
   exit 1
@@ -63,7 +65,20 @@ fi
 
 TAG="${TAG_OVERRIDE:-v$VERSION}"
 TARGET="aarch64-apple-darwin"
-BUNDLE_DIR="target/${TARGET}/release/bundle"
+# `cargo tauri build` runs from app/, where the closest Cargo.toml is
+# app/src-tauri/Cargo.toml — so artifacts land under
+# app/src-tauri/target/, not the root target/.
+BUNDLE_DIR="$REPO_ROOT/app/src-tauri/target/${TARGET}/release/bundle"
+
+# Mirror the env that app/package.json's macos:build:* scripts set up:
+#   - the vendored CEF-aware tauri-cli installs into .cache/cargo-install/bin
+#     and is NOT on the default PATH; without this `cargo tauri build`
+#     errors with "no such command: tauri".
+#   - CEF_PATH must be the same dir tauri-cli uses to download/cache the
+#     ~400MB Chromium dist; sharing it across runs avoids re-downloading.
+INSTALL_ROOT="${OPENHUMAN_CARGO_INSTALL_ROOT:-$REPO_ROOT/.cache/cargo-install}"
+export PATH="$INSTALL_ROOT/bin:$HOME/.cargo/bin:$PATH"
+export CEF_PATH="${CEF_PATH:-$HOME/Library/Caches/tauri-cef}"
 
 echo "[release-fork] repo=${REPO} version=${VERSION} tag=${TAG} target=${TARGET}"
 
@@ -83,23 +98,72 @@ if [[ "$DRY_RUN" == true ]]; then
   exit 0
 fi
 
-if [[ "$SKIP_BUILD" == false ]]; then
+build_step() {
   echo "[release-fork] running cargo tauri build (unsigned, dmg only)"
   # `--bundles app dmg` skips deb / appimage / nsis / msi which would either
-  # fail or be useless on macOS arm64.
-  (cd app && pnpm tauri:ensure)
-  cargo tauri build \
-    --config app/src-tauri/tauri.conf.json \
-    --target "$TARGET" \
-    --bundles app dmg
+  # fail or be useless on macOS arm64. `-- --bin OpenHuman` is required
+  # because the root Cargo workspace has multiple bins (openhuman-core,
+  # slack-backfill, gmail-backfill-3d) — without it cargo can't pick one.
+  #
+  # tauri-bundler's bundle_dmg.sh drives Finder via AppleScript to set the
+  # DMG window background/icon layout, and that step intermittently fails
+  # with "AppleEvent timed out (-1712)" on developer machines. We tolerate
+  # that failure here and rebuild the DMG below with hdiutil — the
+  # auto-update visuals don't matter for fork installs.
+  (
+    cd "$REPO_ROOT/app"
+    pnpm tauri:ensure
+    cargo tauri build \
+      --bundles app dmg \
+      --target "$TARGET" \
+      -- --bin OpenHuman
+  ) || {
+    local rc=$?
+    echo "[release-fork] cargo tauri build returned ${rc}; checking whether the .app got built before bundle_dmg.sh failed"
+    if [[ ! -d "${BUNDLE_DIR}/macos/OpenHuman.app" ]]; then
+      echo "[release-fork] .app was not produced — failure is fatal, aborting" >&2
+      return $rc
+    fi
+    echo "[release-fork] .app present at ${BUNDLE_DIR}/macos/OpenHuman.app — will build DMG via hdiutil"
+  }
+}
+
+# Build the DMG ourselves with hdiutil to bypass tauri-bundler's flaky
+# AppleScript-based DMG decoration. UDZO = compressed read-only DMG, the
+# standard format for distribution.
+make_dmg_with_hdiutil() {
+  local app_path="$1" dmg_path="$2"
+  echo "[release-fork] (re)building DMG via hdiutil: ${dmg_path}"
+  rm -f "${BUNDLE_DIR}/macos"/rw.*.dmg "$dmg_path"
+  hdiutil create \
+    -volname "OpenHuman ${VERSION}" \
+    -srcfolder "$app_path" \
+    -ov -format UDZO \
+    "$dmg_path"
+}
+
+if [[ "$SKIP_BUILD" == false ]]; then
+  build_step
 else
   echo "[release-fork] --skip-build set; using existing artifacts under ${BUNDLE_DIR}"
 fi
 
-DMG_PATH="$(find "${BUNDLE_DIR}/dmg" -maxdepth 1 -name 'OpenHuman_*_aarch64.dmg' -type f | head -n 1 || true)"
-if [[ -z "$DMG_PATH" || ! -f "$DMG_PATH" ]]; then
-  echo "[release-fork] could not find OpenHuman_*_aarch64.dmg under ${BUNDLE_DIR}/dmg" >&2
-  echo "[release-fork] tip: run without --skip-build, or check the build output above for errors" >&2
+EXPECTED_DMG="${BUNDLE_DIR}/dmg/OpenHuman_${VERSION}_aarch64.dmg"
+APP_PATH="${BUNDLE_DIR}/macos/OpenHuman.app"
+
+if [[ ! -f "$EXPECTED_DMG" ]]; then
+  if [[ ! -d "$APP_PATH" ]]; then
+    echo "[release-fork] no DMG and no .app at expected paths under ${BUNDLE_DIR}" >&2
+    echo "[release-fork] expected DMG: ${EXPECTED_DMG}" >&2
+    echo "[release-fork] expected app: ${APP_PATH}" >&2
+    exit 1
+  fi
+  make_dmg_with_hdiutil "$APP_PATH" "$EXPECTED_DMG"
+fi
+
+DMG_PATH="$EXPECTED_DMG"
+if [[ ! -f "$DMG_PATH" ]]; then
+  echo "[release-fork] DMG still missing after fallback: ${DMG_PATH}" >&2
   exit 1
 fi
 DMG_NAME="$(basename "$DMG_PATH")"
