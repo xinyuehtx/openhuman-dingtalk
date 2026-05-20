@@ -2,11 +2,11 @@ name: Release
 
 on:
   push:
-    tags: ['v*']
+    tags: ["v*"]
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag to (re)build, e.g. v0.54.4 (must already exist as a git tag)'
+        description: "Tag to (re)build, e.g. v0.54.4 (must already exist as a git tag)"
         required: true
 
 permissions:
@@ -55,7 +55,7 @@ jobs:
           submodules: recursive
           fetch-depth: 1
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
 
       - name: Setup Node.js 24
         uses: actions/setup-node@v5
@@ -75,11 +75,15 @@ jobs:
         id: cargo-fp
         shell: bash
         run: |
-          HASH=$(tail -n +8 Cargo.lock | shasum -a 256 | awk '{print $1}')
+          if command -v shasum &>/dev/null; then
+            HASH=$(tail -n +8 Cargo.lock | shasum -a 256 | awk '{print $1}')
+          else
+            HASH=$(tail -n +8 Cargo.lock | sha256sum | awk '{print $1}')
+          fi
           echo "hash=$HASH" >> "$GITHUB_OUTPUT"
 
       - name: Cache Cargo registry + git sources
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.cargo/registry
@@ -90,7 +94,7 @@ jobs:
 
       # CEF dist is ~400MB; skip the re-download on every run.
       - name: Cache CEF binary distribution
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ matrix.cef_cache_path }}
           key: ${{ runner.os }}-cef-${{ hashFiles('app/src-tauri/Cargo.toml') }}
@@ -101,7 +105,7 @@ jobs:
       # Keyed on its own Cargo.toml; ensure-tauri-cli.sh additionally rebuilds
       # if vendored source files are newer than the binary.
       - name: Cache vendored cargo-tauri
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .cache/cargo-install
           key: ${{ runner.os }}-vendored-tauri-cli-${{ hashFiles('app/src-tauri/vendor/tauri-cef/crates/tauri-cli/Cargo.toml') }}
@@ -116,14 +120,14 @@ jobs:
           # ensure-tauri-cli.sh defaults CEF_PATH to a macOS path; set it
           # explicitly per platform.
           CEF_PATH: ${{ matrix.cef_cache_path }}
-        run: pnpm tauri:ensure
+        run: bash scripts/ensure-tauri-cli.sh
 
       - name: Build macOS arm64 (.app + .dmg, hdiutil fallback)
         if: runner.os == 'macOS'
         shell: bash
         working-directory: app
         env:
-          NODE_OPTIONS: '--max-old-space-size=8192'
+          NODE_OPTIONS: "--max-old-space-size=8192"
           CEF_PATH: ${{ matrix.cef_cache_path }}
         run: |
           export PATH="$GITHUB_WORKSPACE/.cache/cargo-install/bin:$HOME/.cargo/bin:$PATH"
@@ -167,7 +171,7 @@ jobs:
         shell: bash
         working-directory: app
         env:
-          NODE_OPTIONS: '--max-old-space-size=8192'
+          NODE_OPTIONS: "--max-old-space-size=8192"
           CEF_PATH: ${{ matrix.cef_cache_path }}
         run: |
           export PATH="$GITHUB_WORKSPACE/.cache/cargo-install/bin:$HOME/.cargo/bin:$PATH"
@@ -195,7 +199,7 @@ jobs:
           fi
 
           EXE_NAME="$(basename "$EXE_PATH")"
-          shasum -a 256 "$EXE_PATH" | awk -v n="$EXE_NAME" '{print $1"  "n}' > "${EXE_PATH}.sha256"
+          sha256sum "$EXE_PATH" | awk -v n="$EXE_NAME" '{print $1"  "n}' > "${EXE_PATH}.sha256"
 
           echo "ARTIFACT_PATH=$EXE_PATH"     >> "$GITHUB_ENV"
           echo "SHA_PATH=${EXE_PATH}.sha256" >> "$GITHUB_ENV"
