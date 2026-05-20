@@ -177,22 +177,44 @@ pub async fn invoke_method(state: AppState, method: &str, params: Value) -> Resu
     // workers stand down, and (eventually) pushes a sign-out to the UI.
     // Centralising via the event bus means 401 detection from any path
     // (this one, `llm_provider.api_error`, …) gets the same teardown.
+    //
+    // Custom LLM mode suppression: when the user has configured both
+    // `inference_url` and `api_key`, backend 401s from billing / team /
+    // auth RPCs are expected (no session) and must not trigger the
+    // SessionExpired cascade which would flip scheduler_gate to signed-out
+    // and block the user's custom LLM provider.
     if let Err(ref msg) = result {
         if is_session_expired_error(msg) {
-            log::warn!(
-                "[jsonrpc] backend returned 401 for method '{}' — publishing SessionExpired",
-                method
-            );
-            // Scrub before publishing — subscribers log `reason`, and the
-            // upstream error string could include API keys / tokens from
-            // pasted-through provider replies. `sanitize_api_error` runs
-            // `scrub_secret_patterns` and truncates.
-            crate::core::event_bus::publish_global(
-                crate::core::event_bus::DomainEvent::SessionExpired {
-                    source: format!("jsonrpc.invoke_method:{method}"),
-                    reason: crate::openhuman::inference::provider::ops::sanitize_api_error(msg),
-                },
-            );
+            let suppress = {
+                match crate::openhuman::config::rpc::load_config_with_timeout().await {
+                    Ok(cfg) => {
+                        cfg.inference_url
+                            .as_ref()
+                            .is_some_and(|u| !u.trim().is_empty())
+                            && cfg.api_key.as_ref().is_some_and(|k| !k.trim().is_empty())
+                    }
+                    Err(_) => false,
+                }
+            };
+            if suppress {
+                log::debug!(
+                    "[jsonrpc] backend 401 for '{}' suppressed — custom LLM mode active",
+                    method
+                );
+            } else {
+                log::warn!(
+                    "[jsonrpc] backend returned 401 for method '{}' — publishing SessionExpired",
+                    method
+                );
+                crate::core::event_bus::publish_global(
+                    crate::core::event_bus::DomainEvent::SessionExpired {
+                        source: format!("jsonrpc.invoke_method:{method}"),
+                        reason: crate::openhuman::inference::provider::ops::sanitize_api_error(
+                            msg,
+                        ),
+                    },
+                );
+            }
         }
     }
 
@@ -1139,21 +1161,44 @@ fn register_domain_subscribers(
         // session. Without this, a sidecar that boots with no stored JWT
         // would happily spin up cron / channel loops and fire LLM requests
         // that all 401 immediately.
-        match crate::api::jwt::get_session_token(&config) {
-            Ok(Some(_)) => {
-                crate::openhuman::scheduler_gate::set_signed_out(false);
-            }
-            Ok(None) => {
-                log::info!(
-                    "[auth] no session token at startup — scheduler gate set to signed_out"
-                );
-                crate::openhuman::scheduler_gate::set_signed_out(true);
-            }
-            Err(err) => {
-                log::warn!(
-                    "[auth] failed to read session token at startup ({err}) — assuming signed_out"
-                );
-                crate::openhuman::scheduler_gate::set_signed_out(true);
+        //
+        // Custom LLM mode bypass: when the user has configured both
+        // `inference_url` and `api_key`, inference goes directly to their
+        // own OpenAI-compatible endpoint — no OpenHuman backend session is
+        // required. Keep the gate open so background workers (agent triage,
+        // memory tree, etc.) can use the custom provider without deadlocking
+        // on `wait_for_capacity`.
+        let has_custom_llm = config
+            .inference_url
+            .as_ref()
+            .is_some_and(|u| !u.trim().is_empty())
+            && config
+                .api_key
+                .as_ref()
+                .is_some_and(|k| !k.trim().is_empty());
+
+        if has_custom_llm {
+            log::info!(
+                "[auth] custom LLM mode active (inference_url + api_key) — scheduler gate stays open regardless of session"
+            );
+            crate::openhuman::scheduler_gate::set_signed_out(false);
+        } else {
+            match crate::api::jwt::get_session_token(&config) {
+                Ok(Some(_)) => {
+                    crate::openhuman::scheduler_gate::set_signed_out(false);
+                }
+                Ok(None) => {
+                    log::info!(
+                        "[auth] no session token at startup — scheduler gate set to signed_out"
+                    );
+                    crate::openhuman::scheduler_gate::set_signed_out(true);
+                }
+                Err(err) => {
+                    log::warn!(
+                        "[auth] failed to read session token at startup ({err}) — assuming signed_out"
+                    );
+                    crate::openhuman::scheduler_gate::set_signed_out(true);
+                }
             }
         }
 

@@ -88,14 +88,27 @@ struct SessionEntry {
 /// to `true`, the very next chat turn observes the new value here
 /// and the cache miss + rebuild routes to orchestrator.
 fn pick_target_agent_id(config: &Config, profile: &AgentProfile) -> String {
-    if profile.id == DEFAULT_PROFILE_ID {
-        if config.chat_onboarding_completed {
-            "orchestrator".to_string()
-        } else {
-            "welcome".to_string()
-        }
+    if profile.id != DEFAULT_PROFILE_ID {
+        return profile.agent_id.clone();
+    }
+    // Custom LLM mode (user configured their own inference_url + api_key) is
+    // a "local self-host" setup that doesn't go through the OpenHuman backend.
+    // The welcome agent's onboarding flow gates on a backend session JWT and
+    // would otherwise tell the user to "sign in via the desktop app" on every
+    // first turn, even though they're already running. Skip straight to the
+    // orchestrator in that mode so chat works out of the box.
+    let has_custom_inference = config
+        .inference_url
+        .as_ref()
+        .is_some_and(|u| !u.trim().is_empty())
+        && config
+            .api_key
+            .as_ref()
+            .is_some_and(|k| !k.trim().is_empty());
+    if config.chat_onboarding_completed || has_custom_inference {
+        "orchestrator".to_string()
     } else {
-        profile.agent_id.clone()
+        "welcome".to_string()
     }
 }
 
@@ -1379,7 +1392,43 @@ fn build_session_agent(
 ) -> Result<Agent, String> {
     let mut effective = config.clone();
     if let Some(model) = model_override {
-        effective.default_model = Some(model);
+        // In custom LLM mode the user's endpoint doesn't understand OpenHuman's
+        // internal tier names (`chat-v1`, `hint:reasoning`, …). The frontend
+        // hardcodes `chat-v1` as `model_override` for every chat send, so
+        // letting it overwrite `effective.default_model` would shadow the
+        // model the user configured in LlmSetup and the request would go out
+        // with `model: "chat-v1"`. Drop the override in that case so the
+        // user's configured `default_model` passes through unchanged.
+        let has_custom_inference = config
+            .inference_url
+            .as_ref()
+            .is_some_and(|u| !u.trim().is_empty())
+            && config
+                .api_key
+                .as_ref()
+                .is_some_and(|k| !k.trim().is_empty());
+        let is_openhuman_internal_tier = model.starts_with("hint:")
+            || matches!(
+                model.as_str(),
+                "reasoning-v1"
+                    | "reasoning-quick-v1"
+                    | "agentic-v1"
+                    | "coding-v1"
+                    | "chat-v1"
+                    | "summarization-v1"
+            );
+        if has_custom_inference && is_openhuman_internal_tier {
+            log::info!(
+                "[web-channel] custom LLM mode: dropping internal-tier model_override='{}' \
+                 (keeping user default_model={:?}) client={} thread={}",
+                model,
+                effective.default_model,
+                client_id,
+                thread_id
+            );
+        } else {
+            effective.default_model = Some(model);
+        }
     }
     let provider_role = provider_role_for_model_override(effective.default_model.as_deref());
     if let Some(temp) = temperature {

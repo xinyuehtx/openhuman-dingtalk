@@ -23,7 +23,7 @@ import { chatSend } from './chatService';
 import { callCoreRpc } from './coreRpcClient';
 import { ingestNotification } from './notificationService';
 
-const MEET_ORCHESTRATOR_MODEL = 'reasoning-v1';
+const MEET_ORCHESTRATOR_MODEL = 'chat-v1';
 
 const log = debug('webview-accounts');
 const errLog = debug('webview-accounts:error');

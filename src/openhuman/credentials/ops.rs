@@ -285,7 +285,24 @@ pub async fn clear_session(config: &Config) -> Result<RpcOutcome<serde_json::Val
     // is mid-iteration (or wakes up while we tear down) stalls at its next
     // `wait_for_capacity()` call instead of firing requests at a backend
     // we're about to invalidate. Idempotent.
-    crate::openhuman::scheduler_gate::set_signed_out(true);
+    //
+    // Custom LLM mode bypass: when the user has configured both
+    // `inference_url` and `api_key`, inference goes to their own endpoint.
+    // A backend 401 (from billing/team RPCs) must not block the custom
+    // provider's LLM work.
+    let has_custom_llm = config
+        .inference_url
+        .as_ref()
+        .is_some_and(|u| !u.trim().is_empty())
+        && config
+            .api_key
+            .as_ref()
+            .is_some_and(|k| !k.trim().is_empty());
+    if has_custom_llm {
+        tracing::info!("[auth] custom LLM mode — clear_session skips scheduler_gate signed_out");
+    } else {
+        crate::openhuman::scheduler_gate::set_signed_out(true);
+    }
 
     let auth = AuthService::from_config(config);
     let removed = auth

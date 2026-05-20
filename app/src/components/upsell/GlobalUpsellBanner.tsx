@@ -1,5 +1,6 @@
 import { useUsageState } from '../../hooks/useUsageState';
 import { useT } from '../../lib/i18n/I18nContext';
+import { hasStoredLlmSettings } from '../../utils/configPersistence';
 import { BILLING_DASHBOARD_URL } from '../../utils/links';
 import { openUrl } from '../../utils/openUrl';
 import UpsellBanner from './UpsellBanner';
@@ -7,6 +8,10 @@ import UpsellBanner from './UpsellBanner';
 export default function GlobalUpsellBanner() {
   const { t } = useT();
   const { teamUsage, isLoading, isAtLimit, isNearLimit, isFreeTier, usagePct } = useUsageState();
+
+  // In custom LLM mode, the user's own endpoint has no usage limits —
+  // never show upsell/usage-limit banners.
+  if (hasStoredLlmSettings()) return null;
 
   if (isLoading || !teamUsage) return null;
 

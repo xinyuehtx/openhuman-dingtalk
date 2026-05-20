@@ -17,6 +17,7 @@ import { selectBlockingState } from '../store/connectivitySelectors';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { resolveTheme, setThemeMode, type ThemeMode } from '../store/themeSlice';
 import { APP_VERSION } from '../utils/config';
+import { hasStoredLlmSettings } from '../utils/configPersistence';
 
 export function resolveHomeUserName(user: unknown): string {
   if (!user || typeof user !== 'object') return 'User';
@@ -51,7 +52,10 @@ const Home = () => {
   const promoCredits = user?.usage?.promotionBalanceUsd ?? 0;
   const isFreeTier =
     user?.subscription?.plan === 'FREE' || !user?.subscription?.hasActiveSubscription;
-  const showPromoBanner = isFreeTier && promoCredits > 0.01;
+  // In custom LLM mode, hide all subscription/usage/promotional banners
+  // since the user's own LLM endpoint has no usage limits or billing.
+  const isCustomLlmMode = hasStoredLlmSettings();
+  const showPromoBanner = !isCustomLlmMode && isFreeTier && promoCredits > 0.01;
 
   // Early birdy banner: once dismissed it stays gone (cooldown longer than any realistic session).
   const [showEarlyBirdy, setShowEarlyBirdy] = useState(() =>
@@ -148,7 +152,7 @@ const Home = () => {
   return (
     <div className="min-h-full flex flex-col items-center justify-center p-4">
       <div className="max-w-md w-full">
-        {shouldShowBudgetCompletedMessage && (
+        {shouldShowBudgetCompletedMessage && !isCustomLlmMode && (
           <UsageLimitBanner
             tone="danger"
             icon="⚠️"
@@ -258,9 +262,11 @@ const Home = () => {
           </button>
         </div>
 
-        {showEarlyBirdy && <EarlyBirdyBanner onDismiss={handleDismissEarlyBirdy} />}
+        {showEarlyBirdy && !isCustomLlmMode && (
+          <EarlyBirdyBanner onDismiss={handleDismissEarlyBirdy} />
+        )}
 
-        <DiscordBanner />
+        {!isCustomLlmMode && <DiscordBanner />}
 
         {/* Next steps — compact directory of where to go next */}
         {/* <div className="mt-3 bg-white rounded-2xl shadow-soft border border-stone-200 p-4">

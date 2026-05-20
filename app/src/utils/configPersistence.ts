@@ -264,3 +264,65 @@ export function clearStoredCoreMode(): void {
     console.warn('[configPersistence] Unable to clear core mode in localStorage');
   }
 }
+
+// ── LLM settings persistence ──────────────────────────────────────────────
+
+const LLM_SETTINGS_STORAGE_KEY = 'openhuman_llm_settings';
+
+/** User-configured LLM endpoint settings. */
+export interface LlmSettings {
+  /** OpenAI-compatible base URL (e.g. https://idealab.alibaba-inc.com/api/openai/v1). */
+  inferenceUrl: string;
+  /** API key for the custom LLM endpoint. */
+  apiKey: string;
+  /** Model identifier (e.g. Qwen3.6-Plus-DogFooding). */
+  model: string;
+}
+
+/**
+ * Retrieve the stored LLM settings, or `null` if none have been configured.
+ */
+export function getStoredLlmSettings(): LlmSettings | null {
+  try {
+    const raw = localStorage.getItem(LLM_SETTINGS_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<LlmSettings>;
+    if (parsed.inferenceUrl && parsed.apiKey && parsed.model) {
+      return parsed as LlmSettings;
+    }
+    return null;
+  } catch {
+    console.warn('[configPersistence] Unable to read LLM settings from localStorage');
+    return null;
+  }
+}
+
+/**
+ * Persist user-configured LLM settings so subsequent launches reuse them.
+ */
+export function storeLlmSettings(settings: LlmSettings): void {
+  try {
+    localStorage.setItem(LLM_SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+    console.debug('[configPersistence] Stored LLM settings');
+  } catch {
+    console.warn('[configPersistence] Unable to store LLM settings in localStorage');
+  }
+}
+
+/**
+ * Returns `true` when valid LLM settings have been persisted, meaning the
+ * user has completed the LLM setup flow at least once.
+ */
+export function hasStoredLlmSettings(): boolean {
+  return getStoredLlmSettings() !== null;
+}
+
+/** Clear persisted LLM settings (e.g. on logout / reset). */
+export function clearStoredLlmSettings(): void {
+  try {
+    localStorage.removeItem(LLM_SETTINGS_STORAGE_KEY);
+    console.debug('[configPersistence] Cleared LLM settings');
+  } catch {
+    console.warn('[configPersistence] Unable to clear LLM settings from localStorage');
+  }
+}

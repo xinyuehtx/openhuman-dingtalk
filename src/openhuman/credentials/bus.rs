@@ -63,7 +63,25 @@ impl EventHandler for SessionExpiredSubscriber {
 
         // (1) Stand down background workers immediately. Cheap atomic — safe
         //     even if called repeatedly from concurrent publishers.
-        scheduler_gate::set_signed_out(true);
+        //
+        // Custom LLM mode bypass: when the user has configured both
+        // `inference_url` and `api_key`, inference is routed to their own
+        // endpoint — a backend 401 should not block the custom provider.
+        let has_custom_llm = match crate::openhuman::config::rpc::load_config_with_timeout().await {
+            Ok(cfg) => {
+                cfg.inference_url.as_ref().is_some_and(|u| !u.trim().is_empty())
+                    && cfg.api_key.as_ref().is_some_and(|k| !k.trim().is_empty())
+            }
+            Err(_) => false,
+        };
+        if has_custom_llm {
+            tracing::info!(
+                source = %source,
+                "[auth] custom LLM mode active — skipping scheduler_gate signed_out override"
+            );
+        } else {
+            scheduler_gate::set_signed_out(true);
+        }
 
         // (2) Tear down the session. We must call clear_session against a
         //     loaded config; if the config can't load (rare — disk issue),

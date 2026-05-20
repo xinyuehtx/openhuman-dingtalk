@@ -88,7 +88,41 @@ fn session_user_value(
 
 pub fn build_session_state(config: &Config) -> Result<AuthStateResponse, String> {
     let profile = load_app_session_profile(config)?;
-    Ok(session_state_from_profile(profile.as_ref()))
+    let state = session_state_from_profile(profile.as_ref());
+
+    // In custom-LLM mode (inference_url + api_key configured), provide a
+    // synthetic local identity so subsystems that key on user_id have a
+    // stable value without requiring backend login.
+    if !state.is_authenticated && is_custom_llm_mode(config) {
+        log::debug!(
+            "[credentials] custom-LLM mode detected, providing synthetic local identity user_id={}",
+            super::CUSTOM_LLM_LOCAL_USER_ID
+        );
+        return Ok(AuthStateResponse {
+            is_authenticated: false,
+            user_id: Some(super::CUSTOM_LLM_LOCAL_USER_ID.to_string()),
+            user: Some(serde_json::json!({
+                "id": super::CUSTOM_LLM_LOCAL_USER_ID,
+                "name": "Local User",
+            })),
+            profile_id: None,
+        });
+    }
+
+    Ok(state)
+}
+
+/// Check whether the user has configured a custom LLM endpoint (both
+/// `inference_url` and `api_key` are non-empty).
+fn is_custom_llm_mode(config: &Config) -> bool {
+    config
+        .inference_url
+        .as_ref()
+        .is_some_and(|u| !u.trim().is_empty())
+        && config
+            .api_key
+            .as_ref()
+            .is_some_and(|k| !k.trim().is_empty())
 }
 
 pub fn get_session_token(config: &Config) -> Result<Option<String>, String> {

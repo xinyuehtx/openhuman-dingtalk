@@ -9,6 +9,11 @@ pub mod responses;
 mod schemas;
 pub mod session_support;
 
+/// Default user identity for custom-LLM / offline mode when no backend
+/// session exists. Used as a stable `user_id` so agent, memory, and
+/// socket subsystems have a consistent identity without requiring login.
+pub const CUSTOM_LLM_LOCAL_USER_ID: &str = "local-user";
+
 pub use crate::api::rest::{
     decrypt_handoff_blob, user_id_from_auth_me_payload, user_id_from_profile_payload,
     BackendOAuthClient, ConnectResponse, IntegrationSummary, IntegrationTokensHandoff,

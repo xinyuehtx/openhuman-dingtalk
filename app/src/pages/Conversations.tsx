@@ -56,6 +56,7 @@ import type { ConfirmationModal as ConfirmationModalType } from '../types/intell
 import type { ThreadMessage } from '../types/thread';
 import type { TaskBoardCard, TaskBoardCardStatus } from '../types/turnState';
 import { splitAgentMessageIntoBubbles } from '../utils/agentMessageBubbles';
+import { hasStoredLlmSettings } from '../utils/configPersistence';
 import { BILLING_DASHBOARD_URL } from '../utils/links';
 import { openUrl } from '../utils/openUrl';
 import {
@@ -89,7 +90,7 @@ import { isThreadVisibleInTab, WORKERS_TAB_VALUE } from './conversations/utils/t
 
 // Chat uses the reasoning model; `agentic-v1` is reserved for sub-agents
 // that execute tool calls, not the primary user-facing conversation.
-const CHAT_MODEL_ID = 'reasoning-v1';
+const CHAT_MODEL_ID = 'chat-v1';
 /** Maximum trailing characters rendered in the live-streaming assistant
  *  preview bubble. The full response is revealed via `addInferenceResponse`
  *  on `chat_done` — this is purely a ticker-tape affordance to signal
@@ -679,6 +680,7 @@ const Conversations = ({ variant = 'page', composer = 'text' }: ConversationsPro
       composerInteractionBlocked,
       isAtLimit,
       socketStatus,
+      isCustomLlmMode: hasStoredLlmSettings(),
     });
     const trimmed = sendDecision.trimmedText;
 
@@ -1830,7 +1832,8 @@ const Conversations = ({ variant = 'page', composer = 'text' }: ConversationsPro
         <div className="flex-shrink-0 border-t border-stone-200 dark:border-neutral-800 px-4 py-3">
           {/* [#1123] welcomeLocked and welcomePending guards removed — Joyride walkthrough replaced welcome-agent */}
           <>
-            {isNearLimit &&
+            {!hasStoredLlmSettings() &&
+              isNearLimit &&
               !isAtLimit &&
               isFreeTier &&
               shouldShowBanner('conversations-warning', 24 * 60 * 60 * 1000) && (
@@ -1851,7 +1854,7 @@ const Conversations = ({ variant = 'page', composer = 'text' }: ConversationsPro
                   />
                 </div>
               )}
-            {teamUsage && shouldShowBudgetCompletedMessage && (
+            {!hasStoredLlmSettings() && teamUsage && shouldShowBudgetCompletedMessage && (
               <div className="mb-3 p-3 rounded-xl bg-coral-50 border border-coral-200 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2 min-w-0">
                   <svg
@@ -1885,7 +1888,7 @@ const Conversations = ({ variant = 'page', composer = 'text' }: ConversationsPro
             {/* Cycle usage pill. Backend PR #790 dropped rate-limit gating —
                   only budget-based pressure is surfaced here now. */}
             <div className="flex items-center justify-end gap-2 mb-2">
-              {(isLoadingBudget || teamUsage) && (
+              {!hasStoredLlmSettings() && (isLoadingBudget || teamUsage) && (
                 <div className="relative group">
                   {teamUsage ? (
                     <LimitPill label={t('chat.cycle')} usedPct={usagePct} />

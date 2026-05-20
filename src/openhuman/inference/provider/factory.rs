@@ -133,13 +133,19 @@ pub fn create_chat_provider_from_string(
     // point every workload at a custom provider and bypass the session
     // requirement entirely.
     //
-    // Gate is skipped under #[cfg(test)] so existing unit tests that
-    // create custom providers against a default Config continue to
-    // pass.  The verify_session_active function itself is tested
-    // explicitly with tempdir-backed auth profiles.
+    // Gate is skipped when the user has configured a custom inference_url
+    // + api_key (self-hosted LLM mode) — they don't need an OpenHuman
+    // backend session to use their own provider.
+    //
+    // Gate is also skipped under #[cfg(test)] so existing unit tests that
+    // create custom providers against a default Config continue to pass.
     #[cfg(not(test))]
     {
-        verify_session_active(config)?;
+        let has_custom_inference = config.inference_url.as_ref().is_some_and(|u| !u.trim().is_empty())
+            && config.api_key.as_ref().is_some_and(|k| !k.trim().is_empty());
+        if !has_custom_inference {
+            verify_session_active(config)?;
+        }
     }
 
     if let Some(model_with_temp) = p.strip_prefix(OLLAMA_PROVIDER_PREFIX) {
@@ -191,13 +197,92 @@ pub fn create_chat_provider_from_string(
 
 // ── Internal helpers ──────────────────────────────────────────────────────────
 
-/// Build the OpenHuman backend provider (session-JWT auth).
+/// In custom LLM mode, resolve any OpenHuman-internal tier name or `hint:xxx`
+/// prefix to the user's configured default model. Custom endpoints do not
+/// understand OpenHuman's abstract tier aliases (`reasoning-v1`, `agentic-v1`,
+/// etc.) — sending them verbatim causes 400/404 errors. Concrete model names
+/// (e.g. `"gpt-4o"`, `"Qwen3.6-Plus-DogFooding"`) pass through unchanged.
+fn resolve_for_custom_llm(model: &str, user_default: &str) -> String {
+    if model.starts_with("hint:") {
+        log::debug!(
+            "[providers][custom-llm] mapping {} -> {} (hint prefix)",
+            model,
+            user_default
+        );
+        return user_default.to_string();
+    }
+    match model {
+        "reasoning-v1" | "reasoning-quick-v1" | "agentic-v1" | "coding-v1" | "chat-v1"
+        | "summarization-v1" => {
+            log::debug!(
+                "[providers][custom-llm] mapping tier {} -> {}",
+                model,
+                user_default
+            );
+            user_default.to_string()
+        }
+        _ => model.to_string(),
+    }
+}
+
+/// Build the OpenHuman backend provider (session-JWT auth), or a custom
+/// OpenAI-compatible provider when `inference_url` + `api_key` are configured.
 fn make_openhuman_backend(config: &Config) -> anyhow::Result<(Box<dyn Provider>, String)> {
+    // Resolve the model name. The config's `default_model` should already
+    // have the env overlay applied (`OPENHUMAN_MODEL`), but some execution
+    // paths (e.g. in-process Tauri host) may miss the overlay. Fall back
+    // to reading the env var directly so custom LLM users always get their
+    // configured model.
     let model = config
         .default_model
         .clone()
         .filter(|m| !m.trim().is_empty())
-        .unwrap_or_else(|| "reasoning-v1".to_string());
+        .or_else(|| {
+            std::env::var("OPENHUMAN_MODEL")
+                .ok()
+                .filter(|m| !m.trim().is_empty())
+        })
+        .unwrap_or_else(|| crate::openhuman::config::DEFAULT_MODEL.to_string());
+    log::info!(
+        "[providers][chat-factory] resolved model={} (config.default_model={:?}, env OPENHUMAN_MODEL={:?})",
+        model,
+        config.default_model,
+        std::env::var("OPENHUMAN_MODEL").ok()
+    );
+
+    // ── Custom LLM shortcut ──────────────────────────────────────────
+    // When the user has configured both inference_url and api_key, route
+    // all "openhuman" provider requests to their custom endpoint instead
+    // of the OpenHuman backend (which requires a session JWT and checks
+    // usage budgets). This lets users run entirely on their own LLM.
+    let has_custom_inference = config.inference_url.as_ref().is_some_and(|u| !u.trim().is_empty())
+        && config.api_key.as_ref().is_some_and(|k| !k.trim().is_empty());
+    if has_custom_inference {
+        let url = config.inference_url.as_deref().unwrap();
+        let key = config.api_key.as_deref().unwrap();
+        log::info!(
+            "[providers][chat-factory] custom LLM mode: inference_url={} model={} (api_key bytes={})",
+            url,
+            model,
+            key.len()
+        );
+        // The model_override_for_tiers on the provider ensures that any
+        // OpenHuman-internal tier name (chat-v1, reasoning-v1, hint:xxx,
+        // etc.) that reaches the provider's chat() method — regardless of
+        // the calling code path — is transparently rewritten to the user's
+        // real model before the HTTP request is sent.
+        let p = Box::new(
+            OpenAiCompatibleProvider::new_no_responses_fallback(
+                "custom_openai",
+                url,
+                Some(key),
+                CompatAuthStyle::Bearer,
+            )
+            .with_model_override_for_tiers(model.clone()),
+        );
+        return Ok((p, model));
+    }
+
     // Critical: pass the *config's* workspace directory through so the
     // provider's `AuthService` reads `auth-profiles.json` from the
     // same dir login wrote to. Without this, `ProviderRuntimeOptions::default()`

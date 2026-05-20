@@ -15,6 +15,8 @@ export interface ComposerSendDecisionArgs {
   composerInteractionBlocked: boolean;
   isAtLimit: boolean;
   socketStatus: string;
+  /** When true, usage-limit and socket-disconnected checks are skipped. */
+  isCustomLlmMode?: boolean;
 }
 
 export interface ComposerSendDecision {
@@ -61,11 +63,11 @@ export const evaluateComposerSend = (args: ComposerSendDecisionArgs): ComposerSe
     return { shouldSend: false, trimmedText, blockReason: 'composer_blocked' };
   }
 
-  if (args.isAtLimit) {
+  if (args.isAtLimit && !args.isCustomLlmMode) {
     return { shouldSend: false, trimmedText, blockReason: 'usage_limit_reached' };
   }
 
-  if (args.socketStatus !== 'connected') {
+  if (args.socketStatus !== 'connected' && !args.isCustomLlmMode) {
     return { shouldSend: false, trimmedText, blockReason: 'socket_disconnected' };
   }
 

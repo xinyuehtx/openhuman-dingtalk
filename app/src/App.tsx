@@ -51,6 +51,7 @@ import { useAppSelector } from './store/hooks';
 // import { clearSelectedThread, deleteThread, setWelcomeThreadId } from './store/threadSlice';
 import { isAccountsFullscreen } from './utils/accountsFullscreen';
 import { DEV_FORCE_ONBOARDING } from './utils/config';
+import { hasStoredLlmSettings } from './utils/configPersistence';
 
 // Attach the `webview:event` listener at app boot so background recipe
 // events (Google Meet captions → transcript flush, WhatsApp ingest, …)
@@ -125,8 +126,13 @@ function AppShell() {
   // [#1123] Commented out — welcome-agent onboarding replaced by Joyride walkthrough
   // const welcomeLocked = isWelcomeLocked(snapshot);
   const onOnboardingRoute = location.pathname.startsWith('/onboarding');
+  // In LLM-only mode (no session token, but LLM settings configured),
+  // skip the onboarding flow entirely — users go straight to /home.
+  const isLlmOnlyMode = !snapshot.sessionToken && hasStoredLlmSettings();
   const onboardingPending =
-    !!snapshot.sessionToken && (DEV_FORCE_ONBOARDING || !snapshot.onboardingCompleted);
+    !isLlmOnlyMode &&
+    !!snapshot.sessionToken &&
+    (DEV_FORCE_ONBOARDING || !snapshot.onboardingCompleted);
 
   // Onboarding gate: while `onboarding_completed=false`, force any non-
   // onboarding route back to `/onboarding`. Once completed, bounce the

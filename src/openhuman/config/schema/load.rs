@@ -1008,6 +1008,24 @@ impl Config {
             }
         }
 
+        // Custom LLM inference endpoint — when both OPENHUMAN_INFERENCE_URL
+        // and OPENHUMAN_API_KEY are set, the core talks directly to this
+        // OpenAI-compatible endpoint instead of routing through the
+        // OpenHuman backend.
+        if let Some(inference_url) = env.get("OPENHUMAN_INFERENCE_URL") {
+            let trimmed = inference_url.trim();
+            if !trimmed.is_empty() {
+                self.inference_url = Some(trimmed.to_string());
+            }
+        }
+
+        if let Some(api_key) = env.get("OPENHUMAN_API_KEY") {
+            let trimmed = api_key.trim();
+            if !trimmed.is_empty() {
+                self.api_key = Some(trimmed.to_string());
+            }
+        }
+
         if let Some(workspace) = env.get("OPENHUMAN_WORKSPACE") {
             if !workspace.is_empty() {
                 let (_, workspace_dir) =

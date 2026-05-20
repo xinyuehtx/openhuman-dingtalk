@@ -6,16 +6,32 @@ import { socketService } from '../services/socketService';
 import { setBackend, setCore } from '../store/connectivitySlice';
 import { store } from '../store/index';
 import { IS_DEV } from '../utils/config';
+import { hasStoredLlmSettings } from '../utils/configPersistence';
 import { useCoreState } from './CoreStateProvider';
+
+/**
+ * Placeholder token used for the core socket connection in custom-LLM mode.
+ * The core socket.io server does not validate the token — it is only used as
+ * the `auth` handshake field. Using a constant placeholder lets the socket
+ * connect normally so chat events (chat_done, chat_error, text_delta, etc.)
+ * can be routed back to the frontend via the socket's `client_id`.
+ */
+const CUSTOM_LLM_PLACEHOLDER_TOKEN = 'custom-llm-local';
 
 /**
  * SocketProvider manages the socket connection based on JWT token.
  * The frontend TypeScript socket client is the single realtime path
  * for both desktop and web.
+ *
+ * In custom-LLM mode (user has configured inference_url + api_key but has
+ * no backend session), the provider connects with a placeholder token so
+ * chat RPC calls can obtain a valid `socket.id` for event routing.
  */
 const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const { snapshot } = useCoreState();
   const token = snapshot.sessionToken;
+  const isCustomLlmMode = !token && hasStoredLlmSettings();
+  const effectiveToken = token ?? (isCustomLlmMode ? CUSTOM_LLM_PLACEHOLDER_TOKEN : null);
   const previousTokenRef = useRef<string | null>(null);
 
   // Keep daemon lifecycle management for desktop health/recovery.
@@ -37,61 +53,57 @@ const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     daemonLifecycle.maxAttemptsReached,
   ]);
 
-  // Handle socket connection based on token
+  // Handle socket connection based on effective token
   useEffect(() => {
     const previousToken = previousTokenRef.current;
 
     // Token was set - connect
-    if (token && token !== previousToken) {
-      previousTokenRef.current = token;
-      socketService.connect(token);
-      // Also connect the Rust sidecar to backend-alphahuman so inbound
-      // Discord/Telegram managed-DM messages reach the agent loop.
-      void callCoreRpc({ method: 'openhuman.socket_connect_with_session', params: {} }).catch(
-        (err: unknown) => {
-          // Non-fatal: sidecar may not be running yet or backend unreachable.
-          console.error(
-            '[SocketProvider] openhuman.socket_connect_with_session: RPC connection failed (non-fatal) — sidecar may not be running yet or backend unreachable',
-            err
-          );
-          // (#1527) Surface the failure into the core connectivity channel so
-          // the UI can show an actionable "core offline" state instead of a
-          // single conflated "Disconnected" pill. coreHealthMonitor will flip
-          // the state back to `reachable` once the sidecar answers the next
-          // poll.
-          const message = err instanceof Error ? err.message : String(err);
-          // Route the failure to the right channel: transport/connection errors
-          // (ECONNREFUSED, fetch failure) mean the local core sidecar is
-          // unreachable; everything else is a backend-level rejection and should
-          // not pop the "core offline" blocking screen. (addresses @coderabbitai
-          // on SocketProvider.tsx:63)
-          const isCoreTransportFailure =
-            /ECONNREFUSED|ERR_CONNECTION_REFUSED|Failed to fetch|NetworkError/i.test(message);
-          if (isCoreTransportFailure) {
-            store.dispatch(setCore({ value: 'unreachable', error: message }));
-          } else {
-            store.dispatch(setBackend({ value: 'disconnected', error: message }));
+    if (effectiveToken && effectiveToken !== previousToken) {
+      previousTokenRef.current = effectiveToken;
+      socketService.connect(effectiveToken);
+
+      // In custom-LLM mode we skip the backend socket connection RPC —
+      // there is no backend session to authenticate with.
+      if (!isCustomLlmMode) {
+        // Also connect the Rust sidecar to backend-alphahuman so inbound
+        // Discord/Telegram managed-DM messages reach the agent loop.
+        void callCoreRpc({ method: 'openhuman.socket_connect_with_session', params: {} }).catch(
+          (err: unknown) => {
+            // Non-fatal: sidecar may not be running yet or backend unreachable.
+            console.error(
+              '[SocketProvider] openhuman.socket_connect_with_session: RPC connection failed (non-fatal) — sidecar may not be running yet or backend unreachable',
+              err
+            );
+            const message = err instanceof Error ? err.message : String(err);
+            const isCoreTransportFailure =
+              /ECONNREFUSED|ERR_CONNECTION_REFUSED|Failed to fetch|NetworkError/i.test(message);
+            if (isCoreTransportFailure) {
+              store.dispatch(setCore({ value: 'unreachable', error: message }));
+            } else {
+              store.dispatch(setBackend({ value: 'disconnected', error: message }));
+            }
           }
-        }
-      );
+        );
+      } else if (IS_DEV) {
+        console.log('[SocketProvider] Custom LLM mode — skipping backend socket connection');
+      }
     }
 
     // Token was unset - disconnect
-    if (!token && previousToken) {
+    if (!effectiveToken && previousToken) {
       previousTokenRef.current = null;
       socketService.disconnect();
     }
-  }, [token]);
+  }, [effectiveToken, isCustomLlmMode]);
 
   // Cleanup on unmount only
   useEffect(() => {
     return () => {
-      const currentToken = snapshot.sessionToken;
-      if (!currentToken) {
+      if (!effectiveToken) {
         socketService.disconnect();
       }
     };
-  }, [snapshot.sessionToken]);
+  }, [effectiveToken]);
 
   return <>{children}</>;
 };

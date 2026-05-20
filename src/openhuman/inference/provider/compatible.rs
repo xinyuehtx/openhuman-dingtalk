@@ -77,6 +77,12 @@ pub struct OpenAiCompatibleProvider {
     /// carries an `@<temp>` suffix (e.g. `"openai:gpt-4o@0.2"`). The
     /// `temperature_unsupported_models` glob filter still applies after.
     pub(crate) temperature_override: Option<f64>,
+    /// When set, any model name that is an OpenHuman internal tier alias
+    /// (e.g. `chat-v1`, `reasoning-v1`, `hint:xxx`) is replaced with this
+    /// value before the HTTP request is sent. Used exclusively by the
+    /// custom-LLM factory path so the user's real model name reaches
+    /// their endpoint regardless of which code path selects the model.
+    pub(crate) model_override_for_tiers: Option<String>,
 }
 
 /// How the provider expects the API key to be sent.
@@ -189,6 +195,7 @@ impl OpenAiCompatibleProvider {
             emit_openhuman_thread_id: false,
             temperature_unsupported_models: Vec::new(),
             temperature_override: None,
+            model_override_for_tiers: None,
         }
     }
 
@@ -205,6 +212,34 @@ impl OpenAiCompatibleProvider {
     pub fn with_temperature_override(mut self, temperature: Option<f64>) -> Self {
         self.temperature_override = temperature;
         self
+    }
+
+    /// Set the model override for OpenHuman tier aliases. When active,
+    /// any tier name (`chat-v1`, `reasoning-v1`, etc.) or `hint:xxx`
+    /// prefix passed as the `model` parameter to `chat()` is transparently
+    /// rewritten to the given real model name before the HTTP request.
+    pub fn with_model_override_for_tiers(mut self, model: String) -> Self {
+        self.model_override_for_tiers = Some(model);
+        self
+    }
+
+    /// If a tier-level model override is configured, replace any OpenHuman
+    /// internal tier alias or `hint:xxx` prefix with the user's real model.
+    /// Concrete model names pass through unchanged.
+    fn resolve_model<'a>(&'a self, model: &'a str) -> &'a str {
+        if let Some(ref override_model) = self.model_override_for_tiers {
+            if model.starts_with("hint:") || matches!(model,
+                "reasoning-v1" | "reasoning-quick-v1" | "agentic-v1"
+                | "coding-v1" | "chat-v1" | "summarization-v1"
+            ) {
+                log::info!(
+                    "[provider:{}] model tier override: {} -> {}",
+                    self.name, model, override_model
+                );
+                return override_model.as_str();
+            }
+        }
+        model
     }
 
     /// Resolve the effective temperature for `model`. Returns `None` when the
@@ -1538,6 +1573,10 @@ impl Provider for OpenAiCompatibleProvider {
         model: &str,
         temperature: f64,
     ) -> anyhow::Result<ProviderChatResponse> {
+        // In custom-LLM mode, resolve tier aliases to the user's real model
+        // before any HTTP request is built.
+        let model = self.resolve_model(model);
+
         let credential = self.credential_for_request()?;
 
         let tools = Self::convert_tool_specs(request.tools);
