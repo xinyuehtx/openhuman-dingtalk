@@ -44,7 +44,8 @@ const LlmSetup = ({ onComplete }: LlmSetupProps) => {
     setModel(stored?.model ?? ENV_DEFAULTS.model);
   }, []);
 
-  const isFormValid = inferenceUrl.trim().length > 0 && apiKey.trim().length > 0 && model.trim().length > 0;
+  const isFormValid =
+    inferenceUrl.trim().length > 0 && apiKey.trim().length > 0 && model.trim().length > 0;
 
   const handleSave = useCallback(async () => {
     if (!isFormValid) return;

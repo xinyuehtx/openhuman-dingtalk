@@ -5,14 +5,14 @@
 
 .DESCRIPTION
   Intended for:
-  irm https://raw.githubusercontent.com/tinyhumansai/openhuman/main/scripts/install.ps1 | iex
+  irm https://raw.githubusercontent.com/xinyuehtx/openhuman-dingtalk/main/scripts/install.ps1 | iex
 
   Also works when saved and run directly:
   .\scripts\install.ps1 -DryRun
 
   MSI installs use the Tauri WiX package (InstallScope perMachine). Per-user
   public properties (MSIINSTALLPERUSER / ALLUSERS=2) conflict with that layout
-  and commonly fail with exit 1603 — see tinyhumansai/openhuman#913.
+  and commonly fail with exit 1603 — see xinyuehtx/openhuman-dingtalk#913.
 
   When the current session is not elevated, msiexec is started with -Verb RunAs
   so Windows shows UAC once (machine install to Program Files).
@@ -88,7 +88,7 @@ function Install-OpenHuman {
   $ErrorActionPreference = "Stop"
 
   $InstallerVersion = "1.1.0"
-  $Repo = "tinyhumansai/openhuman"
+  $Repo = "xinyuehtx/openhuman-dingtalk"
   $LatestReleaseApiUrl = "https://api.github.com/repos/$Repo/releases/latest"
 
   function Write-Info([string]$Message) { Write-Host "-> $Message" -ForegroundColor Cyan }
@@ -104,7 +104,7 @@ Usage:
   install.ps1 [-Channel stable] [-DryRun] [-Help] [-Version]
 
 Examples:
-  irm https://raw.githubusercontent.com/tinyhumansai/openhuman/main/scripts/install.ps1 | iex
+  irm https://raw.githubusercontent.com/xinyuehtx/openhuman-dingtalk/main/scripts/install.ps1 | iex
   .\scripts\install.ps1 -DryRun
 "@
   }

@@ -228,13 +228,22 @@ impl OpenAiCompatibleProvider {
     /// Concrete model names pass through unchanged.
     fn resolve_model<'a>(&'a self, model: &'a str) -> &'a str {
         if let Some(ref override_model) = self.model_override_for_tiers {
-            if model.starts_with("hint:") || matches!(model,
-                "reasoning-v1" | "reasoning-quick-v1" | "agentic-v1"
-                | "coding-v1" | "chat-v1" | "summarization-v1"
-            ) {
+            if model.starts_with("hint:")
+                || matches!(
+                    model,
+                    "reasoning-v1"
+                        | "reasoning-quick-v1"
+                        | "agentic-v1"
+                        | "coding-v1"
+                        | "chat-v1"
+                        | "summarization-v1"
+                )
+            {
                 log::info!(
                     "[provider:{}] model tier override: {} -> {}",
-                    self.name, model, override_model
+                    self.name,
+                    model,
+                    override_model
                 );
                 return override_model.as_str();
             }

@@ -69,7 +69,9 @@ impl EventHandler for SessionExpiredSubscriber {
         // endpoint — a backend 401 should not block the custom provider.
         let has_custom_llm = match crate::openhuman::config::rpc::load_config_with_timeout().await {
             Ok(cfg) => {
-                cfg.inference_url.as_ref().is_some_and(|u| !u.trim().is_empty())
+                cfg.inference_url
+                    .as_ref()
+                    .is_some_and(|u| !u.trim().is_empty())
                     && cfg.api_key.as_ref().is_some_and(|k| !k.trim().is_empty())
             }
             Err(_) => false,

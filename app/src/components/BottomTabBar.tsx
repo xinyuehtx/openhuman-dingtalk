@@ -9,6 +9,7 @@ import { selectCompanionSessionActive } from '../store/companionSlice';
 import { useAppSelector } from '../store/hooks';
 import { selectUnreadCount } from '../store/notificationSlice';
 import { isAccountsFullscreen } from '../utils/accountsFullscreen';
+import { hasStoredLlmSettings } from '../utils/configPersistence';
 
 const makeTabs = (t: (key: string) => string) => [
   {
@@ -141,8 +142,12 @@ const BottomTabBar = () => {
   const companionActive = useAppSelector(selectCompanionSessionActive);
 
   const hiddenPaths = ['/', '/login'];
+  // In LLM-only mode (no session token but custom LLM configured), the user
+  // is authenticated via hasStoredLlmSettings() — show the tab bar so they
+  // can navigate to Settings/Connections for connector configuration.
+  const isAuthenticated = !!token || hasStoredLlmSettings();
   if (
-    !token ||
+    !isAuthenticated ||
     hiddenPaths.some(path => location.pathname === path || location.pathname.startsWith(`${path}/`))
   ) {
     return null;

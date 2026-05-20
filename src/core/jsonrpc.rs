@@ -209,9 +209,7 @@ pub async fn invoke_method(state: AppState, method: &str, params: Value) -> Resu
                 crate::core::event_bus::publish_global(
                     crate::core::event_bus::DomainEvent::SessionExpired {
                         source: format!("jsonrpc.invoke_method:{method}"),
-                        reason: crate::openhuman::inference::provider::ops::sanitize_api_error(
-                            msg,
-                        ),
+                        reason: crate::openhuman::inference::provider::ops::sanitize_api_error(msg),
                     },
                 );
             }

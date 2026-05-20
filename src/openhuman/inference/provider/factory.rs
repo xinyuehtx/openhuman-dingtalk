@@ -141,8 +141,14 @@ pub fn create_chat_provider_from_string(
     // create custom providers against a default Config continue to pass.
     #[cfg(not(test))]
     {
-        let has_custom_inference = config.inference_url.as_ref().is_some_and(|u| !u.trim().is_empty())
-            && config.api_key.as_ref().is_some_and(|k| !k.trim().is_empty());
+        let has_custom_inference = config
+            .inference_url
+            .as_ref()
+            .is_some_and(|u| !u.trim().is_empty())
+            && config
+                .api_key
+                .as_ref()
+                .is_some_and(|k| !k.trim().is_empty());
         if !has_custom_inference {
             verify_session_active(config)?;
         }
@@ -255,8 +261,14 @@ fn make_openhuman_backend(config: &Config) -> anyhow::Result<(Box<dyn Provider>,
     // all "openhuman" provider requests to their custom endpoint instead
     // of the OpenHuman backend (which requires a session JWT and checks
     // usage budgets). This lets users run entirely on their own LLM.
-    let has_custom_inference = config.inference_url.as_ref().is_some_and(|u| !u.trim().is_empty())
-        && config.api_key.as_ref().is_some_and(|k| !k.trim().is_empty());
+    let has_custom_inference = config
+        .inference_url
+        .as_ref()
+        .is_some_and(|u| !u.trim().is_empty())
+        && config
+            .api_key
+            .as_ref()
+            .is_some_and(|k| !k.trim().is_empty());
     if has_custom_inference {
         let url = config.inference_url.as_deref().unwrap();
         let key = config.api_key.as_deref().unwrap();

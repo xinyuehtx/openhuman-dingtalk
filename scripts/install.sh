@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # OpenHuman Installer (macOS/Linux)
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/tinyhumansai/openhuman/main/scripts/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/xinyuehtx/openhuman-dingtalk/main/scripts/install.sh | bash
 
 set -euo pipefail
 
@@ -14,7 +14,7 @@ for _arg in "$@"; do
 done
 
 INSTALLER_VERSION="1.0.0"
-REPO="tinyhumansai/openhuman"
+REPO="xinyuehtx/openhuman-dingtalk"
 LATEST_JSON_URL="https://github.com/${REPO}/releases/latest/download/latest.json"
 LATEST_RELEASE_API_URL="https://api.github.com/repos/${REPO}/releases/latest"
 
@@ -55,7 +55,7 @@ Options:
   --verbose         Enable verbose output
 
 Examples:
-  curl -fsSL https://raw.githubusercontent.com/tinyhumansai/openhuman/main/scripts/install.sh | bash
+  curl -fsSL https://raw.githubusercontent.com/xinyuehtx/openhuman-dingtalk/main/scripts/install.sh | bash
   curl -fsSL ... | bash -s -- --dry-run
 EOF
 }
@@ -122,7 +122,7 @@ case "${OS_RAW}" in
   Linux) OS="linux" ;;
   CYGWIN*|MINGW*|MSYS*)
     log_err "Windows detected. Use PowerShell installer:"
-    echo "  irm https://raw.githubusercontent.com/tinyhumansai/openhuman/main/scripts/install.ps1 | iex"
+    echo "  irm https://raw.githubusercontent.com/xinyuehtx/openhuman-dingtalk/main/scripts/install.ps1 | iex"
     exit 1
     ;;
   *)
