@@ -206,7 +206,8 @@ const id1: TranslationMap = {
   'onboarding.runtimeChoice.subtitle':
     'Pilih pengaturan yang paling sesuai untuk Anda. Anda dapat mengubahnya nanti di Pengaturan.',
   'onboarding.runtimeChoice.cloud.title': 'Sederhana',
-  'onboarding.runtimeChoice.cloud.tagline': 'Biarkan OpenHuman 钉钉 mengelola segalanya untuk Anda.',
+  'onboarding.runtimeChoice.cloud.tagline':
+    'Biarkan OpenHuman 钉钉 mengelola segalanya untuk Anda.',
   'onboarding.runtimeChoice.cloud.f1': 'Keamanan bawaan',
   'onboarding.runtimeChoice.cloud.f2': 'Kompresi token untuk memaksimalkan penggunaan Anda',
   'onboarding.runtimeChoice.cloud.f3': 'Satu langganan, semua model sudah termasuk',

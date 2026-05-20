@@ -131,7 +131,8 @@ const zhCN1: TranslationMap = {
   'home.askAssistant': '向你的助手提问...',
   'home.statusOk': '你的设备已连接。保持应用运行以维持连接，通过下方按钮向你的智能体发送消息。',
   'home.statusBackendOnly': '正在重新连接后端…你的智能体很快将再次可用。',
-  'home.statusCoreUnreachable': '本地核心 sidecar 无响应。OpenHuman 钉钉 后台进程可能已崩溃或未能启动。',
+  'home.statusCoreUnreachable':
+    '本地核心 sidecar 无响应。OpenHuman 钉钉 后台进程可能已崩溃或未能启动。',
   'home.statusInternetOffline': '你的设备当前处于离线状态。请检查网络或重启应用以重新连接。',
   'home.restartCore': '重启核心',
   'home.restartingCore': '正在重启核心…',
@@ -252,7 +253,8 @@ const zhCN1: TranslationMap = {
     '使用你自己的 OpenAI 或 Anthropic 密钥。我们会将它用于所有文本类工作负载。',
   'onboarding.custom.voice.title': '语音',
   'onboarding.custom.voice.subtitle': '用于语音模式的语音转文本和文本转语音。',
-  'onboarding.custom.voice.defaultDesc': 'OpenHuman 钉钉 内置托管的 STT/TTS，开箱即用。无需额外配置。',
+  'onboarding.custom.voice.defaultDesc':
+    'OpenHuman 钉钉 内置托管的 STT/TTS，开箱即用。无需额外配置。',
   'onboarding.custom.voice.configureDesc':
     '使用你自己的 ElevenLabs、OpenAI Whisper 等服务。在设置 › 语音中配置。',
   'onboarding.custom.oauth.title': '连接（OAuth）',

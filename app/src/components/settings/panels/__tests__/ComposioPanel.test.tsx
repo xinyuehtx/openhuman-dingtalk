@@ -279,7 +279,9 @@ describe('ComposioPanel', () => {
     renderWithProviders(<Panel />);
     await waitFor(() => expect(screen.queryByText('Loading…')).toBeNull());
 
-    expect(screen.getByLabelText('Managed (OpenHuman 钉钉 handles it for you)')).toBeInTheDocument();
+    expect(
+      screen.getByLabelText('Managed (OpenHuman 钉钉 handles it for you)')
+    ).toBeInTheDocument();
   });
 
   test('trigger-webhook gap is surfaced in the Direct mode description', async () => {

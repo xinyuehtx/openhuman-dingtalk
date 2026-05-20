@@ -273,7 +273,8 @@ const ar1: TranslationMap = {
   'onboarding.custom.search.configureDesc':
     'استخدم مفتاح مزود البحث الخاص بك (Tavily أو Brave إلخ). اضبطه من الإعدادات › الأدوات.',
   'onboarding.custom.memory.title': 'الذاكرة',
-  'onboarding.custom.memory.subtitle': 'كيف يتذكر OpenHuman 钉钉 سياقك وتفضيلاتك ومحادثاتك السابقة.',
+  'onboarding.custom.memory.subtitle':
+    'كيف يتذكر OpenHuman 钉钉 سياقك وتفضيلاتك ومحادثاتك السابقة.',
   'onboarding.custom.memory.defaultDesc':
     'يدير OpenHuman 钉钉 تخزين الذاكرة واسترجاعها تلقائيًا. لا شيء يحتاج إلى إعداد.',
   'onboarding.custom.memory.configureDesc':

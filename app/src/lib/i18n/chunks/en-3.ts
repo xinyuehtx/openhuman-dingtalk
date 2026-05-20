@@ -130,7 +130,8 @@ const en3: TranslationMap = {
   'bootCheck.tokenRequired': "We'll need an auth token to connect.",
   'bootCheck.chooseCoreMode': 'Select a Runtime',
   'bootCheck.connectToCore': 'Connect to Your Runtime',
-  'bootCheck.desktopDescription': 'OpenHuman 钉钉 needs a runtime to think. Pick where it should live.',
+  'bootCheck.desktopDescription':
+    'OpenHuman 钉钉 needs a runtime to think. Pick where it should live.',
   'bootCheck.webDescription':
     'On the web, OpenHuman 钉钉 connects to a runtime you control. Drop in its URL and auth token below, or grab the desktop app to run one right on your machine.',
   'bootCheck.preferDesktop': 'Rather keep everything on your own device?',

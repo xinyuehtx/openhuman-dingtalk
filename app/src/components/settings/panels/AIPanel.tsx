@@ -2216,7 +2216,8 @@ const AIPanel = ({ embedded = false }: AIPanelProps = {}) => {
 
             <div className="text-[11px] text-stone-500 dark:text-neutral-400">
               {t('settings.ai.defaultResolvesTo')}{' '}
-              <span className="font-mono text-stone-700 dark:text-neutral-200">OpenHuman 钉钉</span>.
+              <span className="font-mono text-stone-700 dark:text-neutral-200">OpenHuman 钉钉</span>
+              .
             </div>
           </section>
         </div>

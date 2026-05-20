@@ -412,7 +412,8 @@ const fr5: TranslationMap = {
   'composio.triggers.loading': 'Chargement…',
   'conversations.taskKanban.todo': 'À faire',
   'settings.composio.loading': 'Chargement…',
-  'settings.mascot.noCharactersAvailable': "Aucun personnage OpenHuman 钉钉 n'est encore disponible",
+  'settings.mascot.noCharactersAvailable':
+    "Aucun personnage OpenHuman 钉钉 n'est encore disponible",
   'skills.uninstall.confirmTitle': 'Désinstaller {name} ?',
   'conversations.taskKanban.blocked': 'Bloqué',
   'conversations.taskKanban.done': 'Terminé',

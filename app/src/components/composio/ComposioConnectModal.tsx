@@ -676,8 +676,8 @@ export default function ComposioConnectModal({
                   {toolkit.name} authorization expired
                 </div>
                 <p className="mt-2 text-xs leading-relaxed text-coral-700">
-                  Reconnect to re-enable {toolkit.name} tools. OpenHuman 钉钉 will keep this integration
-                  unavailable until you refresh OAuth access.
+                  Reconnect to re-enable {toolkit.name} tools. OpenHuman 钉钉 will keep this
+                  integration unavailable until you refresh OAuth access.
                 </p>
               </div>
               <button
