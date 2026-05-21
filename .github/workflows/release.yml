@@ -289,8 +289,12 @@ jobs:
           EXE_NAME="$(basename "$EXE_PATH")"
           sha256sum "$EXE_PATH" | awk -v n="$EXE_NAME" '{print $1"  "n}' > "${EXE_PATH}.sha256"
 
-          echo "ARTIFACT_PATH=$EXE_PATH"     >> "$GITHUB_ENV"
-          echo "SHA_PATH=${EXE_PATH}.sha256" >> "$GITHUB_ENV"
+          # Convert MSYS-style path (/c/cbt/...) to Windows-style (C:/cbt/...) so
+          # that softprops/action-gh-release's Node-based @actions/glob can match
+          # the file on Windows runners. MSYS paths fail glob matching there.
+          EXE_PATH_WIN="$(cygpath -m "$EXE_PATH")"
+          echo "ARTIFACT_PATH=$EXE_PATH_WIN"     >> "$GITHUB_ENV"
+          echo "SHA_PATH=${EXE_PATH_WIN}.sha256" >> "$GITHUB_ENV"
 
       # softprops/action-gh-release is idempotent: creates the release on
       # first invocation, appends assets on subsequent ones. The two matrix
