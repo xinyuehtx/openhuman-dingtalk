@@ -66,9 +66,16 @@ jobs:
           cache: pnpm
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+        # Must match the channel in rust-toolchain.toml so that cross-
+        # compilation targets (x86_64-apple-darwin for the CEF helper) are
+        # installed on the toolchain cargo actually uses. Using @stable
+        # installs targets on the wrong toolchain, causing "can't find crate
+        # for `core`" during the CEF helper build.
+        uses: dtolnay/rust-toolchain@master
         with:
+          toolchain: "1.93.0"
           targets: ${{ matrix.rust_targets }}
+          components: rustfmt,clippy
 
       # Skip first 7 lines of Cargo.lock (workspace package version bumps) so
       # the cache key tracks dependency changes only — bumping the app version
@@ -116,12 +123,23 @@ jobs:
         shell: bash
         run: pnpm install --frozen-lockfile
 
+      # Resolve the absolute CEF_PATH once: matrix.cef_cache_path uses `~`
+      # which actions/cache expands but env vars do NOT expand on Windows.
+      # Without this, cef-dll-sys receives a literal `~` path and MSVC fails
+      # with C1083 "Cannot open compiler generated file".
+      - name: Resolve CEF_PATH
+        id: cef
+        shell: bash
+        run: |
+          # Bash expands ~ in assignments only when unquoted and at the start.
+          # Use eval to force expansion, then export the absolute path.
+          eval "CEF_ABS=${{ matrix.cef_cache_path }}"
+          echo "path=$CEF_ABS" >> "$GITHUB_OUTPUT"
+
       - name: Ensure vendored CEF-aware tauri-cli is installed
         shell: bash
         env:
-          # ensure-tauri-cli.sh defaults CEF_PATH to a macOS path; set it
-          # explicitly per platform.
-          CEF_PATH: ${{ matrix.cef_cache_path }}
+          CEF_PATH: ${{ steps.cef.outputs.path }}
         run: bash scripts/ensure-tauri-cli.sh
 
       - name: Build macOS arm64 (.app + .dmg, hdiutil fallback)
@@ -130,7 +148,7 @@ jobs:
         working-directory: app
         env:
           NODE_OPTIONS: "--max-old-space-size=8192"
-          CEF_PATH: ${{ matrix.cef_cache_path }}
+          CEF_PATH: ${{ steps.cef.outputs.path }}
         run: |
           export PATH="$GITHUB_WORKSPACE/.cache/cargo-install/bin:$HOME/.cargo/bin:$PATH"
 
@@ -174,7 +192,7 @@ jobs:
         working-directory: app
         env:
           NODE_OPTIONS: "--max-old-space-size=8192"
-          CEF_PATH: ${{ matrix.cef_cache_path }}
+          CEF_PATH: ${{ steps.cef.outputs.path }}
         run: |
           export PATH="$GITHUB_WORKSPACE/.cache/cargo-install/bin:$HOME/.cargo/bin:$PATH"
 
