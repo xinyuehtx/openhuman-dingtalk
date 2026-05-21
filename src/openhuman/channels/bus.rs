@@ -2,11 +2,93 @@
 //!
 //! The [`ChannelInboundSubscriber`] handles inbound channel messages published
 //! by the socket transport layer. It runs the agent inference loop via the web
-//! channel provider and sends the reply back through the REST API.
+//! channel provider and sends the reply back through the REST API or — when
+//! an external channel runtime is active — directly via the local channel
+//! instance registered on the native event bus.
 
 use crate::core::event_bus::{DomainEvent, EventHandler};
 use async_trait::async_trait;
 use serde_json::json;
+
+// ---------------------------------------------------------------------------
+// Native request types for local channel sending
+// ---------------------------------------------------------------------------
+
+/// Method name for dispatching a message to a locally-running external
+/// channel (DingTalk, Telegram, Slack, …) through the native event bus.
+pub const CHANNEL_SEND_METHOD: &str = "channel.send";
+
+/// Request payload for [`CHANNEL_SEND_METHOD`].
+///
+/// Callers provide the target channel name, recipient, and message content.
+/// The handler looks up the channel instance by name and calls
+/// [`Channel::send`] directly — no remote REST API or JWT required.
+pub struct ChannelSendRequest {
+    pub channel_name: String,
+    pub recipient: String,
+    pub content: String,
+    pub thread_ts: Option<String>,
+}
+
+/// Response from [`CHANNEL_SEND_METHOD`].
+pub struct ChannelSendResponse {
+    pub success: bool,
+}
+
+/// Register the `channel.send` native request handler so any module can
+/// send messages through locally-running external channels without
+/// importing channel instances directly.
+///
+/// Called from [`super::runtime::startup::start_channels`] after all
+/// channel instances are constructed.
+pub fn register_channel_send_handler(
+    channels_by_name: std::sync::Arc<
+        std::collections::HashMap<String, std::sync::Arc<dyn super::Channel>>,
+    >,
+) {
+    use crate::core::event_bus::register_native_global;
+    use crate::openhuman::channels::SendMessage;
+
+    let channel_count = channels_by_name.len();
+
+    register_native_global::<ChannelSendRequest, ChannelSendResponse, _, _>(
+        CHANNEL_SEND_METHOD,
+        move |req| {
+            let channels = std::sync::Arc::clone(&channels_by_name);
+            async move {
+                let channel = channels.get(&req.channel_name).ok_or_else(|| {
+                    format!(
+                        "[channel.send] no local channel instance for '{}'",
+                        req.channel_name
+                    )
+                })?;
+                tracing::info!(
+                    "[channel.send] sending message via local channel='{}' recipient='{}' len={}",
+                    req.channel_name,
+                    req.recipient,
+                    req.content.len(),
+                );
+                let message = SendMessage::new(&req.content, &req.recipient)
+                    .in_thread(req.thread_ts);
+                channel.send(&message).await.map_err(|e| {
+                    format!(
+                        "[channel.send] send failed on channel='{}': {}",
+                        req.channel_name, e
+                    )
+                })?;
+                tracing::info!(
+                    "[channel.send] message delivered via local channel='{}'",
+                    req.channel_name,
+                );
+                Ok(ChannelSendResponse { success: true })
+            }
+        },
+    );
+    tracing::debug!(
+        "[channel.send] native handler registered with {} channel(s)",
+        channel_count,
+    );
+}
 
 /// Subscribes to `ChannelInboundMessage` events and runs the agent loop,
 /// sending replies back to the originating channel via the backend REST API.
@@ -871,8 +953,64 @@ async fn build_channel_client() -> Option<(crate::api::rest::BackendOAuthClient,
     }
 }
 
-/// Send a text reply back to a channel via the backend REST API.
+/// Send a text reply back to a channel.
+///
+/// **Primary path** (local): dispatches through the native event bus to a
+/// locally-running channel instance registered via [`register_channel_send_handler`].
+/// This works without a backend session JWT and is the only path available
+/// in custom-LLM / offline deployments.
+///
+/// **Fallback path** (remote): if the local handler is not registered or
+/// fails, falls back to the backend REST API (requires a valid session JWT).
 async fn send_channel_reply(channel: &str, text: &str) {
+    // ── Primary: try the local channel instance via native bus ────────
+    tracing::debug!(
+        "[channel-inbound] attempting local send via native bus channel='{}'",
+        channel,
+    );
+    let local_result = crate::core::event_bus::request_native_global::<
+        ChannelSendRequest,
+        ChannelSendResponse,
+    >(
+        CHANNEL_SEND_METHOD,
+        ChannelSendRequest {
+            channel_name: channel.to_string(),
+            recipient: channel.to_string(),
+            content: text.to_string(),
+            thread_ts: None,
+        },
+    )
+    .await;
+
+    match local_result {
+        Ok(resp) if resp.success => {
+            tracing::info!(
+                "[channel-inbound] reply delivered via local channel='{}'",
+                channel,
+            );
+            return;
+        }
+        Ok(_) => {
+            tracing::warn!(
+                "[channel-inbound] local send returned success=false for channel='{}'; falling back to REST API",
+                channel,
+            );
+        }
+        Err(e) => {
+            tracing::debug!(
+                "[channel-inbound] local send unavailable for channel='{}': {}; falling back to REST API",
+                channel,
+                e,
+            );
+        }
+    }
+
+    // ── Fallback: backend REST API (requires session JWT) ─────────────
+    send_channel_reply_via_rest(channel, text).await;
+}
+
+/// Backend REST API fallback for [`send_channel_reply`].
+async fn send_channel_reply_via_rest(channel: &str, text: &str) {
     let config = match crate::openhuman::config::rpc::load_config_with_timeout().await {
         Ok(c) => c,
         Err(e) => {
@@ -885,7 +1023,7 @@ async fn send_channel_reply(channel: &str, text: &str) {
     let jwt = match crate::api::jwt::get_session_token(&config) {
         Ok(Some(t)) => t,
         Ok(None) => {
-            tracing::error!("[channel-inbound] no session JWT — cannot reply");
+            tracing::error!("[channel-inbound] no session JWT — cannot reply via REST");
             return;
         }
         Err(e) => {
@@ -906,14 +1044,14 @@ async fn send_channel_reply(channel: &str, text: &str) {
     match client.send_channel_message(channel, &jwt, body).await {
         Ok(resp) => {
             tracing::info!(
-                "[channel-inbound] reply sent to channel='{}' response={:?}",
+                "[channel-inbound] reply sent via REST to channel='{}' response={:?}",
                 channel,
                 resp
             );
         }
         Err(e) => {
             tracing::error!(
-                "[channel-inbound] failed to send reply to channel='{}': {}",
+                "[channel-inbound] failed to send reply via REST to channel='{}': {}",
                 channel,
                 e
             );

@@ -158,6 +158,25 @@ pub async fn run(
     SyncCategoryResult::ok(DwsSyncCategory::Minutes, headers.len(), total_chunks)
 }
 
+/// Parse a minutes list page.
+///
+/// Real-world dws shape (verified against a live `minutes list mine`
+/// response):
+/// ```json
+/// {
+///   "dingOpenErrcode": 0,
+///   "errorMsg": "ok",
+///   "result": {
+///     "hasNext": true,
+///     "minutesDetails": [...],
+///     "nextToken": "<opaque>"
+///   }
+/// }
+/// ```
+///
+/// `result.minutesDetails` is the production key — earlier versions only
+/// checked `items` / `minutes` / `list` and silently returned 0 records.
+/// The historical fallbacks are retained for forward compatibility.
 fn extract_list_page(v: &Value) -> (Vec<Value>, Option<String>) {
     let items = v
         .get("result")
@@ -165,7 +184,8 @@ fn extract_list_page(v: &Value) -> (Vec<Value>, Option<String>) {
             if let Some(arr) = r.as_array() {
                 Some(arr.clone())
             } else {
-                r.get("items")
+                r.get("minutesDetails")
+                    .or_else(|| r.get("items"))
                     .or_else(|| r.get("minutes"))
                     .or_else(|| r.get("list"))
                     .and_then(|x| x.as_array())
@@ -299,7 +319,21 @@ fn extract_summary_text(summary: &Value) -> String {
     match summary {
         Value::String(s) => s.clone(),
         Value::Object(map) => {
-            for k in ["summary", "content", "text", "body", "abstract"] {
+            // The live dws `minutes get summary` envelope returns the
+            // AI-generated meeting summary under `fullSummary` (markdown
+            // with `> **主题** ...`, sections, AI insights, etc.). The
+            // historical keys (`summary`, `content`, `text`, `body`,
+            // `abstract`) are retained as fallbacks in case a future
+            // dws version or a sibling endpoint reverts to a flatter
+            // shape.
+            for k in [
+                "fullSummary",
+                "summary",
+                "content",
+                "text",
+                "body",
+                "abstract",
+            ] {
                 if let Some(s) = map.get(k).and_then(|v| v.as_str()) {
                     return s.to_string();
                 }
@@ -311,12 +345,35 @@ fn extract_summary_text(summary: &Value) -> String {
 }
 
 fn extract_todo_lines(todos: &Value) -> Vec<String> {
+    // The live dws `minutes get todos` envelope returns two parallel
+    // arrays:
+    // - `actions` — opaque strings (sometimes a JSON-encoded blob with
+    //   `{mark, value}`), one per AI-derived action item;
+    // - `dingtalkTodoList` — structured todos (`title`, `executorList`,
+    //   `createdTime`, ...) when the meeting host promoted any of them
+    //   into the dingtalk Todo app.
+    //
+    // Prefer the structured list when present (richer + lets
+    // `arr_to_lines` pick up owner / due fields); fall back to the
+    // unstructured `actions` array so we don't lose AI suggestions
+    // even when the user hasn't promoted any. Historical keys kept as
+    // additional fallbacks.
     let arr = match todos {
         Value::Array(a) => a.clone(),
         Value::Object(map) => {
-            for k in ["todos", "items", "tasks", "list"] {
+            for k in [
+                "dingtalkTodoList",
+                "actions",
+                "todos",
+                "items",
+                "tasks",
+                "list",
+            ] {
                 if let Some(a) = map.get(k).and_then(|v| v.as_array()) {
-                    return arr_to_lines(a);
+                    let lines = arr_to_lines(a);
+                    if !lines.is_empty() {
+                        return lines;
+                    }
                 }
             }
             return Vec::new();
@@ -329,17 +386,64 @@ fn extract_todo_lines(todos: &Value) -> Vec<String> {
 fn arr_to_lines(arr: &[Value]) -> Vec<String> {
     arr.iter()
         .filter_map(|t| match t {
-            Value::String(s) => Some(s.clone()),
+            Value::String(s) => {
+                // `minutes get todos`'s `actions` array hands us each
+                // entry as a JSON-encoded string like
+                // `{"mark":[],"value":"黑键在群内总结..."}`. Try to
+                // parse it: if the JSON shape matches, surface the
+                // `value` field as the todo text. On any parse
+                // failure / shape mismatch we fall back to the raw
+                // string — that way unstructured action entries still
+                // land in memory verbatim.
+                if let Ok(parsed) = serde_json::from_str::<Value>(s) {
+                    if let Some(value) = parsed.get("value").and_then(|v| v.as_str()) {
+                        if !value.trim().is_empty() {
+                            return Some(value.to_string());
+                        }
+                    }
+                }
+                Some(s.clone())
+            }
             Value::Object(map) => {
+                // Structured todo objects (e.g. `dingtalkTodoList`
+                // entries) use `title` / `executorList` / etc. The
+                // historical `content` / `text` keys are kept as
+                // fallbacks for adapter sources that pre-date the
+                // dingtalk Todo integration.
                 let text = map
-                    .get("content")
+                    .get("title")
+                    .or_else(|| map.get("content"))
                     .or_else(|| map.get("text"))
-                    .or_else(|| map.get("title"))
                     .and_then(|v| v.as_str())?;
                 let owner = map
                     .get("owner")
                     .or_else(|| map.get("assignee"))
-                    .and_then(|v| v.as_str());
+                    // `executorList` from dingtalkTodoList is an array
+                    // of opaque user-id strings or objects with
+                    // `displayName`. Render the first one if present.
+                    .or_else(|| {
+                        map.get("executorList")
+                            .and_then(|v| v.as_array())
+                            .and_then(|arr| arr.first())
+                            .and_then(|first| match first {
+                                Value::String(s) => Some(first).filter(|_| !s.is_empty()),
+                                Value::Object(o) => o
+                                    .get("displayName")
+                                    .or_else(|| o.get("name"))
+                                    .or_else(|| o.get("nick"))
+                                    .map(|_| first),
+                                _ => None,
+                            })
+                    })
+                    .and_then(|v| match v {
+                        Value::String(s) => Some(s.as_str()),
+                        Value::Object(o) => o
+                            .get("displayName")
+                            .or_else(|| o.get("name"))
+                            .or_else(|| o.get("nick"))
+                            .and_then(|x| x.as_str()),
+                        _ => None,
+                    });
                 let due = map
                     .get("due")
                     .or_else(|| map.get("deadline"))
@@ -377,6 +481,29 @@ mod tests {
     }
 
     #[test]
+    fn extract_list_page_handles_minutes_details_envelope() {
+        // Regression for the production envelope discovered against the
+        // live dws backend (`minutes list mine`). Adapter must accept
+        // `result.minutesDetails` — earlier versions only knew about
+        // `items` / `minutes` / `list` and silently returned 0 records.
+        let v = serde_json::json!({
+            "dingOpenErrcode": 0,
+            "errorMsg": "ok",
+            "result": {
+                "hasNext": true,
+                "minutesDetails": [
+                    {"taskUuid": "u1", "title": "M1"},
+                    {"taskUuid": "u2", "title": "M2"}
+                ],
+                "nextToken": "TOK"
+            }
+        });
+        let (items, next) = extract_list_page(&v);
+        assert_eq!(items.len(), 2);
+        assert_eq!(next.as_deref(), Some("TOK"));
+    }
+
+    #[test]
     fn extract_task_uuid_tries_multiple_keys() {
         assert_eq!(
             extract_task_uuid(&serde_json::json!({"taskUuid": "t1"})).as_deref(),
@@ -401,6 +528,21 @@ mod tests {
     }
 
     #[test]
+    fn extract_summary_text_handles_full_summary_envelope() {
+        // Regression for the production envelope from the live dws
+        // backend (`minutes get summary`): the AI-generated meeting
+        // summary lives under `fullSummary`, not `summary`. Earlier
+        // versions returned an empty string for every meeting and the
+        // saved md only contained the meeting time.
+        let v = serde_json::json!({
+            "fullSummary": "> **主题**: X\n\n## 任务目标\nfoo bar"
+        });
+        let out = extract_summary_text(&v);
+        assert!(out.contains("**主题**"));
+        assert!(out.contains("任务目标"));
+    }
+
+    #[test]
     fn extract_todo_lines_handles_array_of_strings() {
         let v = serde_json::json!(["finish doc", "send email"]);
         assert_eq!(extract_todo_lines(&v), vec!["finish doc", "send email"]);
@@ -417,6 +559,61 @@ mod tests {
         let lines = extract_todo_lines(&v);
         assert_eq!(lines[0], "finish doc — Alice — 2026-05-25");
         assert_eq!(lines[1], "review PR");
+    }
+
+    #[test]
+    fn extract_todo_lines_handles_dingtalk_todo_list_envelope() {
+        // Regression for the production `dingtalkTodoList` shape:
+        // structured todos use `title` + `executorList[].displayName`
+        // rather than `content` + `owner`. Earlier versions returned
+        // an empty list for every meeting.
+        let v = serde_json::json!({
+            "dingtalkTodoList": [
+                {
+                    "title": "黑键在群内总结专属域名Cookie未种问题",
+                    "executorList": [{ "displayName": "黑键" }]
+                },
+                {
+                    "title": "参省团队拉通相关方"
+                }
+            ]
+        });
+        let lines = extract_todo_lines(&v);
+        assert_eq!(lines.len(), 2);
+        assert!(lines[0].contains("黑键在群内总结"));
+        assert!(lines[0].contains("— 黑键"));
+        assert_eq!(lines[1], "参省团队拉通相关方");
+    }
+
+    #[test]
+    fn extract_todo_lines_handles_actions_envelope_with_json_strings() {
+        // The `actions` array in `minutes get todos` hands us each
+        // entry as a JSON-encoded string. Adapter must unwrap the
+        // `value` field rather than dumping the raw `{"mark":[],"value":..}`.
+        let v = serde_json::json!({
+            "actions": [
+                r#"{"mark":[],"value":"黑键在群内总结专属域名Cookie未种问题及解决路径"}"#,
+                "plain string fallback"
+            ]
+        });
+        let lines = extract_todo_lines(&v);
+        assert_eq!(lines.len(), 2);
+        assert_eq!(lines[0], "黑键在群内总结专属域名Cookie未种问题及解决路径");
+        assert_eq!(lines[1], "plain string fallback");
+    }
+
+    #[test]
+    fn extract_todo_lines_prefers_structured_list_over_actions() {
+        // When both arrays are present, the structured
+        // `dingtalkTodoList` is the user-curated promotion and should
+        // win — `actions` is the raw AI suggestion list.
+        let v = serde_json::json!({
+            "actions": [r#"{"mark":[],"value":"raw action"}"#],
+            "dingtalkTodoList": [{ "title": "promoted todo" }]
+        });
+        let lines = extract_todo_lines(&v);
+        assert_eq!(lines.len(), 1);
+        assert_eq!(lines[0], "promoted todo");
     }
 
     #[test]

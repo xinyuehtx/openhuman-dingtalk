@@ -52,12 +52,28 @@ pub async fn run(
             }
         };
 
-        let (items, next_cursor) = extract_page(&response);
+        let (items, next_cursor, has_more) = extract_page(&response);
         let item_count = items.len();
         raw_messages.extend(items);
 
+        // The dws `chat message list-all` endpoint paginates over a
+        // *time-bucketed* index rather than a contiguous result set: an
+        // early page may legitimately contain 0 messages while
+        // `hasMore=true` + a non-zero cursor point at later pages where
+        // the actual messages live. The previous "stop when items=0"
+        // condition therefore prematurely abandoned every active sync
+        // (records_count stayed at 0). Continue paging as long as the
+        // server promises more AND hands us a fresh cursor.
         match next_cursor {
-            Some(token) if !token.is_empty() && token != "0" && item_count > 0 => cursor = token,
+            Some(token) if !token.is_empty() && token != "0" && token != cursor => {
+                cursor = token;
+                if !has_more && item_count == 0 {
+                    // Server moved the cursor but says no more data —
+                    // honour the explicit signal so we don't loop forever
+                    // on a stuck endpoint.
+                    break;
+                }
+            }
             _ => break,
         }
     }
@@ -126,14 +142,32 @@ pub async fn run(
     SyncCategoryResult::ok(DwsSyncCategory::Chat, raw_messages.len(), total_chunks)
 }
 
-fn extract_page(v: &Value) -> (Vec<Value>, Option<String>) {
+/// Parse a chat-message page. Returns `(messages, next_cursor, has_more)`.
+///
+/// Real-world dws shape (verified against a live response):
+/// ```json
+/// {
+///   "result": {
+///     "conversationMessagesList": [...],
+///     "hasMore": true,
+///     "nextCursor": "<opaque>"
+///   },
+///   "success": true
+/// }
+/// ```
+///
+/// The historical key checks (`messages` / `items` / `list`) are kept as
+/// fallbacks so the parser doesn't regress if the upstream renames the
+/// container or a future endpoint variant uses a different name.
+fn extract_page(v: &Value) -> (Vec<Value>, Option<String>, bool) {
     let items = v
         .get("result")
         .and_then(|r| {
             if let Some(arr) = r.as_array() {
                 Some(arr.clone())
             } else {
-                r.get("messages")
+                r.get("conversationMessagesList")
+                    .or_else(|| r.get("messages"))
                     .or_else(|| r.get("items"))
                     .or_else(|| r.get("list"))
                     .and_then(|x| x.as_array())
@@ -150,7 +184,13 @@ fn extract_page(v: &Value) -> (Vec<Value>, Option<String>) {
         .and_then(|c| c.as_str())
         .map(str::to_string);
 
-    (items, next)
+    let has_more = v
+        .get("hasMore")
+        .or_else(|| v.get("result").and_then(|r| r.get("hasMore")))
+        .and_then(|b| b.as_bool())
+        .unwrap_or(false);
+
+    (items, next, has_more)
 }
 
 fn group_by_conversation(raw: &[Value]) -> BTreeMap<String, Vec<Value>> {
@@ -247,9 +287,10 @@ mod tests {
             "nextCursor": "abc",
             "success": true
         });
-        let (items, next) = extract_page(&v);
+        let (items, next, has_more) = extract_page(&v);
         assert_eq!(items.len(), 2);
         assert_eq!(next.as_deref(), Some("abc"));
+        assert!(!has_more, "no hasMore field present → defaults to false");
     }
 
     #[test]
@@ -257,9 +298,46 @@ mod tests {
         let v = serde_json::json!({
             "result": { "messages": [{ "a": 1 }], "cursor": "xx" }
         });
-        let (items, next) = extract_page(&v);
+        let (items, next, _has_more) = extract_page(&v);
         assert_eq!(items.len(), 1);
         assert_eq!(next.as_deref(), Some("xx"));
+    }
+
+    #[test]
+    fn extract_page_handles_conversation_messages_list_envelope() {
+        // Regression for the production envelope discovered against the
+        // live dws backend (`chat message list-all`). Adapter must accept
+        // `result.conversationMessagesList` — earlier versions only knew
+        // about `result.messages` and silently returned 0 records.
+        let v = serde_json::json!({
+            "result": {
+                "conversationMessagesList": [{ "msgId": "m1" }, { "msgId": "m2" }],
+                "hasMore": true,
+                "nextCursor": "TOKEN"
+            },
+            "success": true
+        });
+        let (items, next, has_more) = extract_page(&v);
+        assert_eq!(items.len(), 2);
+        assert_eq!(next.as_deref(), Some("TOKEN"));
+        assert!(has_more);
+    }
+
+    #[test]
+    fn extract_page_surfaces_has_more_for_empty_pages() {
+        // The live `list-all` endpoint can return an empty page with
+        // `hasMore=true` early in the time bucket. The adapter relies on
+        // this flag to keep paginating past the empty window.
+        let v = serde_json::json!({
+            "result": {
+                "conversationMessagesList": [],
+                "hasMore": true,
+                "nextCursor": "TOKEN"
+            }
+        });
+        let (items, _next, has_more) = extract_page(&v);
+        assert!(items.is_empty());
+        assert!(has_more);
     }
 
     #[test]

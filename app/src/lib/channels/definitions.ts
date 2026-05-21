@@ -228,7 +228,7 @@ export const FALLBACK_DEFINITIONS: ChannelDefinition[] = [
             label: 'Allowed Users',
             field_type: 'string',
             required: false,
-            placeholder: 'Comma-separated DingTalk userIds; leave empty to allow any',
+            placeholder: '* (default: all users); or comma-separated DingTalk userIds',
           },
         ],
         auth_action: undefined,

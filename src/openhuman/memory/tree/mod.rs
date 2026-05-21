@@ -28,6 +28,7 @@ pub mod chunker;
 pub mod content_store;
 pub mod ingest;
 pub mod jobs;
+pub mod obsidian_register;
 pub mod read_rpc;
 pub mod retrieval;
 pub mod rpc;

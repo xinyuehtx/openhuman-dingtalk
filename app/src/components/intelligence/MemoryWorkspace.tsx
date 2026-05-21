@@ -35,8 +35,10 @@ import { isTauri } from '../../utils/tauriCommands/common';
 import {
   type GraphExportResponse,
   type GraphMode,
+  type ObsidianRegisterOutcome,
   memoryTreeFlushNow,
   memoryTreeGraphExport,
+  memoryTreeRegisterObsidianVault,
   memoryTreeResetTree,
   memoryTreeWipeAll,
 } from '../../utils/tauriCommands';
@@ -63,31 +65,52 @@ interface MemoryWorkspaceProps {
 const SYNCABLE_TOOLKITS: ReadonlySet<string> = new Set(['gmail']);
 
 /**
- * Trigger the `obsidian://open?path=<abs>` deep link via the OS shell.
+ * Open the memory vault in Obsidian, registering it first when needed.
  *
- * We deliberately route through `openUrl` (which delegates to
- * `tauri-plugin-opener`) rather than setting `window.location.href`.
- * The webview-host intent handler intercepts in-app navigations and
- * does NOT punt custom schemes to the OS, so a direct
- * `window.location.href = "obsidian://…"` either no-ops or navigates
- * the React app away from the Memory tab. The opener plugin hands the
- * URL straight to the system handler so Obsidian launches as a
- * separate process.
+ * Obsidian's `obsidian://open?path=<abs>` URI scheme only resolves when
+ * `<abs>` falls inside a vault Obsidian already knows about — there is
+ * no URI action to add a vault, so a fresh user without prior
+ * registration just sees a "vault doesn't exist" dialog. To make the
+ * button a one-click experience we first call
+ * `memoryTreeRegisterObsidianVault`, which patches the user's
+ * `obsidian.json` (a documented community technique that's stable
+ * across the Obsidian 1.x line), and only then dispatch the URI.
  *
- * IMPORTANT: Obsidian's `obsidian://open?path=...` only works after the
- * user has registered the content folder as a vault. If they haven't,
- * Obsidian launches and shows a "vault doesn't exist" dialog. Use
- * `revealVaultInFinder` as a one-time companion so the user can drag
- * the highlighted folder into Obsidian's "Open folder as vault" picker.
+ * If Obsidian isn't installed at all (config directory missing) we
+ * skip the URI dispatch and let the caller surface install + manual
+ * `Open folder as vault` instructions via a toast.
+ *
+ * The URI dispatch itself goes through `openUrl` (→ tauri-plugin-opener
+ * → OS shell). `window.location.href = "obsidian://…"` would be
+ * intercepted by the webview-host intent handler and either no-op or
+ * navigate the React app away from the Memory tab.
+ *
+ * Returns the registration outcome so the caller can choose what toast
+ * to show. Throws on RPC failure (caller decides whether to swallow).
  */
-async function openVaultInObsidian(contentRootAbs: string): Promise<void> {
+async function openVaultInObsidian(
+  contentRootAbs: string
+): Promise<ObsidianRegisterOutcome> {
+  console.debug('[ui-flow][memory-workspace] register-then-open vault path=%s', contentRootAbs);
+  const outcome = await memoryTreeRegisterObsidianVault();
+  if (outcome.status === 'obsidian_not_installed') {
+    console.warn(
+      '[ui-flow][memory-workspace] Obsidian not installed (expected=%s) — skipping URI dispatch',
+      outcome.expected_config_path
+    );
+    return outcome;
+  }
+  // Registered (newly or already): hand Obsidian the deep link. We
+  // dispatch even on `already_present` because the click intent is
+  // "open the vault in Obsidian", not just "make sure it's registered".
   const url = `obsidian://open?path=${encodeURIComponent(contentRootAbs)}`;
-  console.debug('[ui-flow][memory-workspace] open vault in Obsidian url=%s', url);
+  console.debug('[ui-flow][memory-workspace] open vault url=%s status=%s', url, outcome.status);
   try {
     await openUrl(url);
   } catch (err) {
     console.error('[ui-flow][memory-workspace] openUrl failed', err);
   }
+  return outcome;
 }
 
 /**
@@ -107,6 +130,84 @@ async function revealVaultInFinder(contentRootAbs: string): Promise<void> {
     await revealItemInDir(contentRootAbs);
   } catch (err) {
     console.error('[ui-flow][memory-workspace] revealItemInDir failed', err);
+  }
+}
+
+/**
+ * Click handler for the "View Vault" button. Owns the user-facing
+ * narrative around auto-registration:
+ *
+ * - `registered`        → first-time success. Tell the user Obsidian
+ *                         was just taught about this folder; if Obsidian
+ *                         is already running, they may need to quit + relaunch
+ *                         so the new vault entry is picked up.
+ * - `already_present`   → silent success. Vault was registered earlier.
+ *                         No toast — the URI dispatch is the visible signal.
+ * - `obsidian_not_installed` → Obsidian config directory doesn't exist.
+ *                         Surface the install URL + the manual `Open
+ *                         folder as vault` steps + the absolute path so
+ *                         the user can copy-paste it once Obsidian is
+ *                         installed.
+ *
+ * Any RPC error (network, malformed config, permission) gets surfaced
+ * verbatim — we'd rather show a noisy diagnostic toast than silently
+ * fail and leave the user wondering why nothing happened.
+ */
+async function handleOpenVaultClick(
+  contentRootAbs: string,
+  onToast?: (toast: Omit<ToastNotification, 'id'>) => void
+): Promise<void> {
+  try {
+    const outcome = await openVaultInObsidian(contentRootAbs);
+    if (outcome.status === 'registered') {
+      onToast?.({
+        type: 'success',
+        title: 'Vault registered & launching',
+        message:
+          `Added the memory folder to Obsidian's vault list ` +
+          `(${outcome.config_path}, id=${outcome.vault_id}). ` +
+          `Obsidian should now open the vault. If Obsidian was already ` +
+          `running with a different vault, the URI may not have triggered a ` +
+          `switch — quit Obsidian (Cmd/Ctrl+Q) and click "View Vault" again.`,
+        duration: 10_000,
+      });
+    } else if (outcome.status === 'already_present') {
+      // Previously we silently swallowed this and let the URI dispatch
+      // be the signal — but the URI is silent when Obsidian is already
+      // focused on this vault (or when the running instance doesn't
+      // switch vaults), making the click feel unresponsive. Always emit
+      // a short info toast so every click has visible feedback.
+      onToast?.({
+        type: 'info',
+        title: 'Opening in Obsidian',
+        message:
+          `Vault was already registered (${outcome.config_path}, id=${outcome.vault_id}). ` +
+          `Sent obsidian:// open URI. If nothing happens, Obsidian may be ` +
+          `running with a different vault open — switch vaults via Obsidian's ` +
+          `vault picker, or quit Obsidian and click again.`,
+        duration: 6_000,
+      });
+    } else if (outcome.status === 'obsidian_not_installed') {
+      onToast?.({
+        type: 'warning',
+        title: 'Obsidian not detected',
+        message:
+          `Expected Obsidian config at ${outcome.expected_config_path} but it doesn't exist. ` +
+          `1) Install Obsidian from https://obsidian.md, launch it once so the config ` +
+          `file is created, then click "View Vault" again. ` +
+          `2) Or click the folder button next to this one to reveal ` +
+          `${contentRootAbs} in your file manager and add it manually via ` +
+          `Obsidian → menu → File → Open Vault → "Open folder as vault".`,
+        duration: 15_000,
+      });
+    }
+  } catch (err) {
+    console.error('[ui-flow][memory-workspace] handleOpenVaultClick failed', err);
+    onToast?.({
+      type: 'error',
+      title: 'Open Vault failed',
+      message: err instanceof Error ? err.message : String(err),
+    });
   }
 }
 
@@ -339,21 +440,17 @@ export function MemoryWorkspace({ onToast }: MemoryWorkspaceProps) {
             <>
               <button
                 type="button"
-                onClick={() => void openVaultInObsidian(graph.content_root_abs)}
+                onClick={() => void handleOpenVaultClick(graph.content_root_abs, onToast)}
                 data-testid="memory-open-in-obsidian"
                 className="inline-flex items-center gap-2 rounded-lg
                            bg-violet-500 px-4 py-2 text-sm font-semibold text-white
                            shadow-sm transition-colors hover:bg-violet-600
                            focus:outline-none focus:ring-2 focus:ring-violet-300"
                 title={
-                  // Obsidian only resolves the `path=` URI when the absolute
-                  // path falls inside an already-registered vault. Spell that
-                  // out here so first-time users know what to do if Obsidian
-                  // says "vault doesn't exist".
-                  `Opens ${graph.content_root_abs} via obsidian://. ` +
-                  `If Obsidian reports "vault doesn't exist", click the ` +
-                  `folder button next to this one and drag the revealed ` +
-                  `folder onto Obsidian's "Open folder as vault" picker once.`
+                  `Auto-registers ${graph.content_root_abs} as an Obsidian ` +
+                  `vault (writes ~/Library/Application Support/obsidian/obsidian.json ` +
+                  `on macOS, $APPDATA/obsidian on Windows, ~/.config/obsidian on Linux) ` +
+                  `then opens it via obsidian://.`
                 }>
                 <ExternalLinkIcon />
                 {t('workspace.viewVault')}
@@ -371,9 +468,9 @@ export function MemoryWorkspace({ onToast }: MemoryWorkspaceProps) {
                            focus:outline-none focus:ring-2 focus:ring-stone-200"
                 title={
                   `Reveal ${graph.content_root_abs} in the file manager. ` +
-                  `Use this once to add the folder as an Obsidian vault: ` +
-                  `Obsidian → File → Open Vault → Open folder as vault → ` +
-                  `select the revealed folder.`
+                  `Useful when Obsidian's auto-register couldn't run (no Obsidian ` +
+                  `installed yet, or permissions denied). Drag the revealed folder ` +
+                  `onto Obsidian's "Open folder as vault" picker once.`
                 }>
                 <FolderIcon />
               </button>

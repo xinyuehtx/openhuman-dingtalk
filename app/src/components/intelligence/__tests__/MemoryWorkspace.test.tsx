@@ -15,6 +15,17 @@ vi.mock('../../../utils/tauriCommands', () => ({
   memoryTreeFlushNow: vi.fn(),
   memoryTreeWipeAll: vi.fn(),
   memoryTreeResetTree: vi.fn(),
+  // New: "View Vault" now auto-registers the folder as an Obsidian vault
+  // before dispatching the obsidian:// URL. Default mock returns
+  // `already_present` so existing click tests keep observing the URI
+  // dispatch without a noisy first-run toast.
+  memoryTreeRegisterObsidianVault: vi.fn(),
+}));
+
+// `revealItemInDir` is the fallback used by the new "reveal in finder"
+// button. Stub it so tests don't crash on import of @tauri-apps/plugin-opener.
+vi.mock('@tauri-apps/plugin-opener', () => ({
+  revealItemInDir: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('../../../services/memorySyncService', () => ({
@@ -30,13 +41,19 @@ vi.mock('../../../lib/composio/composioApi', () => ({
 // through `tauri-plugin-opener` (which isn't loaded in the test env).
 vi.mock('../../../utils/openUrl', () => ({ openUrl: vi.fn().mockResolvedValue(undefined) }));
 
-const { memoryTreeGraphExport, memoryTreeFlushNow, memoryTreeWipeAll, memoryTreeResetTree } =
-  (await import('../../../utils/tauriCommands')) as unknown as {
-    memoryTreeGraphExport: Mock;
-    memoryTreeFlushNow: Mock;
-    memoryTreeWipeAll: Mock;
-    memoryTreeResetTree: Mock;
-  };
+const {
+  memoryTreeGraphExport,
+  memoryTreeFlushNow,
+  memoryTreeWipeAll,
+  memoryTreeResetTree,
+  memoryTreeRegisterObsidianVault,
+} = (await import('../../../utils/tauriCommands')) as unknown as {
+  memoryTreeGraphExport: Mock;
+  memoryTreeFlushNow: Mock;
+  memoryTreeWipeAll: Mock;
+  memoryTreeResetTree: Mock;
+  memoryTreeRegisterObsidianVault: Mock;
+};
 
 const { listConnections, syncConnection } =
   (await import('../../../lib/composio/composioApi')) as unknown as {
@@ -92,6 +109,13 @@ describe('MemoryWorkspace (graph view)', () => {
     listConnections.mockResolvedValue({ connections: [] });
     syncConnection.mockResolvedValue({ ok: true });
     openUrl.mockResolvedValue(undefined);
+    // Default: vault is already registered — keeps URI-dispatch tests
+    // focused on the dispatch itself rather than the first-run handshake.
+    memoryTreeRegisterObsidianVault.mockResolvedValue({
+      status: 'already_present',
+      config_path: '/tmp/obsidian.json',
+      vault_id: 'abc1234567890def',
+    });
   });
 
   it('renders the SVG graph once the export RPC resolves', async () => {

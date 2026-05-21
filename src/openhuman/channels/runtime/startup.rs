@@ -549,6 +549,12 @@ pub async fn start_channels(config: Config) -> Result<()> {
             .map(|ch| (ch.name().to_string(), Arc::clone(ch)))
             .collect::<HashMap<_, _>>(),
     );
+
+    // Register the channel.send native handler so modules like
+    // ChannelInboundSubscriber can send messages through locally-running
+    // external channels without a backend session JWT.
+    crate::openhuman::channels::bus::register_channel_send_handler(Arc::clone(&channels_by_name));
+
     // Register the cron delivery subscriber so cron jobs can deliver output
     // to channels via events instead of directly constructing channel instances.
     let _cron_delivery_handle = bus.subscribe(Arc::new(

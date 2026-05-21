@@ -349,7 +349,12 @@ pub async fn connect_channel(
             .filter(|s| !s.is_empty())
             .ok_or_else(|| "missing required client_secret".to_string())?
             .to_string();
-        let allowed_users = parse_allowed_users(creds_map.get("allowed_users"));
+        let parsed_allowed_users = parse_allowed_users(creds_map.get("allowed_users"));
+        let allowed_users = if parsed_allowed_users.is_empty() {
+            vec!["*".to_string()]
+        } else {
+            parsed_allowed_users
+        };
         let allowed_users_count = allowed_users.len();
 
         let mut persisted = config.clone();

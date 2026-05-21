@@ -112,9 +112,26 @@ pub fn canonicalise(
     }
 
     let mut md = String::new();
-    // No leading `# provider — title` header. Provider / title info
-    // belongs in the MD front-matter (Phase MD-content).
-    md.push_str(doc.body.trim());
+    // Title goes as a leading `# <title>` header. An earlier iteration
+    // dropped the title entirely on the assumption that it belonged in
+    // the YAML front-matter — but the `Metadata` struct has no `title`
+    // field, so the title was being lost altogether (e.g. every
+    // dingtalk calendar / minutes record landed with no subject). The
+    // body view in Obsidian, the LLM extractor, and recall snippets all
+    // benefit from having the title text right at the top of the
+    // markdown, so put it there. Skip when the title is just
+    // whitespace or when the body already starts with a heading (some
+    // callers — Notion, Google Docs — render their own title at the
+    // top of the body and we don't want a duplicate header).
+    let title_trimmed = doc.title.trim();
+    let body_trimmed = doc.body.trim();
+    let body_starts_with_heading = body_trimmed.starts_with("# ") || body_trimmed.starts_with("#\t");
+    if !title_trimmed.is_empty() && !body_starts_with_heading {
+        md.push_str("# ");
+        md.push_str(title_trimmed);
+        md.push_str("\n\n");
+    }
+    md.push_str(body_trimmed);
     md.push('\n');
 
     Ok(Some(CanonicalisedSource {
@@ -159,7 +176,12 @@ mod tests {
     }
 
     #[test]
-    fn renders_body_without_header() {
+    fn renders_title_as_h1_then_body() {
+        // The canonical Markdown now begins with `# <title>` so the LLM
+        // extractor, recall snippets, and the Obsidian rendering all
+        // see the document's subject. Previously the title was dropped
+        // entirely (root cause for the "calendar events have no title"
+        // bug reported against the dws sync output).
         let out = canonicalise(
             "d1",
             "alice",
@@ -168,13 +190,43 @@ mod tests {
         )
         .unwrap()
         .unwrap();
-        // No leading `# notion — Launch plan` header — that info belongs in front-matter.
         assert!(
-            !out.markdown.starts_with("# "),
-            "canonical document MD must NOT start with a `# ` header"
+            out.markdown.starts_with("# Launch plan\n\n"),
+            "expected leading `# Launch plan` header, got:\n{}",
+            out.markdown
         );
         assert!(out.markdown.contains("step one"));
         assert!(out.markdown.contains("step two"));
+    }
+
+    #[test]
+    fn skips_title_header_when_body_already_starts_with_h1() {
+        // Notion / Google-Docs exports often render their own title at
+        // the top of the body; we don't want to emit a duplicate
+        // `# Title\n\n# Title\n` header pair.
+        let out = canonicalise(
+            "d1",
+            "alice",
+            &[],
+            doc("Launch plan", "# Launch plan\n\nstep one"),
+        )
+        .unwrap()
+        .unwrap();
+        // The body already starts with `# Launch plan` — we should NOT
+        // add a second one.
+        let h1_count = out.markdown.matches("# Launch plan").count();
+        assert_eq!(h1_count, 1, "expected exactly one H1, got:\n{}", out.markdown);
+    }
+
+    #[test]
+    fn skips_title_header_when_title_is_blank() {
+        let out = canonicalise("d1", "alice", &[], doc("   ", "body content")).unwrap().unwrap();
+        assert!(
+            !out.markdown.starts_with("# "),
+            "blank title must not emit an empty `# \n` header, got:\n{}",
+            out.markdown
+        );
+        assert!(out.markdown.contains("body content"));
     }
 
     #[test]

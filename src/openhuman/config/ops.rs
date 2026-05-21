@@ -1442,6 +1442,14 @@ pub async fn dws_runtime_logout() -> Result<RpcOutcome<serde_json::Value>, Strin
 }
 
 /// Triggers an immediate DWS sync for categories that are enabled in config.
+///
+/// **Non-blocking**: returns as soon as the background task is spawned, with
+/// the freshly-minted `run_id`. The UI polls
+/// [`dws_sync_progress`] to track per-category state and learn when the
+/// run finished. Previously this blocked the RPC until every adapter
+/// finished — on a fresh install with months of dingtalk data that
+/// routinely tripped the 30s client-side RPC timeout, even though the
+/// underlying work continued in the background.
 pub async fn dws_sync_now() -> Result<RpcOutcome<serde_json::Value>, String> {
     use crate::openhuman::tools::implementations::dws::sync;
 
@@ -1458,22 +1466,94 @@ pub async fn dws_sync_now() -> Result<RpcOutcome<serde_json::Value>, String> {
         ));
     }
 
-    let result = sync::sync_now(&enabled_categories).await;
-    let result_json =
-        serde_json::to_value(&result).map_err(|e| format!("serialization error: {e}"))?;
-
-    // Reload state so we can echo the freshly-recorded timestamps to the UI.
-    let state = sync::load_state(&config.workspace_dir).await;
+    let category_count = enabled_categories.len();
+    let (run_id, started_fresh) = sync::spawn_sync_now(enabled_categories);
 
     Ok(RpcOutcome::new(
         serde_json::json!({
             "synced": true,
-            "result": result_json,
-            "last_synced_at": state.last_synced_at,
+            "async": true,
+            "run_id": run_id,
+            "started_fresh": started_fresh,
+            // Initial progress snapshot — handy for the UI to render
+            // immediately without a separate poll-roundtrip on the
+            // happy path.
+            "progress": sync::progress_snapshot(),
         }),
         vec![format!(
-            "dws_sync: synced {} categories",
-            enabled_categories.len()
+            "dws_sync: spawned async run for {} categories (run_id={})",
+            category_count, run_id
+        )],
+    ))
+}
+
+/// Read-only snapshot of the current (or most recent) DWS sync run.
+/// Returns `null` when no run has ever started in this process.
+pub async fn dws_sync_progress() -> Result<RpcOutcome<serde_json::Value>, String> {
+    use crate::openhuman::tools::implementations::dws::sync;
+    let snap = sync::progress_snapshot();
+    let payload =
+        serde_json::to_value(&snap).map_err(|e| format!("serialization error: {e}"))?;
+    Ok(RpcOutcome::new(payload, Vec::new()))
+}
+
+/// Drop persisted `last_synced_at` cursors so the next sync uses each
+/// category's full cold-start window. Used by the "强制冷启动拉取"
+/// (force cold-start) UI flow to recover from a stuck cursor —
+/// typically after upgrading from an older buggy adapter that
+/// landed cursor=now even though zero records were actually
+/// ingested.
+///
+/// `categories` is optional:
+/// - `None` / empty array → clear ALL cursors
+/// - non-empty array of `"chat" | "doc" | "calendar" | "minutes"`
+///   → clear only those
+///
+/// This does NOT trigger a sync — the UI is expected to call
+/// `dws_sync_now` immediately after so the user sees fresh data
+/// without manually clicking through twice.
+pub async fn dws_sync_reset_cursors(
+    categories: Option<Vec<String>>,
+) -> Result<RpcOutcome<serde_json::Value>, String> {
+    use crate::openhuman::tools::implementations::dws::sync;
+
+    let config = load_config_with_timeout().await?;
+
+    // Parse the optional list of category keys. Unknown / mis-spelled
+    // values surface as an error rather than being silently dropped,
+    // so a UI bug that ships `"docs"` (plural) doesn't no-op forever.
+    let typed: Vec<sync::DwsSyncCategory> = match categories.as_ref() {
+        None => Vec::new(),
+        Some(list) if list.is_empty() => Vec::new(),
+        Some(list) => {
+            let mut typed = Vec::with_capacity(list.len());
+            for raw in list {
+                let cat = match raw.as_str() {
+                    "chat" => sync::DwsSyncCategory::Chat,
+                    "doc" => sync::DwsSyncCategory::Doc,
+                    "calendar" => sync::DwsSyncCategory::Calendar,
+                    "minutes" => sync::DwsSyncCategory::Minutes,
+                    other => {
+                        return Err(format!(
+                            "unknown dws sync category: {other:?} (valid: chat/doc/calendar/minutes)"
+                        ));
+                    }
+                };
+                typed.push(cat);
+            }
+            typed
+        }
+    };
+
+    let cleared = sync::reset_cursors(&config.workspace_dir, &typed).await;
+    let count = cleared.len();
+    Ok(RpcOutcome::new(
+        serde_json::json!({
+            "cleared": cleared,
+            "count": count,
+        }),
+        vec![format!(
+            "dws_sync: reset {count} cursor(s) ({cleared:?})"
         )],
     ))
 }

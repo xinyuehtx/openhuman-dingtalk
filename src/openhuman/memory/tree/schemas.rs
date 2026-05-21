@@ -45,6 +45,7 @@ pub fn all_controller_schemas() -> Vec<ControllerSchema> {
         schemas("flush_now"),
         schemas("wipe_all"),
         schemas("reset_tree"),
+        schemas("register_obsidian_vault"),
     ]
 }
 
@@ -127,6 +128,10 @@ pub fn all_registered_controllers() -> Vec<RegisteredController> {
         RegisteredController {
             schema: schemas("reset_tree"),
             handler: handle_reset_tree,
+        },
+        RegisteredController {
+            schema: schemas("register_obsidian_vault"),
+            handler: handle_register_obsidian_vault,
         },
     ]
 }
@@ -717,6 +722,49 @@ pub fn schemas(function: &str) -> ControllerSchema {
                 },
             ],
         },
+        "register_obsidian_vault" => ControllerSchema {
+            namespace: NAMESPACE,
+            function: "register_obsidian_vault",
+            description: "Auto-register the memory_tree `content/` folder as an \
+                Obsidian vault by patching the user's `obsidian.json`. Idempotent — \
+                returns `already_present` when the path is registered. Returns \
+                `obsidian_not_installed` when Obsidian's config directory doesn't \
+                exist; the UI should then show install / manual-add guidance. \
+                This is the prerequisite for `obsidian://open?path=...` deep links \
+                to resolve.",
+            inputs: vec![],
+            outputs: vec![
+                FieldSchema {
+                    name: "status",
+                    ty: TypeSchema::Enum {
+                        variants: vec!["registered", "already_present", "obsidian_not_installed"],
+                    },
+                    comment: "Outcome discriminator.",
+                    required: true,
+                },
+                FieldSchema {
+                    name: "config_path",
+                    ty: TypeSchema::Option(Box::new(TypeSchema::String)),
+                    comment: "Absolute path to the `obsidian.json` we wrote to (or would \
+                        have written to). Always present for diagnostics.",
+                    required: false,
+                },
+                FieldSchema {
+                    name: "vault_id",
+                    ty: TypeSchema::Option(Box::new(TypeSchema::String)),
+                    comment: "The 16-hex-char vault id Obsidian will key this vault by. \
+                        Absent when status=obsidian_not_installed.",
+                    required: false,
+                },
+                FieldSchema {
+                    name: "expected_config_path",
+                    ty: TypeSchema::Option(Box::new(TypeSchema::String)),
+                    comment: "Set only when status=obsidian_not_installed — the path the \
+                        UI can show the user so they know what to check.",
+                    required: false,
+                },
+            ],
+        },
         "memory_backfill_status" => ControllerSchema {
             namespace: NAMESPACE,
             function: "memory_backfill_status",
@@ -951,6 +999,31 @@ fn handle_reset_tree(_params: Map<String, Value>) -> ControllerFuture {
     Box::pin(async move {
         let config = config_rpc::load_config_with_timeout().await?;
         to_json(read_rpc::reset_tree_rpc(&config).await?)
+    })
+}
+
+fn handle_register_obsidian_vault(_params: Map<String, Value>) -> ControllerFuture {
+    use crate::openhuman::memory::tree::obsidian_register;
+    Box::pin(async move {
+        let config = config_rpc::load_config_with_timeout().await?;
+        let vault_root = config.memory_tree_content_root();
+        // Best-effort filesystem touch — register_vault tolerates a missing
+        // file but the directory must exist for Obsidian to consider it a
+        // vault. Use `create_dir_all` so an empty workspace (no chunks yet)
+        // still registers cleanly.
+        if let Err(err) = std::fs::create_dir_all(&vault_root) {
+            log::warn!(
+                "[memory_tree] register_obsidian_vault: create content root failed at {:?}: {err:#}",
+                vault_root
+            );
+        }
+        let outcome = tokio::task::spawn_blocking(move || {
+            obsidian_register::register_vault(&vault_root)
+        })
+        .await
+        .map_err(|e| format!("register_obsidian_vault join error: {e}"))?
+        .map_err(|e| format!("register_obsidian_vault failed: {e:#}"))?;
+        to_json(RpcOutcome::new(outcome, Vec::new()))
     })
 }
 

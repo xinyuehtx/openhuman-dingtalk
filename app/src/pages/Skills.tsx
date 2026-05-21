@@ -9,7 +9,7 @@ import CreateSkillModal from '../components/skills/CreateSkillModal';
 import InstallSkillDialog from '../components/skills/InstallSkillDialog';
 import ScreenIntelligenceSetupModal from '../components/skills/ScreenIntelligenceSetupModal';
 import UnifiedSkillCard from '../components/skills/SkillCard';
-import { type SkillCategory } from '../components/skills/skillCategories';
+import type { SkillCategory } from '../components/skills/skillCategories';
 import SkillDetailDrawer from '../components/skills/SkillDetailDrawer';
 import {
   BUILT_IN_SKILL_ICONS,
@@ -242,6 +242,7 @@ export default function Skills() {
     [channelDefs]
   );
 
+  // Unified item list
   const allItems: SkillItem[] = useMemo(() => {
     const items: SkillItem[] = [];
 
@@ -270,6 +271,9 @@ export default function Skills() {
       });
     }
 
+    // Discovered SKILL.md skills — surface each as a card whose CTA opens
+    // the detail drawer. They live under the generic "Other" category so
+    // they don't displace hand-curated built-ins or Channels.
     for (const skill of discoveredSkills) {
       items.push({
         id: `discovered-${skill.id}`,
@@ -285,6 +289,29 @@ export default function Skills() {
     return items;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [configurableChannels, channelConnections, discoveredSkills]);
+
+  const filteredItems = useMemo(() => {
+    return allItems.filter(item => {
+      return item.category !== 'Channels';
+    });
+  }, [allItems]);
+
+  // Underscore prefix tells TS to ignore the unused-binding warning.
+  // Kept as a stable computation so downstream callers that may rely
+  // on it via future PR conflicts don't silently lose it.
+  const _groupedItems = useMemo(() => {
+    const groups = new Map<SkillCategory, SkillItem[]>();
+    for (const item of filteredItems) {
+      const existing = groups.get(item.category);
+      if (existing) {
+        existing.push(item);
+      } else {
+        groups.set(item.category, [item]);
+      }
+    }
+    return Array.from(groups.entries()).map(([category, items]) => ({ category, items }));
+  }, [filteredItems]);
+  void _groupedItems;
 
   const channelsGroup = useMemo(() => {
     const items = allItems.filter(item => item.category === 'Channels');
@@ -532,6 +559,67 @@ export default function Skills() {
             )}
 
             {otherGroups.map(group => renderGroup(group))}
+            {
+              <>
+                {channelsGroup && (
+                  <div className="rounded-2xl border border-stone-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-3 shadow-soft animate-fade-up">
+                    <div className="px-1 pb-3 pt-1">
+                      <h2
+                        className="flex items-center gap-2 text-sm font-semibold text-stone-900 dark:text-neutral-100"
+                        data-walkthrough="skills-channels">
+                        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-stone-100 dark:bg-neutral-800">
+                          <SkillCategoryIcon
+                            category="Channels"
+                            className={skillCategoryHeadingClassName('Channels')}
+                          />
+                        </span>
+                        {t('skills.channels')}
+                      </h2>
+                      <p className="mt-0.5 text-[11px] leading-relaxed text-stone-500 dark:text-neutral-400">
+                        {t('channels.defaultMessaging')}
+                      </p>
+                    </div>
+                    <div
+                      className="grid gap-2 sm:gap-3"
+                      style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(5.5rem, 1fr))' }}>
+                      {channelsGroup.items.map(item => (
+                        <ChannelTile
+                          key={item.id}
+                          def={item.channelDef!}
+                          status={item.channelStatus!}
+                          icon={item.icon}
+                          onOpen={() => setChannelModalDef(item.channelDef!)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* <MeetingBotsCard onToast={addToast} /> */}
+
+                {/* DingTalk DWS Integration */}
+                <div className="rounded-2xl border border-stone-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-3 shadow-soft animate-fade-up">
+                  <div className="px-1 pb-3 pt-1">
+                    <h2
+                      className="flex items-center gap-2 text-sm font-semibold text-stone-900 dark:text-neutral-100"
+                      data-walkthrough="skills-dws">
+                      <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-stone-100 dark:bg-neutral-800">
+                        🔔
+                      </span>
+                      钉钉工作台 (DWS)
+                    </h2>
+                    <p className="mt-0.5 text-[11px] leading-relaxed text-stone-500 dark:text-neutral-400">
+                      通过 DingTalk Workspace CLI 管理钉钉全产品能力
+                    </p>
+                  </div>
+                  <div className="px-1 pb-1">
+                    <DwsSetupCard />
+                  </div>
+                </div>
+
+                {otherGroups.map(group => renderGroup(group))}
+              </>
+            }
           </div>
         </div>
       </div>

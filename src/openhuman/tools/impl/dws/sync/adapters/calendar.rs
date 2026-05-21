@@ -189,9 +189,20 @@ fn build_event_body(event: &Value, start_ms: Option<i64>) -> String {
         body.push('\n');
     }
 
+    // The live dws calendar envelope wraps the conference link inside
+    // `onlineMeetingInfo.url` (alongside `conferenceId`, `extraInfo`,
+    // etc.) — top-level `onlineMeetingUrl` / `meetingUrl` are kept as
+    // fallbacks for older or alternative envelopes.
     if let Some(meeting_url) = event
         .get("onlineMeetingUrl")
         .or_else(|| event.get("meetingUrl"))
+        .or_else(|| event.get("onlineMeetingInfo").and_then(|i| i.get("url")))
+        .or_else(|| {
+            event
+                .get("onlineMeetingInfo")
+                .and_then(|i| i.get("internalExtraInfo"))
+                .and_then(|i| i.get("urlForCalDAV"))
+        })
         .and_then(|v| v.as_str())
     {
         body.push_str("**会议链接**: ");
@@ -336,6 +347,25 @@ mod tests {
         let body = build_event_body(&event, None);
         assert!(body.contains("- line1"));
         assert!(body.contains("- line4"));
+    }
+
+    #[test]
+    fn build_event_body_extracts_meeting_url_from_online_meeting_info() {
+        // Regression: real dws envelope nests the conference link
+        // under `onlineMeetingInfo.url` rather than at the top level.
+        // Adapter must recognise that path so 钉钉视频会议 links land
+        // in memory.
+        let event = serde_json::json!({
+            "summary": "Sync",
+            "onlineMeetingInfo": {
+                "conferenceId": "abc",
+                "type": "dingtalk",
+                "url": "dingtalk://dingtalkclient/page/videoConf?confId=abc"
+            }
+        });
+        let body = build_event_body(&event, None);
+        assert!(body.contains("**会议链接**"));
+        assert!(body.contains("dingtalk://dingtalkclient/page/videoConf?confId=abc"));
     }
 
     #[test]

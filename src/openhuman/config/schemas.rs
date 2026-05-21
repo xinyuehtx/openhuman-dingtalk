@@ -220,6 +220,8 @@ pub fn all_controller_schemas() -> Vec<ControllerSchema> {
         schemas("get_dws_sync_settings"),
         schemas("update_dws_sync_settings"),
         schemas("dws_sync_now"),
+        schemas("dws_sync_progress"),
+        schemas("dws_sync_reset_cursors"),
         schemas("dws_runtime_status"),
         schemas("dws_runtime_install"),
         schemas("dws_runtime_open_login"),
@@ -352,6 +354,14 @@ pub fn all_registered_controllers() -> Vec<RegisteredController> {
         RegisteredController {
             schema: schemas("dws_sync_now"),
             handler: handle_dws_sync_now,
+        },
+        RegisteredController {
+            schema: schemas("dws_sync_progress"),
+            handler: handle_dws_sync_progress,
+        },
+        RegisteredController {
+            schema: schemas("dws_sync_reset_cursors"),
+            handler: handle_dws_sync_reset_cursors,
         },
         RegisteredController {
             schema: schemas("dws_runtime_status"),
@@ -924,9 +934,56 @@ pub fn schemas(function: &str) -> ControllerSchema {
         "dws_sync_now" => ControllerSchema {
             namespace: "config",
             function: "dws_sync_now",
-            description: "Immediately trigger a DWS data sync for all enabled categories. Returns sync results per category.",
+            description: "Kick off a DWS data sync for all enabled categories. \
+                Returns IMMEDIATELY with a `run_id` — the actual fetching runs in a \
+                background task so the RPC never trips the client-side 30s timeout. \
+                Poll `config_dws_sync_progress` to watch per-category state and learn \
+                when the run finished.",
             inputs: vec![],
-            outputs: vec![json_output("result", "Sync results with per-category success/failure details.")],
+            outputs: vec![json_output(
+                "result",
+                "{ synced, async, run_id, started_fresh, progress }. \
+                 `started_fresh=false` means another run was already in flight and \
+                 its existing `run_id` was returned instead of starting a duplicate.",
+            )],
+        },
+        "dws_sync_progress" => ControllerSchema {
+            namespace: "config",
+            function: "dws_sync_progress",
+            description: "Snapshot of the current (or most recent) DWS sync run. \
+                The UI polls this every ~500ms while the sync button is active to \
+                render per-category state (Pending / Running / Done / Failed) and \
+                detect completion (`finished_at != null`). Returns `null` when no \
+                run has ever started in this process.",
+            inputs: vec![],
+            outputs: vec![json_output(
+                "progress",
+                "Optional progress snapshot: { run_id, started_at, finished_at, categories[] }.",
+            )],
+        },
+        "dws_sync_reset_cursors" => ControllerSchema {
+            namespace: "config",
+            function: "dws_sync_reset_cursors",
+            description: "Drop persisted `last_synced_at` cursors so the next \
+                `dws_sync_now` falls back to each category's full cold-start \
+                window (Chat/Calendar=1h, Doc/Minutes=30d). Used by the \
+                '强制冷启动拉取' UI flow to recover from a stuck cursor — \
+                typically after upgrading from a buggy adapter that landed \
+                cursor=now even though zero records were ingested.",
+            inputs: vec![FieldSchema {
+                name: "categories",
+                ty: TypeSchema::Option(Box::new(TypeSchema::Array(Box::new(
+                    TypeSchema::Enum {
+                        variants: vec!["chat", "doc", "calendar", "minutes"],
+                    },
+                )))),
+                comment: "Optional category whitelist. Omit / empty → clear ALL.",
+                required: false,
+            }],
+            outputs: vec![json_output(
+                "result",
+                "{ cleared: [string], count: int } — the state-keys that were dropped.",
+            )],
         },
         "dws_runtime_status" => ControllerSchema {
             namespace: "config",
@@ -1488,6 +1545,49 @@ fn handle_dws_sync_now(_params: Map<String, Value>) -> ControllerFuture {
             }
             Err(err) => {
                 log::warn!("[config][rpc] dws_sync_now failed: {err}");
+                Err(err)
+            }
+        }
+    })
+}
+
+fn handle_dws_sync_progress(_params: Map<String, Value>) -> ControllerFuture {
+    Box::pin(async {
+        log::trace!("[config][rpc] dws_sync_progress enter");
+        // No `await` between progress::snapshot() and serialise — keeps
+        // the global lock release immediate even though the surface is
+        // async.
+        match config_rpc::dws_sync_progress().await {
+            Ok(outcome) => to_json(outcome),
+            Err(err) => {
+                log::warn!("[config][rpc] dws_sync_progress failed: {err}");
+                Err(err)
+            }
+        }
+    })
+}
+
+fn handle_dws_sync_reset_cursors(params: Map<String, Value>) -> ControllerFuture {
+    Box::pin(async move {
+        log::debug!("[config][rpc] dws_sync_reset_cursors enter");
+        let categories = params
+            .get("categories")
+            .and_then(|v| v.as_array())
+            .map(|arr| {
+                arr.iter()
+                    .filter_map(|c| c.as_str().map(str::to_string))
+                    .collect::<Vec<_>>()
+            });
+        match config_rpc::dws_sync_reset_cursors(categories).await {
+            Ok(outcome) => {
+                log::info!(
+                    "[config][rpc] dws_sync_reset_cursors ok ({} cleared)",
+                    outcome.value.get("count").and_then(|v| v.as_u64()).unwrap_or(0)
+                );
+                to_json(outcome)
+            }
+            Err(err) => {
+                log::warn!("[config][rpc] dws_sync_reset_cursors failed: {err}");
                 Err(err)
             }
         }

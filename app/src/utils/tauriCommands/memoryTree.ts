@@ -631,3 +631,58 @@ export async function memoryTreeBackfillStatus(): Promise<BackfillStatus> {
   );
   return out;
 }
+
+/**
+ * Outcome of `register_obsidian_vault` — used by the UI to decide
+ * whether to dispatch the `obsidian://` URL directly or fall back to
+ * manual install / add-as-vault guidance.
+ *
+ * Wire shape mirrors the Rust `RegisterOutcome` enum's
+ * `#[serde(tag = "status", rename_all = "snake_case")]` representation.
+ */
+export type ObsidianRegisterOutcome =
+  | {
+      /** Newly added an entry in `obsidian.json` for the content root. */
+      status: 'registered';
+      /** Path to the `obsidian.json` we wrote. */
+      config_path: string;
+      /** 16-hex-char vault id Obsidian uses to key this vault. */
+      vault_id: string;
+    }
+  | {
+      /** A vault entry pointing at the same path was already there. */
+      status: 'already_present';
+      config_path: string;
+      vault_id: string;
+    }
+  | {
+      /** Obsidian's config dir is missing — likely not installed. */
+      status: 'obsidian_not_installed';
+      /** Path we expected to find but didn't, for diagnostics in the UI. */
+      expected_config_path: string;
+    };
+
+/**
+ * Best-effort auto-register the memory_tree content folder as an
+ * Obsidian vault by patching the user's `obsidian.json`. Required
+ * because Obsidian's `obsidian://open?path=...` URI scheme only
+ * resolves when the absolute path falls inside an already-registered
+ * vault (there is no URI action to add one). Idempotent — repeat calls
+ * return `already_present` rather than minting a duplicate.
+ *
+ * Backed by `openhuman.memory_tree_register_obsidian_vault`.
+ */
+export async function memoryTreeRegisterObsidianVault(): Promise<ObsidianRegisterOutcome> {
+  console.debug('[memory-tree-rpc] memoryTreeRegisterObsidianVault: entry');
+  const resp = await callCoreRpc<
+    ObsidianRegisterOutcome | ResultEnvelope<ObsidianRegisterOutcome>
+  >({
+    method: 'openhuman.memory_tree_register_obsidian_vault',
+  });
+  const out = unwrapResult(resp);
+  console.debug(
+    '[memory-tree-rpc] memoryTreeRegisterObsidianVault: exit status=%s',
+    out.status
+  );
+  return out;
+}

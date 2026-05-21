@@ -22,7 +22,12 @@ import { useMemo, useRef, useState } from 'react';
 
 import { useT } from '../../lib/i18n/I18nContext';
 import { openUrl } from '../../utils/openUrl';
-import { type GraphEdge, type GraphMode, type GraphNode } from '../../utils/tauriCommands';
+import {
+  type GraphEdge,
+  type GraphMode,
+  type GraphNode,
+  memoryTreeRegisterObsidianVault,
+} from '../../utils/tauriCommands';
 
 interface SimNode extends GraphNode {
   x: number;
@@ -135,10 +140,38 @@ function relaxLayout(nodes: SimNode[], edges: Array<[number, number]>, iteration
  * them — `window.location.href` would route through the embedded
  * webview's intent handler and either no-op or navigate the
  * MemoryWorkspace away.
+ *
+ * Registers the vault first (idempotent — `already_present` after the
+ * very first click) so the `obsidian://open?path=...` URI actually
+ * resolves. Without this, Obsidian shows its "vault doesn't exist"
+ * dialog for users who haven't manually added the folder yet. The
+ * registration RPC is silent on failure here because the per-node
+ * click flow has no toast surface to render guidance into — the
+ * "View Vault" button in MemoryWorkspace already does the loud
+ * first-run handshake with full toasts.
  */
 async function openSummaryInObsidian(node: GraphNode, contentRootAbs: string): Promise<void> {
   if (node.kind !== 'summary' || !node.tree_kind || node.level == null || !node.file_basename) {
     return;
+  }
+  try {
+    const outcome = await memoryTreeRegisterObsidianVault();
+    if (outcome.status === 'obsidian_not_installed') {
+      // Skip the URI dispatch — Obsidian will just bounce. The user
+      // already saw guidance from the "View Vault" button (or will
+      // once they click it), so suppress here to avoid a useless
+      // launch attempt.
+      console.warn(
+        '[memory-graph] Obsidian not installed (expected=%s) — skipping deep-link dispatch',
+        outcome.expected_config_path
+      );
+      return;
+    }
+  } catch (err) {
+    // Registration failure is non-fatal for the per-node click: try
+    // the URI anyway, since the vault may already be registered from
+    // a prior session even if the RPC errored.
+    console.warn('[memory-graph] registerObsidianVault failed, trying URI anyway', err);
   }
   const slug = slugify(node.tree_scope ?? '');
   // Mirrors `summary_rel_path` on the Rust side — the `wiki/` prefix

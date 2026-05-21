@@ -2,8 +2,11 @@ import { useState } from 'react';
 
 import { useDwsStatus } from '../../features/dws/useDwsStatus';
 import {
+  type DwsCategoryProgress,
   type DwsSyncCategories,
   type DwsSyncConfig,
+  type DwsSyncProgressSnapshot,
+  type SyncNowResult,
   useDwsSyncConfig,
 } from '../../features/dws/useDwsSyncConfig';
 
@@ -241,8 +244,17 @@ function OperationLog({ kind, text, onClose }: OperationLogProps) {
 // ── Sync panel ─────────────────────────────────────────────────────────────
 
 function DwsSyncPanel() {
-  const { config, loading, syncing, toggleCategory, syncNow, updateConfig, error } =
-    useDwsSyncConfig();
+  const {
+    config,
+    loading,
+    syncing,
+    syncProgress,
+    toggleCategory,
+    syncNow,
+    forceColdStartSync,
+    updateConfig,
+    error,
+  } = useDwsSyncConfig();
   const [syncResult, setSyncResult] = useState<string | null>(null);
 
   if (!config && loading) {
@@ -257,27 +269,28 @@ function DwsSyncPanel() {
   }
   if (!config) return null;
 
+  const handleForceColdStart = async () => {
+    // Two-step confirm — a force cold-start re-fetches up to 30 days of
+    // doc/minutes from dws, which can be slow and is wasteful to trigger
+    // by accident.
+    const ok = window.confirm(
+      '强制冷启动会清除增量游标，按每个类别的完整窗口重新拉取（聊天/日历 1 小时、文档/听记 30 天）。继续？'
+    );
+    if (!ok) return;
+    setSyncResult(null);
+    const result = await forceColdStartSync();
+    if (!result) {
+      setSyncResult('强制冷启动失败，请查看 core 日志');
+      return;
+    }
+    renderSyncFinishedResult(result, setSyncResult);
+  };
+
   const handleSyncNow = async () => {
     setSyncResult(null);
     const result = await syncNow();
     if (!result) return;
-    if (!result.synced) {
-      setSyncResult(result.message ?? '没有启用任何同步类别');
-      return;
-    }
-    if (result.result) {
-      const ok = result.result.results.filter(r => r.success).length;
-      const total = result.result.results.length;
-      const failed = result.result.results
-        .filter(r => !r.success)
-        .map(r => `${r.category}: ${r.error ?? 'unknown error'}`)
-        .join('\n');
-      setSyncResult(
-        failed
-          ? `同步完成：${ok}/${total} 成功\n\n失败明细：\n${failed}`
-          : `同步完成：${ok}/${total} 个类别成功`
-      );
-    }
+    renderSyncFinishedResult(result, setSyncResult);
   };
 
   return (
@@ -296,14 +309,47 @@ function DwsSyncPanel() {
             title={config.enabled ? '已启用定时同步' : '已禁用定时同步'}
           />
         </div>
-        <button
-          type="button"
-          onClick={() => void handleSyncNow()}
-          disabled={syncing || loading}
-          className="rounded-lg bg-primary-500 px-2.5 py-1 text-[10px] font-semibold text-white shadow-soft transition-colors hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1">
-          {syncing ? '同步中…' : '⚡ 立即拉取'}
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => void handleForceColdStart()}
+            disabled={syncing || loading}
+            title={
+              // The 30-day Doc/Minutes lookback is the main reason this
+              // button exists — spell that out so the user knows what
+              // they're triggering. Calendar/Chat are still 1h.
+              '清除所有类别的增量游标，再按完整冷启动窗口重新拉取（聊天/日历 1 小时、文档/听记 30 天）。' +
+              '\n\n适用于：升级后增量游标卡住（每次同步 records=0）、想重新拉取全部历史数据。'
+            }
+            className="inline-flex items-center gap-1 rounded-lg border border-amber-300 dark:border-amber-500/40 bg-white dark:bg-neutral-900 px-2 py-1 text-[10px] font-semibold text-amber-700 dark:text-amber-300 shadow-soft transition-colors hover:bg-amber-50 dark:hover:bg-amber-500/10 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-1">
+            🧹 强制冷启动
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleSyncNow()}
+            disabled={syncing || loading}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-primary-500 px-2.5 py-1 text-[10px] font-semibold text-white shadow-soft transition-colors hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1">
+            {syncing ? (
+              <>
+                <span className="h-2.5 w-2.5 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                <span>
+                  {syncProgress
+                    ? `同步中 ${countCompleted(syncProgress)}/${syncProgress.categories.length}`
+                    : '同步中…'}
+                </span>
+              </>
+            ) : (
+              <>⚡ 立即拉取</>
+            )}
+          </button>
+        </div>
       </div>
+
+      {/* Live per-category progress while a run is in flight (or the
+          most recent run's final state right after it finishes). */}
+      {syncProgress && (syncing || syncProgress.finished_at != null) && (
+        <SyncProgressList progress={syncProgress} active={syncing} />
+      )}
 
       {/* Interval picker */}
       <IntervalPicker
@@ -375,6 +421,161 @@ function DwsSyncPanel() {
       <FooterCaption config={config} />
     </div>
   );
+}
+
+/** Format the final result of a sync run (incremental or cold-start)
+ *  into a single status message for the panel. Pulled out of
+ *  `handleSyncNow` so the cold-start button reuses the exact same
+ *  rendering — keeps the two flows visually identical to avoid
+ *  surprising the user. */
+function renderSyncFinishedResult(
+  result: SyncNowResult,
+  setSyncResult: (v: string | null) => void
+): void {
+  if (!result.synced) {
+    setSyncResult(result.message ?? '没有启用任何同步类别');
+    return;
+  }
+  const snap = result.progress;
+  if (!snap) {
+    setSyncResult('同步已开始，进度未知（请查看 core 日志）');
+    return;
+  }
+  const total = snap.categories.length;
+  const ok = snap.categories.filter(c => c.state.kind === 'done').length;
+  const failed = snap.categories
+    .filter(c => c.state.kind === 'failed')
+    .map(c => {
+      const err = c.state.kind === 'failed' ? c.state.error : 'unknown';
+      return `${c.category}: ${err}`;
+    })
+    .join('\n');
+  setSyncResult(
+    failed
+      ? `同步完成：${ok}/${total} 成功\n\n失败明细：\n${failed}`
+      : `同步完成：${ok}/${total} 个类别成功`
+  );
+}
+
+/** Count categories whose state is terminal (Done or Failed). Drives
+ *  the "x/N" label on the sync button while a run is in flight. */
+function countCompleted(progress: DwsSyncProgressSnapshot): number {
+  return progress.categories.filter(
+    c => c.state.kind === 'done' || c.state.kind === 'failed'
+  ).length;
+}
+
+/** Display label for one of the four sync categories. Mirrors the
+ *  emoji set used by `SYNC_CATEGORIES`, fetched by id so the progress
+ *  row stays in sync with the toggle grid above. */
+function categoryMeta(category: DwsCategoryProgress['category']): { label: string; emoji: string } {
+  const entry = SYNC_CATEGORIES.find(c => c.key === category);
+  return entry ?? { label: category, emoji: '•' };
+}
+
+interface SyncProgressListProps {
+  progress: DwsSyncProgressSnapshot;
+  /** True while the poll loop is still running. Drives the spinner
+   *  on the `Running` row vs. the static check / x icon for terminal
+   *  states. Also gates whether we render the live header. */
+  active: boolean;
+}
+
+/** Per-category state rows shown beneath the sync button while a run
+ *  is in flight (or right after it finishes). Mirrors the live state
+ *  the core's `dws_sync_progress` RPC reports. */
+function SyncProgressList({ progress, active }: SyncProgressListProps) {
+  const completed = countCompleted(progress);
+  const total = progress.categories.length;
+  const overallPct = total === 0 ? 0 : Math.round((completed / total) * 100);
+  return (
+    <div className="rounded-lg border border-stone-200 dark:border-neutral-700 bg-white/40 dark:bg-neutral-900/40 p-2 space-y-1.5">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-[10px] font-semibold text-stone-700 dark:text-neutral-200">
+          {active ? '同步进行中' : '上次同步'}
+        </span>
+        <span className="text-[10px] tabular-nums text-stone-500 dark:text-neutral-400">
+          {completed}/{total} · {overallPct}%
+        </span>
+      </div>
+      {/* Slim progress bar. Width is driven by completed/total — sub
+          progress within a single category would refine this further
+          when adapters start reporting `Running { current, total }`. */}
+      <div className="h-1 w-full overflow-hidden rounded-full bg-stone-200 dark:bg-neutral-800">
+        <div
+          className={`h-full rounded-full transition-all duration-300 ${
+            active ? 'bg-primary-400' : 'bg-sage-400'
+          }`}
+          style={{ width: `${overallPct}%` }}
+        />
+      </div>
+      <div className="space-y-0.5">
+        {progress.categories.map(c => (
+          <SyncProgressRow key={c.category} entry={c} active={active} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SyncProgressRow({
+  entry,
+  active,
+}: {
+  entry: DwsCategoryProgress;
+  active: boolean;
+}) {
+  const meta = categoryMeta(entry.category);
+  const { icon, text, tone } = renderSyncState(entry.state, active);
+  return (
+    <div className="flex items-center gap-1.5 text-[10px]">
+      <span className="w-3 flex-shrink-0 text-center">{meta.emoji}</span>
+      <span className="w-12 flex-shrink-0 truncate text-stone-700 dark:text-neutral-300">
+        {meta.label}
+      </span>
+      <span className="flex-shrink-0">{icon}</span>
+      <span className={`flex-1 truncate ${tone}`}>{text}</span>
+    </div>
+  );
+}
+
+function renderSyncState(
+  state: DwsCategoryProgress['state'],
+  active: boolean
+): { icon: React.ReactNode; text: string; tone: string } {
+  switch (state.kind) {
+    case 'pending':
+      return {
+        icon: <span className="text-stone-400">⏸</span>,
+        text: active ? '等待中' : '未开始',
+        tone: 'text-stone-400 dark:text-neutral-500',
+      };
+    case 'running': {
+      const frac =
+        state.total != null && state.total > 0
+          ? ` ${state.current}/${state.total}`
+          : '';
+      return {
+        icon: (
+          <span className="inline-block h-2 w-2 animate-spin rounded-full border border-primary-400 border-t-transparent" />
+        ),
+        text: `${state.label ?? '获取中'}${frac}`,
+        tone: 'text-primary-600 dark:text-primary-300',
+      };
+    }
+    case 'done':
+      return {
+        icon: <span className="text-sage-500">✓</span>,
+        text: `${state.records} 条记录 · ${state.chunks} chunk`,
+        tone: 'text-sage-700 dark:text-sage-300',
+      };
+    case 'failed':
+      return {
+        icon: <span className="text-coral-500">✗</span>,
+        text: state.error,
+        tone: 'text-coral-600 dark:text-coral-300',
+      };
+  }
 }
 
 interface IntervalPickerProps {

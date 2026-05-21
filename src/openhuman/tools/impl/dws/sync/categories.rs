@@ -60,4 +60,25 @@ impl DwsSyncCategory {
     pub fn needs_user_id(&self) -> bool {
         matches!(self, Self::Doc)
     }
+
+    /// Cold-start lookback window (seconds) when no `last_synced_at` cursor
+    /// exists for this category yet.
+    ///
+    /// Chat / Calendar activity is dense (multiple events per hour) so a
+    /// one-hour cold start surfaces useful context immediately without
+    /// dragging months of dingtalk history into memory. Doc / Minutes are
+    /// the opposite: typical users edit a handful of docs per week and
+    /// record meetings even less often, so the 1-hour window almost always
+    /// returned **zero** items on the first sync (the bug behind "拉取
+    /// 文档列表为空"). Widen those two to 30 days so the first sync has
+    /// something to feed the memory tree; incremental ticks afterwards
+    /// stay narrow thanks to the persisted cursor.
+    pub fn cold_start_seconds(&self) -> u64 {
+        const HOUR: u64 = 3_600;
+        const DAY: u64 = 24 * HOUR;
+        match self {
+            Self::Chat | Self::Calendar => HOUR,
+            Self::Doc | Self::Minutes => 30 * DAY,
+        }
+    }
 }
