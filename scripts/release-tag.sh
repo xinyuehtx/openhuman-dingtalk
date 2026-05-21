@@ -3,9 +3,9 @@
 #
 # Usage:
 #   ./scripts/release-tag.sh                 # default: patch bump
-#   ./scripts/release-tag.sh patch           # explicit patch bump (0.54.3 → 0.54.4)
-#   ./scripts/release-tag.sh minor           # minor bump (0.54.3 → 0.55.0)
-#   ./scripts/release-tag.sh major           # major bump (0.54.3 → 1.0.0)
+#   ./scripts/release-tag.sh patch           # explicit patch bump (0.55.0 → 0.55.0)
+#   ./scripts/release-tag.sh minor           # minor bump (0.55.0 → 0.55.0)
+#   ./scripts/release-tag.sh major           # major bump (0.55.0 → 1.0.0)
 #   ./scripts/release-tag.sh --dry-run       # show what would happen, no changes
 #   ./scripts/release-tag.sh patch --dry-run # combine
 #
@@ -54,11 +54,12 @@ CURRENT_VERSION="$(node -e "console.log(require('./app/package.json').version)")
 echo "[release-tag] current version: ${CURRENT_VERSION}"
 echo "[release-tag] bump type: ${RELEASE_TYPE}"
 
-# Check for uncommitted changes (allow untracked files).
+# Stage any uncommitted tracked changes so they are included in the
+# release commit. Untracked files are left alone — add them manually
+# before running this script if they should be part of the release.
 if ! git diff --quiet || ! git diff --cached --quiet; then
-  echo "[release-tag] ERROR: working tree has uncommitted changes. Commit or stash them first." >&2
-  git status --short >&2
-  exit 1
+  echo "[release-tag] detected uncommitted changes — will include them in the release commit"
+  git add -u
 fi
 
 # ── Dry-run mode ─────────────────────────────────────────────────────────────

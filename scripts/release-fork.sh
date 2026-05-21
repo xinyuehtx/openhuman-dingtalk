@@ -16,7 +16,7 @@
 # Usage:
 #   ./scripts/release-fork.sh               # build + upload using version from app/package.json
 #   ./scripts/release-fork.sh --dry-run     # build only, skip upload
-#   ./scripts/release-fork.sh --tag v0.54.3 # build + upload to an existing release tag
+#   ./scripts/release-fork.sh --tag v0.55.0 # build + upload to an existing release tag
 #   ./scripts/release-fork.sh --skip-build  # skip cargo build, only upload existing artifacts
 
 set -euo pipefail

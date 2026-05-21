@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Tag to (re)build, e.g. v0.54.4 (must already exist as a git tag)"
+        description: "Tag to (re)build, e.g. v0.55.0 (must already exist as a git tag)"
         required: true
 
 permissions:
@@ -124,11 +124,11 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       # The tag version (e.g. v0.54.8) may differ from the version baked
-      # into the config files on the checked-out commit (e.g. 0.54.3).
+      # into the config files on the checked-out commit (e.g. 0.55.0).
       # Tauri's NSIS/DMG bundler embeds the version from tauri.conf.json
       # into artifact filenames, so we must sync all four config files to
       # the tag version before building — otherwise the produced file
-      # (OpenHuman_0.54.3_x64-setup.exe) won't match what the release
+      # (OpenHuman_0.55.0_x64-setup.exe) won't match what the release
       # step expects (OpenHuman_0.54.8_x64-setup.exe).
       - name: Sync config versions to tag
         shell: bash

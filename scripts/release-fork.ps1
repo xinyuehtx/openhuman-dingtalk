@@ -17,7 +17,7 @@
 .EXAMPLE
   .\scripts\release-fork.ps1
   .\scripts\release-fork.ps1 -DryRun
-  .\scripts\release-fork.ps1 -Tag v0.54.3
+  .\scripts\release-fork.ps1 -Tag v0.55.0
   .\scripts\release-fork.ps1 -SkipBuild
 #>
 
