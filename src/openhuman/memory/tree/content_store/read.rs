@@ -432,6 +432,7 @@ mod tests {
             time_range_end: ts,
             sealed_at: ts,
             body,
+            display_title: None,
         };
         let composed = compose_summary_md(&input);
         let path = dir.path().join("sum.md");

@@ -1,9 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-import {
-  channelDisplayName,
-  type MentionTarget,
-} from '../mentionPicker';
+import { channelDisplayName, type MentionTarget } from '../mentionPicker';
 
 interface MentionPickerProps {
   targets: MentionTarget[];
@@ -34,9 +31,7 @@ export function MentionPicker({
   useEffect(() => {
     const root = listRef.current;
     if (!root) return;
-    const row = root.querySelector<HTMLButtonElement>(
-      `[data-mention-row="${activeIndex}"]`
-    );
+    const row = root.querySelector<HTMLButtonElement>(`[data-mention-row="${activeIndex}"]`);
     if (row) {
       row.scrollIntoView({ block: 'nearest' });
     }

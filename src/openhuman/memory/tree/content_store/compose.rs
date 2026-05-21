@@ -335,6 +335,13 @@ pub struct SummaryComposeInput<'a> {
     pub sealed_at: DateTime<Utc>,
     /// Raw summariser output text — the body written to disk.
     pub body: &'a str,
+    /// Optional human-readable display title used for the summary filename
+    /// and alias in Obsidian. When `Some`, the summary file is named
+    /// `<中文标题>-L<level>.md` instead of the opaque hash-based id.
+    /// For Source trees: document/meeting/transcript title.
+    /// For Topic trees: the entity surface form.
+    /// For Global trees: a Chinese date string like `2026年5月21日`.
+    pub display_title: Option<&'a str>,
 }
 
 /// The composed front-matter, body, and full file content for a summary.
@@ -447,33 +454,50 @@ fn build_summary_front_matter(r: &SummaryComposeInput<'_>) -> String {
 }
 
 /// Build a human-readable alias for the summary's `aliases:` front-matter field.
+///
+/// Uses Chinese labels for tree kinds; when `display_title` is available
+/// it takes precedence over the generic scope / child-count description.
 fn build_summary_alias(r: &SummaryComposeInput<'_>) -> String {
     let date_range = format_date_range(r.time_range_start, r.time_range_end);
     match r.tree_kind {
         SummaryTreeKind::Source => {
-            let scope_short = scope_short_label(r.tree_scope);
-            format!(
-                "L{} \u{00b7} {} \u{00b7} {} children \u{00b7} {}",
-                r.level, scope_short, r.child_count, date_range
-            )
+            if let Some(title) = r.display_title {
+                format!("L{} · {} · {}", r.level, title, date_range)
+            } else {
+                let scope_short = scope_short_label(r.tree_scope);
+                format!(
+                    "L{} · {} · {} 条子记录 · {}",
+                    r.level, scope_short, r.child_count, date_range
+                )
+            }
         }
         SummaryTreeKind::Global => {
-            format!(
-                "L{} \u{00b7} global digest \u{00b7} {}",
-                r.level, date_range
-            )
+            if let Some(title) = r.display_title {
+                format!("L{} · 全局日报 · {}", r.level, title)
+            } else {
+                format!("L{} · 全局日报 · {}", r.level, date_range)
+            }
         }
         SummaryTreeKind::Topic => {
-            // Strip protocol prefix like "topic:" from scope for readability.
-            let entity = r
-                .tree_scope
-                .split_once(':')
-                .map(|(_, v)| v)
-                .unwrap_or(r.tree_scope);
-            format!(
-                "L{} \u{00b7} topic {} \u{00b7} {} children",
-                r.level, entity, r.child_count
-            )
+            // tree_scope is canonically `kind:surface` (e.g. `person:张三`).
+            // Pull the kind out for a Chinese parenthetical so users
+            // disambiguate same-name entities (e.g. a person and an org
+            // both called "张三") without having to inspect the path.
+            let (kind_slug, fallback_entity) = match r.tree_scope.split_once(':') {
+                Some((k, v)) => (Some(k), v),
+                None => (None, r.tree_scope),
+            };
+            let entity = r.display_title.unwrap_or(fallback_entity);
+            match kind_slug.map(topic_kind_chinese) {
+                Some(kind_label) => format!(
+                    "L{} · 主题：{}（{}）· {} 条子记录",
+                    r.level, entity, kind_label, r.child_count
+                ),
+                None => format!(
+                    "L{} · 主题：{} · {} 条子记录",
+                    r.level, entity, r.child_count
+                ),
+            }
         }
     }
 }
@@ -487,6 +511,28 @@ fn format_date_range(start: DateTime<Utc>, end: DateTime<Utc>) -> String {
         s
     } else {
         format!("{s}\u{2013}{e}") // en dash
+    }
+}
+
+/// Translate an entity kind slug (as it appears before the `:` in a Topic
+/// tree's `tree_scope`) to a short Chinese label rendered inside the
+/// Topic alias parenthetical, e.g. `主题：张三（人物）`. Falls back to the
+/// raw slug when the kind isn't in the canonical set so an out-of-band
+/// kind still surfaces a readable hint instead of vanishing.
+fn topic_kind_chinese(kind_slug: &str) -> String {
+    match kind_slug.trim().to_ascii_lowercase().as_str() {
+        "person" => "人物".to_string(),
+        "organization" | "org" => "组织".to_string(),
+        "location" | "loc" => "地点".to_string(),
+        "event" => "事件".to_string(),
+        "product" => "产品".to_string(),
+        "technology" | "tech" => "技术".to_string(),
+        "artifact" => "工件".to_string(),
+        "quantity" => "指标".to_string(),
+        "datetime" => "时间".to_string(),
+        "misc" => "其他".to_string(),
+        other if !other.is_empty() => other.to_string(),
+        _ => "未知".to_string(),
     }
 }
 
@@ -895,6 +941,7 @@ mod tests {
             time_range_end: ts_end,
             sealed_at: sealed,
             body: "This is the summariser output.\n",
+            display_title: None,
         }
     }
 
@@ -999,6 +1046,7 @@ mod tests {
             time_range_end: ts,
             sealed_at: ts,
             body: "L1 body",
+            display_title: None,
         };
         let composed = compose_summary_md(&input);
         let fm = &composed.front_matter;
@@ -1038,6 +1086,7 @@ mod tests {
             time_range_end: ts,
             sealed_at: ts,
             body: "L2 body",
+            display_title: None,
         };
         let composed = compose_summary_md(&input);
         let fm = &composed.front_matter;
@@ -1064,8 +1113,8 @@ mod tests {
             "must have tree_kind: global"
         );
         assert!(
-            composed.front_matter.contains("global digest"),
-            "alias must mention 'global digest'"
+            composed.front_matter.contains("全局日报"),
+            "alias must mention '全局日报'"
         );
     }
 
@@ -1078,8 +1127,81 @@ mod tests {
             "must have tree_kind: topic"
         );
         assert!(
-            composed.front_matter.contains("topic"),
-            "alias must mention topic entity"
+            composed.front_matter.contains("主题"),
+            "alias must mention '主题' (topic in Chinese)"
+        );
+    }
+
+    #[test]
+    fn compose_topic_summary_alias_includes_kind_parenthetical() {
+        // tree_scope `person:张三` → alias should include `（人物）` so
+        // same-name entities (e.g. a person and an org both called 张三)
+        // are disambiguated without inspecting the folder path.
+        let input = sample_summary_input(SummaryTreeKind::Topic, "person:张三", 1);
+        let composed = compose_summary_md(&input);
+        assert!(
+            composed.front_matter.contains("主题：张三（人物）"),
+            "alias must include Chinese kind parenthetical; got:\n{}",
+            composed.front_matter
+        );
+    }
+
+    #[test]
+    fn compose_topic_summary_alias_kind_mapping_covers_canonical_kinds() {
+        for (slug, expected_label) in [
+            ("person", "人物"),
+            ("organization", "组织"),
+            ("org", "组织"),
+            ("location", "地点"),
+            ("event", "事件"),
+            ("product", "产品"),
+            ("technology", "技术"),
+            ("artifact", "工件"),
+            ("quantity", "指标"),
+            ("datetime", "时间"),
+            ("misc", "其他"),
+        ] {
+            let scope = format!("{slug}:示例");
+            let input = sample_summary_input(SummaryTreeKind::Topic, &scope, 1);
+            let composed = compose_summary_md(&input);
+            let parenthetical = format!("（{expected_label}）");
+            assert!(
+                composed.front_matter.contains(&parenthetical),
+                "kind '{slug}' must render as '{expected_label}'; got:\n{}",
+                composed.front_matter
+            );
+        }
+    }
+
+    #[test]
+    fn compose_topic_summary_alias_unknown_kind_falls_back_to_slug() {
+        // Out-of-band kinds (e.g. a custom extractor emits `meeting`) must
+        // surface in the alias rather than vanish — the parenthetical helps
+        // users notice schema drift.
+        let input = sample_summary_input(SummaryTreeKind::Topic, "meeting:站会", 1);
+        let composed = compose_summary_md(&input);
+        assert!(
+            composed.front_matter.contains("主题：站会（meeting）"),
+            "unknown kind must appear verbatim in the parenthetical; got:\n{}",
+            composed.front_matter
+        );
+    }
+
+    #[test]
+    fn compose_topic_summary_alias_scope_without_kind_skips_parenthetical() {
+        // Defensive: a malformed scope without `:` shouldn't crash, and
+        // shouldn't invent a kind label.
+        let input = sample_summary_input(SummaryTreeKind::Topic, "loosely-typed-scope", 1);
+        let composed = compose_summary_md(&input);
+        assert!(
+            composed.front_matter.contains("主题：loosely-typed-scope"),
+            "scope without ':' should still appear as the topic entity; got:\n{}",
+            composed.front_matter
+        );
+        assert!(
+            !composed.front_matter.contains("（"),
+            "alias must not invent a parenthetical when kind is unknown; got:\n{}",
+            composed.front_matter
         );
     }
 
@@ -1099,6 +1221,7 @@ mod tests {
             time_range_end: ts,
             sealed_at: ts,
             body: "empty",
+            display_title: None,
         };
         let composed = compose_summary_md(&input);
         assert!(composed.front_matter.contains("children: []"));
@@ -1121,13 +1244,14 @@ mod tests {
             time_range_end: ts, // same as start
             sealed_at: ts,
             body: "day recap",
+            display_title: None,
         };
         let composed = compose_summary_md(&input);
         // Alias must contain just one date, not "date–date"
         let alias_line = composed
             .front_matter
             .lines()
-            .find(|l| l.contains("L1") && l.contains("global digest"))
+            .find(|l| l.contains("L1") && l.contains("全局日报"))
             .expect("alias line must be present");
         // The date should appear exactly once (no en-dash range)
         let date_str = ts.format("%Y-%m-%d").to_string();
@@ -1177,6 +1301,7 @@ mod tests {
             time_range_end: ts,
             sealed_at: ts,
             body: "summary body text",
+            display_title: None,
         };
         let composed = compose_summary_md(&input);
         let file_bytes = composed.full.as_bytes();

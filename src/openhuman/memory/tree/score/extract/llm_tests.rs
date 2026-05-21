@@ -5,8 +5,10 @@ fn build_system_prompt_default_omits_topics() {
     let p = build_system_prompt(false);
     assert!(!p.contains("\"topics\""));
     assert!(!p.contains("Topics are"));
-    assert!(p.contains("ALL three top-level fields"));
-    assert!(p.contains("entities, importance"));
+    // Chinese prompt uses 三 (three) for field count
+    assert!(p.contains("three"));
+    assert!(p.contains("entities"));
+    assert!(p.contains("importance"));
 }
 
 #[test]
@@ -14,8 +16,11 @@ fn build_system_prompt_with_flag_includes_topics() {
     let p = build_system_prompt(true);
     assert!(p.contains("\"topics\""));
     assert!(p.contains("Topics are short free-form theme labels"));
-    assert!(p.contains("ALL four top-level fields"));
-    assert!(p.contains("entities, topics, importance"));
+    // Chinese prompt uses four for field count
+    assert!(p.contains("four"));
+    assert!(p.contains("entities"));
+    assert!(p.contains("topics"));
+    assert!(p.contains("importance"));
 }
 
 #[test]

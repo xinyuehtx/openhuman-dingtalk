@@ -258,50 +258,52 @@ fn build_system_prompt(emit_topics: bool) -> String {
     };
 
     format!(
-        "You are a named-entity extractor and importance rater. Return JSON only — \
-no prose, no markdown, no commentary. Do not summarize. Extract every named \
-entity mention you find, including duplicates, and rate the chunk's overall \
-importance as a float in [0.0, 1.0].
+        "你是一个命名实体提取器和重要性评估器。只返回 JSON — \
+不要输出散文、markdown 或评论。不要做总结。提取你找到的每一个命名实体，\
+包括重复出现的，并将整段内容的重要性评为 [0.0, 1.0] 之间的浮点数。
+
+实体的 text 字段请使用内容中的原始形式。如果内容是中文，text 就用中文；如果是英文就用英文。
+topics 主题标签请使用有意义的中文短语。
 
 Schema:
 {{
   \"entities\": [
     {{ \"kind\": \"person|organization|location|event|product|datetime|technology|artifact|quantity\",
-      \"text\": \"<exact surface form as it appears in the text>\" }}
+      \"text\": \"<文本中出现的原始形式>\" }}
   ],
 {topics_schema_line}  \"importance\": 0.0,
-  \"importance_reason\": \"<one short sentence explaining the rating>\"
+  \"importance_reason\": \"<一句话解释评分理由>\"
 }}
 
-Kinds guide:
-  person       named human                            (\"Alice\", \"Steven Enamakel\")
-  organization company / team / project               (\"Anthropic\", \"TinyHumans\")
-  location     place                                  (\"SF office\", \"London\")
-  event        scheduled occurrence                   (\"Q2 launch\", \"design review\")
-  product      commercial offering                    (\"Claude Code\", \"OpenHuman\")
-  datetime     temporal expression                    (\"Friday\", \"Q2 2026\", \"EOD tomorrow\")
-  technology   tool / framework / language / service  (\"Rust\", \"OAuth\", \"Slack API\")
-  artifact     code / ticket / doc reference          (\"PR #934\", \"src/foo.rs\", \"OH-42\")
-  quantity     amount / metric / money                (\"$5K\", \"20/min\", \"10k tokens\")
+类型说明：
+  person       具名人物                              （「张三」「Alice」「Steven Enamakel」）
+  organization 公司 / 团队 / 项目                     （「阿里巴巴」「Anthropic」「TinyHumans」）
+  location     地点                                  （「杭州办公室」「SF office」「London」）
+  event        已安排的事件                           （「Q2 发布会」「设计评审」）
+  product      商业产品                              （「Claude Code」「OpenHuman」「钉钉」）
+  datetime     时间表达                              （「周五」「Q2 2026」「明天下班前」）
+  technology   工具 / 框架 / 语言 / 服务              （「Rust」「OAuth」「Slack API」）
+  artifact     代码 / 工单 / 文档引用                 （「PR #934」「src/foo.rs」「OH-42」）
+  quantity     数量 / 指标 / 金额                     （「500万」「20次/分钟」「10k tokens」）
 
 {topics_guide} 
-If a mention doesn't clearly fit a kind above, omit it rather than guessing.
-Always emit ALL {fields_count} top-level fields (entities, {topics_required}importance, importance_reason),
-even when entities is empty.
+如果某个提及不明确属于以上任何类型，请省略它而不要猜测。
+始终输出所有 {fields_count} 个顶级字段（entities、{topics_required}importance、importance_reason），
+即使 entities 为空。
 
-Examples:
+示例：
 
 Input: alice and bob shipped the auth migration friday. PR #42 ships OAuth refactor in src/auth/.
-Output: {{\"entities\":[{{\"kind\":\"person\",\"text\":\"alice\"}},{{\"kind\":\"person\",\"text\":\"bob\"}},{{\"kind\":\"event\",\"text\":\"auth migration\"}},{{\"kind\":\"datetime\",\"text\":\"friday\"}},{{\"kind\":\"artifact\",\"text\":\"PR #42\"}},{{\"kind\":\"technology\",\"text\":\"OAuth\"}},{{\"kind\":\"artifact\",\"text\":\"src/auth/\"}}]{example1_topics},\"importance\":0.9,\"importance_reason\":\"explicit shipping commitment\"}}
+Output: {{\"entities\":[{{\"kind\":\"person\",\"text\":\"alice\"}},{{\"kind\":\"person\",\"text\":\"bob\"}},{{\"kind\":\"event\",\"text\":\"auth migration\"}},{{\"kind\":\"datetime\",\"text\":\"friday\"}},{{\"kind\":\"artifact\",\"text\":\"PR #42\"}},{{\"kind\":\"technology\",\"text\":\"OAuth\"}},{{\"kind\":\"artifact\",\"text\":\"src/auth/\"}}]{example1_topics},\"importance\":0.9,\"importance_reason\":\"明确的发布承诺\"}}
 
 Input: Anthropic shipped Claude Code in SF — $20M ARR target by Q2.
-Output: {{\"entities\":[{{\"kind\":\"organization\",\"text\":\"Anthropic\"}},{{\"kind\":\"product\",\"text\":\"Claude Code\"}},{{\"kind\":\"location\",\"text\":\"SF\"}},{{\"kind\":\"quantity\",\"text\":\"$20M ARR\"}},{{\"kind\":\"datetime\",\"text\":\"Q2\"}}]{example2_topics},\"importance\":0.85,\"importance_reason\":\"factual content with key business metric\"}}
+Output: {{\"entities\":[{{\"kind\":\"organization\",\"text\":\"Anthropic\"}},{{\"kind\":\"product\",\"text\":\"Claude Code\"}},{{\"kind\":\"location\",\"text\":\"SF\"}},{{\"kind\":\"quantity\",\"text\":\"$20M ARR\"}},{{\"kind\":\"datetime\",\"text\":\"Q2\"}}]{example2_topics},\"importance\":0.85,\"importance_reason\":\"包含关键业务指标的事实性内容\"}}
 
-Importance guide:
-  0.9+  actionable decisions, key information, explicit commitments
-  0.6+  substantive discussion, factual content, named entities
-  0.3+  ambient context, low-density prose
-  <0.3  reactions, acknowledgments, bots, trivial exchanges
+重要性指南：
+  0.9+  可执行的决策、关键信息、明确的承诺
+  0.6+  实质性讨论、事实性内容、命名实体
+  0.3+  背景上下文、低密度散文
+  <0.3  回应、确认、机器人消息、琐碎对话
 "
     )
 }

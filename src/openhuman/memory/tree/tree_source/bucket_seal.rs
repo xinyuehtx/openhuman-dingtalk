@@ -561,6 +561,50 @@ pub(crate) async fn seal_one_level(
     } else {
         None
     };
+    // Build a display title for Obsidian-friendly Chinese filenames.
+    //
+    // - Topic trees: take the entity surface form from the scope
+    //   (e.g. `"person:张三"` → `"张三"`).
+    // - Source trees: prefer the first available real title (Markdown H1
+    //   from the first chunk body — documents, meeting notes, AI listening
+    //   transcripts all emit a `# Title` header), falling back to a
+    //   readable label derived from the scope. Without the H1 fallback,
+    //   document trees scoped to `document:<opaque_id>` would write
+    //   `<opaque_id>-L1.md` instead of something a human can recognise
+    //   in their Obsidian sidebar.
+    //
+    // The H1 path only runs at L1 seals (children are real chunks with
+    // bodies that contain markdown). At L≥2 the children are summary
+    // text and the H1 line wouldn't be representative of the source —
+    // we stay on the scope label there, which is stable per tree.
+    let display_title_owned: Option<String> = match tree.kind {
+        TreeKind::Topic => {
+            let entity_name = tree
+                .scope
+                .split_once(':')
+                .map(|(_, v)| v.to_string())
+                .unwrap_or_else(|| tree.scope.clone());
+            Some(entity_name)
+        }
+        _ => {
+            // L1 only: peek at the first hydrated chunk body for an H1.
+            let from_h1 = if node.level == 1 {
+                inputs
+                    .iter()
+                    .find_map(|inp| extract_first_markdown_heading(&inp.content))
+            } else {
+                None
+            };
+            from_h1.or_else(|| {
+                let label = scope_short_label_for_title(&tree.scope);
+                if label.is_empty() {
+                    None
+                } else {
+                    Some(label)
+                }
+            })
+        }
+    };
     let compose_input = SummaryComposeInput {
         summary_id: &node.id,
         tree_kind: summary_tree_kind,
@@ -574,6 +618,7 @@ pub(crate) async fn seal_one_level(
         time_range_end: node.time_range_end,
         sealed_at: node.sealed_at,
         body: &node.content,
+        display_title: display_title_owned.as_deref(),
     };
     // Stage the summary .md file and propagate any error — a staging failure
     // aborts the seal entirely so the database never commits a row with
@@ -871,6 +916,66 @@ fn hydrate_summary_inputs(config: &Config, summary_ids: &[String]) -> Result<Vec
         });
     }
     Ok(out)
+}
+
+/// Walk a chunk body for the first ATX-style `# H1` heading and return its
+/// text. Used by source-tree seals to surface a real document/meeting title
+/// in the summary filename when `tree.scope` is an opaque id.
+///
+/// Only the first H1 wins; subsequent `# …` lines are ignored. `## …`,
+/// `### …`, and HTML headings are deliberately not matched — they're
+/// section headers, not the document title. Internal whitespace inside
+/// the matched title is collapsed to a single space so a heading like
+/// `# 项目  设计\n文档` doesn't smuggle newlines into the filename. The
+/// result is trimmed and length-capped (60 Unicode scalars) so an
+/// over-long heading still produces a sane on-disk filename.
+fn extract_first_markdown_heading(body: &str) -> Option<String> {
+    const MAX_TITLE_CHARS: usize = 60;
+    for line in body.lines() {
+        let Some(rest) = line.trim_start().strip_prefix("# ") else {
+            continue;
+        };
+        // Collapse whitespace so multi-space or tab-separated headings
+        // don't render with awkward gaps in the filename. Also strips
+        // any trailing `#` ATX-close that some authors use.
+        let cleaned = rest.trim().trim_end_matches('#').trim();
+        let collapsed: String = cleaned.split_whitespace().collect::<Vec<_>>().join(" ");
+        if collapsed.is_empty() {
+            continue;
+        }
+        let capped: String = collapsed.chars().take(MAX_TITLE_CHARS).collect();
+        return Some(capped);
+    }
+    None
+}
+
+/// Extract a short human-readable label from a tree scope string for use
+/// as the summary file's `display_title`. Returns an empty string if no
+/// meaningful label can be derived.
+///
+/// Examples:
+/// - `"gmail:alice@x.com|bob@y.com"` → `"alice@x.com ↔ bob@y.com"`
+/// - `"slack:#general"` → `"slack-#general"`
+/// - `"document:项目设计文档"` → `"项目设计文档"`
+fn scope_short_label_for_title(scope: &str) -> String {
+    if let Some((prefix, rest)) = scope.split_once(':') {
+        match prefix {
+            "gmail" if !rest.is_empty() => {
+                let addrs: Vec<&str> = rest.split('|').collect();
+                match addrs.as_slice() {
+                    [] => String::new(),
+                    [only] => only.to_string(),
+                    [first, second] => format!("{first} ↔ {second}"),
+                    [first, others @ ..] => format!("{first} + {} others", others.len()),
+                }
+            }
+            // For document / chat / other sources, the portion after the
+            // colon is usually the source title or channel name.
+            _ => rest.to_string(),
+        }
+    } else {
+        scope.to_string()
+    }
 }
 
 #[cfg(test)]

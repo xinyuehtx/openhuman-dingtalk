@@ -202,6 +202,13 @@ pub async fn end_of_day_digest(
 
     // Phase MD-content: stage the L0 daily .md file before the write tx.
     // `date_for_global` = day_start (the calendar day this digest covers).
+    // Title is rendered through the shared level-aware formatter so the
+    // weekly/monthly/yearly seals upstream stay consistent in style.
+    let daily_display_title = super::title::chinese_global_title(
+        daily.level,
+        daily.time_range_start,
+        daily.time_range_end,
+    );
     let daily_compose_input = SummaryComposeInput {
         summary_id: &daily.id,
         tree_kind: SummaryTreeKind::Global,
@@ -215,6 +222,7 @@ pub async fn end_of_day_digest(
         time_range_end: daily.time_range_end,
         sealed_at: daily.sealed_at,
         body: &daily.content,
+        display_title: Some(&daily_display_title),
     };
     // Stage the summary .md file — abort the digest on failure so the database
     // never commits a row with content_path = NULL. The digest job is retried

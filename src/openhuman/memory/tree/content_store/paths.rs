@@ -77,7 +77,31 @@ pub fn summary_rel_path(
     summary_id: &str,
     date_for_global: Option<DateTime<Utc>>,
 ) -> String {
-    let filename = summary_filename(summary_id);
+    summary_rel_path_with_title(
+        tree_kind,
+        scope_slug,
+        level,
+        summary_id,
+        date_for_global,
+        None,
+    )
+}
+
+/// Like [`summary_rel_path`] but accepts an optional display title. When
+/// `display_title` is `Some`, the filename uses the Chinese title instead
+/// of the opaque id — e.g. `每日站会纪要-L1.md`.
+pub fn summary_rel_path_with_title(
+    tree_kind: SummaryTreeKind,
+    scope_slug: &str,
+    level: u32,
+    summary_id: &str,
+    date_for_global: Option<DateTime<Utc>>,
+    display_title: Option<&str>,
+) -> String {
+    let filename = match display_title {
+        Some(title) => sanitize_display_title(title, level),
+        None => summary_filename(summary_id),
+    };
 
     match tree_kind {
         SummaryTreeKind::Source => {
@@ -187,6 +211,30 @@ pub(crate) fn sanitize_filename(s: &str) -> String {
         .collect()
 }
 
+/// Build a filename stem from a human-readable display title and level.
+///
+/// Strips filesystem-illegal characters while preserving CJK and other
+/// Unicode text. The result is `{sanitised_title}-L{level}` (without `.md`
+/// — the caller appends the extension).
+///
+/// Examples: `("每日站会纪要", 1)` → `"每日站会纪要-L1"`,
+/// `("项目: 回顾/总结", 2)` → `"项目- 回顾-总结-L2"`
+pub(crate) fn sanitize_display_title(title: &str, level: u32) -> String {
+    let sanitised: String = title
+        .chars()
+        .map(|c| match c {
+            '\\' | '/' | ':' | '*' | '?' | '"' | '<' | '>' | '|' => '-',
+            c => c,
+        })
+        .collect();
+    let trimmed = sanitised.trim().trim_matches('-');
+    if trimmed.is_empty() {
+        format!("untitled-L{level}")
+    } else {
+        format!("{trimmed}-L{level}")
+    }
+}
+
 /// Build the absolute on-disk path for a summary given the content root.
 pub fn summary_abs_path(
     content_root: &Path,
@@ -196,7 +244,36 @@ pub fn summary_abs_path(
     summary_id: &str,
     date_for_global: Option<DateTime<Utc>>,
 ) -> PathBuf {
-    let rel = summary_rel_path(tree_kind, scope_slug, level, summary_id, date_for_global);
+    summary_abs_path_with_title(
+        content_root,
+        tree_kind,
+        scope_slug,
+        level,
+        summary_id,
+        date_for_global,
+        None,
+    )
+}
+
+/// Like [`summary_abs_path`] but forwards `display_title` through to
+/// [`summary_rel_path_with_title`] for Chinese-friendly filenames.
+pub fn summary_abs_path_with_title(
+    content_root: &Path,
+    tree_kind: SummaryTreeKind,
+    scope_slug: &str,
+    level: u32,
+    summary_id: &str,
+    date_for_global: Option<DateTime<Utc>>,
+    display_title: Option<&str>,
+) -> PathBuf {
+    let rel = summary_rel_path_with_title(
+        tree_kind,
+        scope_slug,
+        level,
+        summary_id,
+        date_for_global,
+        display_title,
+    );
     let mut abs = content_root.to_path_buf();
     for component in rel.split('/') {
         abs.push(component);

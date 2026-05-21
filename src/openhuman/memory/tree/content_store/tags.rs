@@ -193,28 +193,35 @@ pub fn update_summary_tags(config: &Config, summary_id: &str) -> anyhow::Result<
 
 /// Slugify an entity kind string for use in an Obsidian hierarchical tag.
 ///
-/// Output: lowercase, spaces and non-alphanumeric chars replaced with `-`,
-/// consecutive dashes collapsed, leading/trailing dashes stripped.
+/// Preserves CJK characters so Chinese/Japanese/Korean entity kinds render
+/// correctly in Obsidian (e.g. `#人物/张三`). ASCII is lowercased; spaces
+/// and non-alphanumeric, non-CJK chars become `-`; consecutive dashes
+/// collapse; leading/trailing dashes are stripped.
 ///
-/// Example: `"Person"` → `"person"`, `"GitHub Repo"` → `"github-repo"`
+/// Examples: `"Person"` → `"person"`, `"GitHub Repo"` → `"github-repo"`,
+/// `"人物"` → `"人物"`
 pub fn slugify_tag_kind(kind: &str) -> String {
     slugify_tag_component(kind)
 }
 
 /// Slugify an entity value string for use in an Obsidian hierarchical tag.
 ///
-/// Like `slugify_tag_kind`, but capitalises the first letter of each word
-/// so values are visually distinct from kinds:
+/// Preserves CJK characters verbatim. For ASCII-only words, capitalises
+/// the first letter of each word so values are visually distinct from
+/// kinds. CJK runs are kept as-is without word-boundary capitalisation
+/// (Chinese has no case concept).
 ///
-/// `"alice johnson"` → `"Alice-Johnson"`,
-/// `"project Phoenix"` → `"Project-Phoenix"`
+/// Examples:
+/// - `"alice johnson"` → `"Alice-Johnson"`
+/// - `"project Phoenix"` → `"Project-Phoenix"`
+/// - `"张三"` → `"张三"`
+/// - `"Alice 和 Bob"` → `"Alice-和-Bob"`
 pub fn slugify_tag_value(value: &str) -> String {
-    // Split on non-alphanumeric boundaries, capitalise first letter of each word.
     let mut parts: Vec<String> = Vec::new();
     let mut current = String::new();
 
     for ch in value.chars() {
-        if ch.is_alphanumeric() || ch == '_' {
+        if ch.is_alphanumeric() || ch == '_' || is_cjk(ch) {
             current.push(ch);
         } else if !current.is_empty() {
             parts.push(capitalise(&current));
@@ -238,12 +245,28 @@ pub fn entity_tag(kind: &str, surface: &str) -> String {
     format!("{}/{}", slugify_tag_kind(kind), slugify_tag_value(surface))
 }
 
+/// Returns `true` for CJK Unified Ideographs, CJK extensions, Hiragana,
+/// Katakana, Hangul, and CJK punctuation commonly used in tags. This
+/// ensures Chinese, Japanese, and Korean text passes through the slugify
+/// functions without being replaced by `-`.
+fn is_cjk(ch: char) -> bool {
+    matches!(ch,
+        '\u{4e00}'..='\u{9fff}'   // CJK Unified Ideographs
+        | '\u{3400}'..='\u{4dbf}' // CJK Extension A
+        | '\u{f900}'..='\u{faff}' // CJK Compatibility Ideographs
+        | '\u{3040}'..='\u{309f}' // Hiragana
+        | '\u{30a0}'..='\u{30ff}' // Katakana
+        | '\u{ac00}'..='\u{d7af}' // Hangul Syllables
+        | '\u{20000}'..='\u{2a6df}' // CJK Extension B
+    )
+}
+
 fn slugify_tag_component(s: &str) -> String {
     let lower = s.to_lowercase();
     let mut out = String::new();
     let mut last_dash = true;
     for ch in lower.chars() {
-        if ch.is_ascii_alphanumeric() || ch == '_' {
+        if ch.is_ascii_alphanumeric() || ch == '_' || is_cjk(ch) {
             out.push(ch);
             last_dash = false;
         } else if !last_dash {
@@ -410,10 +433,23 @@ mod tests {
     }
 
     #[test]
+    fn slugify_tag_kind_preserves_cjk() {
+        assert_eq!(slugify_tag_kind("人物"), "人物");
+        assert_eq!(slugify_tag_kind("组织 机构"), "组织-机构");
+    }
+
+    #[test]
     fn slugify_tag_value_capitalises_words() {
         assert_eq!(slugify_tag_value("alice johnson"), "Alice-Johnson");
         assert_eq!(slugify_tag_value("project Phoenix"), "Project-Phoenix");
         assert_eq!(slugify_tag_value("OPENAI"), "OPENAI");
+    }
+
+    #[test]
+    fn slugify_tag_value_preserves_cjk() {
+        assert_eq!(slugify_tag_value("张三"), "张三");
+        assert_eq!(slugify_tag_value("Alice 和 Bob"), "Alice-和-Bob");
+        assert_eq!(slugify_tag_value("阿里巴巴"), "阿里巴巴");
     }
 
     #[test]
@@ -423,6 +459,15 @@ mod tests {
             "person/Alice-Johnson"
         );
         assert_eq!(entity_tag("ORG", "Tinyhumans AI"), "org/Tinyhumans-AI");
+    }
+
+    #[test]
+    fn entity_tag_builds_cjk_obsidian_tag() {
+        assert_eq!(entity_tag("person", "张三"), "person/张三");
+        assert_eq!(
+            entity_tag("organization", "阿里巴巴"),
+            "organization/阿里巴巴"
+        );
     }
 
     // ─── update_summary_tags tests ────────────────────────────────────────────
@@ -452,6 +497,7 @@ mod tests {
             time_range_end: ts,
             sealed_at: ts,
             body,
+            display_title: None,
         };
         let composed = compose_summary_md(&input);
         let path = dir.path().join("sum.md");

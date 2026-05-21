@@ -29,6 +29,7 @@ pub mod digest;
 pub mod recap;
 pub mod registry;
 pub mod seal;
+pub mod title;
 
 pub use digest::{end_of_day_digest, DigestOutcome};
 pub use recap::{recap, RecapOutput};

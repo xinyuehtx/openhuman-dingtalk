@@ -89,10 +89,7 @@ export function parseChannelThreadId(
  * When `channelFilter` is provided, only recipients on that channel are
  * returned. Otherwise every channel surface is included.
  */
-export function deriveMentionTargets(
-  threads: Thread[],
-  channelFilter?: string
-): MentionTarget[] {
+export function deriveMentionTargets(threads: Thread[], channelFilter?: string): MentionTarget[] {
   const byKey = new Map<string, Extract<MentionTarget, { kind: 'channel' }>>();
   if (!Array.isArray(threads)) {
     return [{ kind: 'agent', label: 'Agent' }];
@@ -104,8 +101,7 @@ export function deriveMentionTargets(
     if (channelFilter && parsed.channel !== channelFilter) continue;
     const key = `${parsed.channel}:${parsed.sender}`;
     const existing = byKey.get(key);
-    const lastMessageAt =
-      typeof thread.lastMessageAt === 'string' ? thread.lastMessageAt : '';
+    const lastMessageAt = typeof thread.lastMessageAt === 'string' ? thread.lastMessageAt : '';
     const candidate: Extract<MentionTarget, { kind: 'channel' }> = {
       kind: 'channel',
       channel: parsed.channel,
@@ -149,11 +145,7 @@ export function detectActiveMention(value: string, caret: number): MentionDetect
       // The `@` must be at the start of input or preceded by whitespace.
       const before = i > 0 ? value[i - 1] : '';
       if (i === 0 || /\s/.test(before)) {
-        return {
-          active: true,
-          queryStart: i,
-          query: value.slice(i + 1, caret),
-        };
+        return { active: true, queryStart: i, query: value.slice(i + 1, caret) };
       }
       return { active: false, queryStart: -1, query: '' };
     }
@@ -171,10 +163,7 @@ export function detectActiveMention(value: string, caret: number): MentionDetect
  * the channel name. Returns the matching subset preserving the original
  * order from {@link deriveMentionTargets}.
  */
-export function filterMentionTargets(
-  targets: MentionTarget[],
-  query: string
-): MentionTarget[] {
+export function filterMentionTargets(targets: MentionTarget[], query: string): MentionTarget[] {
   const q = query.trim().toLowerCase();
   if (!q) return targets;
   return targets.filter(target => {

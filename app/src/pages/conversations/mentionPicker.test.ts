@@ -7,8 +7,8 @@ import {
   deriveMentionTargets,
   detectActiveMention,
   filterMentionTargets,
-  parseChannelThreadId,
   type MentionTarget,
+  parseChannelThreadId,
 } from './mentionPicker';
 
 function thread(id: string, lastMessageAt: string): Thread {
@@ -34,9 +34,11 @@ describe('parseChannelThreadId', () => {
   });
 
   it('strips _thread:<ts> suffix when present', () => {
-    expect(
-      parseChannelThreadId('channel:slack_alice_general_thread:T123')
-    ).toEqual({ channel: 'slack', sender: 'alice', replyTarget: 'general' });
+    expect(parseChannelThreadId('channel:slack_alice_general_thread:T123')).toEqual({
+      channel: 'slack',
+      sender: 'alice',
+      replyTarget: 'general',
+    });
   });
 
   it('returns null for non-channel ids', () => {
@@ -106,11 +108,7 @@ describe('detectActiveMention', () => {
   });
 
   it('returns inactive when @ is in the middle of a word', () => {
-    expect(detectActiveMention('foo@bar', 7)).toEqual({
-      active: false,
-      queryStart: -1,
-      query: '',
-    });
+    expect(detectActiveMention('foo@bar', 7)).toEqual({ active: false, queryStart: -1, query: '' });
   });
 
   it('returns inactive when whitespace separates @ and caret', () => {
@@ -122,11 +120,7 @@ describe('detectActiveMention', () => {
   });
 
   it('handles empty query', () => {
-    expect(detectActiveMention('@', 1)).toEqual({
-      active: true,
-      queryStart: 0,
-      query: '',
-    });
+    expect(detectActiveMention('@', 1)).toEqual({ active: true, queryStart: 0, query: '' });
   });
 });
 
@@ -165,10 +159,7 @@ describe('filterMentionTargets', () => {
   });
 
   it('matches the agent target case-insensitively', () => {
-    expect(filterMentionTargets(targets, 'AGE')).toContainEqual({
-      kind: 'agent',
-      label: 'Agent',
-    });
+    expect(filterMentionTargets(targets, 'AGE')).toContainEqual({ kind: 'agent', label: 'Agent' });
   });
 });
 
@@ -176,12 +167,7 @@ describe('applyMentionInsertion', () => {
   const detection = { active: true, queryStart: 0, query: 'sta' };
 
   it('strips the @-token when picking the agent target', () => {
-    const result = applyMentionInsertion(
-      '@sta',
-      detection,
-      { kind: 'agent', label: 'Agent' },
-      4
-    );
+    const result = applyMentionInsertion('@sta', detection, { kind: 'agent', label: 'Agent' }, 4);
     expect(result).toEqual({ value: '', caret: 0 });
   });
 

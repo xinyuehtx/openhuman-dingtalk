@@ -12,7 +12,7 @@ use std::io::Write;
 use std::path::Path;
 
 use super::compose::{compose_summary_md, split_front_matter, SummaryComposeInput};
-use super::paths::{summary_abs_path, summary_rel_path};
+use super::paths::{summary_abs_path_with_title, summary_rel_path_with_title};
 
 /// Write `bytes` atomically to `abs_path` if the file does not already exist.
 ///
@@ -125,20 +125,22 @@ pub fn stage_summary(
     scope_slug: &str,
     date_for_global: Option<chrono::DateTime<chrono::Utc>>,
 ) -> anyhow::Result<StagedSummary> {
-    let rel_path = summary_rel_path(
+    let rel_path = summary_rel_path_with_title(
         input.tree_kind,
         scope_slug,
         input.level,
         input.summary_id,
         date_for_global,
+        input.display_title,
     );
-    let abs_path = summary_abs_path(
+    let abs_path = summary_abs_path_with_title(
         content_root,
         input.tree_kind,
         scope_slug,
         input.level,
         input.summary_id,
         date_for_global,
+        input.display_title,
     );
 
     let composed = compose_summary_md(input);
@@ -284,6 +286,7 @@ mod tests {
             time_range_end: ts,
             sealed_at: ts,
             body,
+            display_title: None,
         }
     }
 
@@ -365,6 +368,61 @@ mod tests {
         let staged = stage_summary(dir.path(), &input, "gmail-x-y-com", None).unwrap();
         let expected = sha256_hex(body.as_bytes());
         assert_eq!(staged.content_sha256, expected);
+    }
+
+    /// Sanity belt that `display_title` survives all the way from
+    /// [`SummaryComposeInput`] through [`summary_rel_path_with_title`] to the
+    /// actual file basename on disk. The path-builder + composer have their
+    /// own unit tests, but this is the single test that proves the wire
+    /// between them isn't broken — a future refactor that drops
+    /// `display_title` from `stage_summary`'s call sites would silently fall
+    /// back to hash-based filenames everywhere, and nothing else catches it.
+    #[test]
+    fn stage_summary_with_chinese_display_title_writes_chinese_filename() {
+        use chrono::TimeZone;
+        let dir = TempDir::new().unwrap();
+        let ts = chrono::Utc.timestamp_millis_opt(1_700_000_000_000).unwrap();
+        let children = vec!["c1".to_string()];
+        let input = SummaryComposeInput {
+            summary_id: "summary:L1:doc1",
+            tree_kind: SummaryTreeKind::Source,
+            tree_id: "tree-doc",
+            tree_scope: "document:doc-abc",
+            level: 1,
+            child_ids: &children,
+            child_basenames: None,
+            child_count: 1,
+            time_range_start: ts,
+            time_range_end: ts,
+            sealed_at: ts,
+            body: "正文",
+            display_title: Some("项目设计文档"),
+        };
+        let staged = stage_summary(dir.path(), &input, "document-doc-abc", None).unwrap();
+        assert!(
+            staged.content_path.ends_with("项目设计文档-L1.md"),
+            "content_path must use Chinese display title; got: {}",
+            staged.content_path
+        );
+        // Path stays under wiki/summaries/source-<scope>/L1/ regardless of title.
+        assert!(
+            staged
+                .content_path
+                .starts_with("wiki/summaries/source-document-doc-abc/L1/"),
+            "tree-kind + scope folder must be unchanged; got: {}",
+            staged.content_path
+        );
+        // The Chinese-named file must actually exist on disk (not just in the
+        // returned path string).
+        let mut abs = dir.path().to_path_buf();
+        for part in staged.content_path.split('/') {
+            abs.push(part);
+        }
+        assert!(
+            abs.exists(),
+            "file with Chinese basename must exist on disk; expected: {}",
+            abs.display()
+        );
     }
 
     #[test]

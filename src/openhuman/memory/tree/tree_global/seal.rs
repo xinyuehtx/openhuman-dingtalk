@@ -247,6 +247,13 @@ async fn seal_one_level(
     // write tx. date_for_global = time_range_start date (daily for L0, or
     // the start of the range for higher levels).
     let global_date = Some(time_range_start);
+    // Build a Chinese display title for the global summary. The shared
+    // level-aware formatter picks the right granularity per level:
+    // L0 = day, L1 = week-in-month, L2 = month, L3+ = year. Same
+    // formatter that `digest.rs` calls for the L0 daily seal so
+    // upper-level seals never diverge in style.
+    let global_display_title =
+        super::title::chinese_global_title(node.level, time_range_start, time_range_end);
     let compose_input_global = SummaryComposeInput {
         summary_id: &node.id,
         tree_kind: SummaryTreeKind::Global,
@@ -260,6 +267,7 @@ async fn seal_one_level(
         time_range_end: node.time_range_end,
         sealed_at: node.sealed_at,
         body: &node.content,
+        display_title: Some(&global_display_title),
     };
     // Stage the summary .md file — abort the seal on failure so the database
     // never commits a row with content_path = NULL. The job-retry path will

@@ -193,7 +193,11 @@ async function openSummaryInObsidian(node: GraphNode, contentRootAbs: string): P
   }
 }
 
-/** Mirror of `paths::slugify_source_id` (Rust). */
+/**
+ * Mirror of `paths::slugify_source_id` (Rust). Preserves CJK characters
+ * so Chinese / Japanese / Korean scope strings produce readable directory
+ * names in Obsidian.
+ */
 function slugify(s: string): string {
   const lower = s.toLowerCase();
   let out = '';
@@ -202,7 +206,7 @@ function slugify(s: string): string {
   for (const ch of lower) {
     if (ch === '_') {
       if (!lastDash) pendingUnderscore = true;
-    } else if (/[a-z0-9]/.test(ch)) {
+    } else if (/[a-z0-9]/.test(ch) || isCjk(ch)) {
       if (pendingUnderscore) {
         out += '_';
         pendingUnderscore = false;
@@ -218,6 +222,19 @@ function slugify(s: string): string {
     }
   }
   return out.replace(/[-_]+$/, '').slice(0, 120) || 'unknown';
+}
+
+/** Returns true for CJK Unified Ideographs and common CJK ranges. */
+function isCjk(ch: string): boolean {
+  const code = ch.codePointAt(0) ?? 0;
+  return (
+    (code >= 0x4e00 && code <= 0x9fff) || // CJK Unified Ideographs
+    (code >= 0x3400 && code <= 0x4dbf) || // CJK Extension A
+    (code >= 0xf900 && code <= 0xfaff) || // CJK Compatibility Ideographs
+    (code >= 0x3040 && code <= 0x309f) || // Hiragana
+    (code >= 0x30a0 && code <= 0x30ff) || // Katakana
+    (code >= 0xac00 && code <= 0xd7af) // Hangul Syllables
+  );
 }
 
 /** Cross-platform path join (forward slash; Obsidian accepts both). */

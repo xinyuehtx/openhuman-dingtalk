@@ -296,28 +296,27 @@ fn build_user_prompt(inputs: &[SummaryInput], per_input_cap_tokens: u32) -> Stri
 /// input has plenty of substance. Output is clamped post-generation by
 /// [`clamp_to_budget`] in the caller.
 fn system_prompt(_budget: u32, structured_facets: bool) -> String {
-    let base = "You are a precise summariser. Summarise the user-provided contributions into a \
-     single cohesive passage that preserves concrete facts, decisions, \
-     and temporal ordering. Do not invent facts.\n\
+    let base = "你是一位精准的摘要生成器。请将用户提供的内容总结为一段连贯的中文段落，\
+     保留具体事实、决策和时间顺序。不要编造事实。\n\
      \n\
-     Return the summary text first.";
+     请先输出中文摘要正文。";
 
     if !structured_facets {
         return format!(
-            "{base} No commentary, no preamble, no headings, \
-             no markdown wrappers, no JSON — just the prose summary."
+            "{base} 不要添加任何评论、前言、标题、\
+             markdown 包装或 JSON — 只输出中文摘要正文。"
         );
     }
 
     format!(
         "{base}\n\
          \n\
-         After the summary, output a JSON object as the second part of your response, \
-         fenced in a ```json block:\n\
+         在摘要之后，请输出一个 JSON 对象作为响应的第二部分，\
+         使用 ```json 代码块包裹：\n\
          \n\
          ```json\n\
          {{\n\
-           \"summary\": \"<the summary text you just produced>\",\n\
+           \"summary\": \"<你刚才输出的摘要文本>\",\n\
            \"facets\": [\n\
              {{\n\
                \"class\": \"style|identity|tooling|veto|goal\",\n\
@@ -331,15 +330,16 @@ fn system_prompt(_budget: u32, structured_facets: bool) -> String {
          }}\n\
          ```\n\
          \n\
-         Rules:\n\
-         - Only include facets that are clearly evidenced in the content above.\n\
-         - Each facet must cite at least one chunk_id from this batch (the id in brackets \
-           before each contribution, e.g. [chunk-abc]).\n\
-         - Use canonical keys: verbosity, format, name, timezone, role, package_manager, \
-           lang, framework, runtime, etc.\n\
-         - Cap the facets array at 8 items per call. Skip the array entirely (emit \
-           facets: []) if no clear evidence.\n\
-         - No commentary outside the prose summary and the JSON block."
+         规则：\n\
+         - 摘要正文必须使用中文书写。\n\
+         - 仅包含在上述内容中有明确证据的 facets。\n\
+         - 每个 facet 必须引用至少一个本批次的 chunk_id（方括号中的 id，\
+           例如 [chunk-abc]）。\n\
+         - 使用规范化的 key：verbosity, format, name, timezone, role, package_manager, \
+           lang, framework, runtime 等。\n\
+         - 每次调用最多输出 8 个 facets。如果没有明确证据，\
+           跳过 facets 数组（输出 facets: []）。\n\
+         - 除了中文摘要正文和 JSON 块之外，不要输出任何其他内容。"
     )
 }
 

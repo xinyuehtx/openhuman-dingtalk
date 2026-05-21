@@ -76,6 +76,11 @@ import { MentionPicker } from './conversations/components/MentionPicker';
 import { TaskKanbanBoard } from './conversations/components/TaskKanbanBoard';
 import { ToolTimelineBlock } from './conversations/components/ToolTimelineBlock';
 import {
+  evaluateComposerSend,
+  getComposerBlockedSendFeedback,
+  handleComposerSlashCommand,
+} from './conversations/composerSendDecision';
+import {
   applyMentionInsertion,
   channelDisplayName,
   deriveMentionTargets,
@@ -83,11 +88,6 @@ import {
   filterMentionTargets,
   type MentionTarget,
 } from './conversations/mentionPicker';
-import {
-  evaluateComposerSend,
-  getComposerBlockedSendFeedback,
-  handleComposerSlashCommand,
-} from './conversations/composerSendDecision';
 import {
   type AgentBubblePosition,
   buildAcceptedInlineCompletion,
@@ -692,10 +692,7 @@ const Conversations = ({ variant = 'page', composer = 'text' }: ConversationsPro
   // Refresh the picker based on the caret position. `caret` defaults to
   // the textarea's current selectionEnd; callers that already know the
   // intended caret (e.g. after applying an insertion) can pass it in.
-  const updateMentionStateFromInput = (
-    nextValue: string,
-    nextCaret?: number
-  ) => {
+  const updateMentionStateFromInput = (nextValue: string, nextCaret?: number) => {
     const caret = nextCaret ?? textInputRef.current?.selectionEnd ?? nextValue.length;
     const detection = detectActiveMention(nextValue, caret);
     if (!detection.active) {
@@ -1065,8 +1062,7 @@ const Conversations = ({ variant = 'page', composer = 'text' }: ConversationsPro
         setMentionState(prev => ({
           ...prev,
           activeIndex:
-            (prev.activeIndex - 1 + filteredMentionTargets.length) %
-            filteredMentionTargets.length,
+            (prev.activeIndex - 1 + filteredMentionTargets.length) % filteredMentionTargets.length,
         }));
         return;
       }
@@ -1687,196 +1683,194 @@ const Conversations = ({ variant = 'page', composer = 'text' }: ConversationsPro
                   channelMeta !== null && msg.sender !== 'user' && msg.sender !== 'agent';
                 const renderAsAgent = msg.sender === 'agent' || isChannelOutbound;
                 const alignRight = msg.sender === 'user' && !isChannelInbound;
-                const channelLabel = channelMeta
-                  ? channelDisplayName(channelMeta.channel)
-                  : null;
+                const channelLabel = channelMeta ? channelDisplayName(channelMeta.channel) : null;
                 return (
-                <div key={msg.id}>
-                  {shouldRenderTimelineBeforeLatestAgentMessage &&
-                    latestVisibleAgentMessage?.id === msg.id && (
-                      <ToolTimelineBlock entries={selectedThreadToolTimeline} />
-                    )}
-                  <div
-                    className={`group/msg flex ${alignRight ? 'justify-end' : 'justify-start'}`}>
-                    <div className="relative w-fit max-w-[75%]">
-                      {channelMeta && (
-                        <p
-                          className="mb-0.5 flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-amber-700 dark:text-amber-300"
-                          data-testid={`channel-origin-${channelMeta.channel}`}>
-                          <span className="inline-flex h-3.5 items-center rounded-full bg-amber-100 px-1.5 text-[9px] text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
-                            {channelLabel}
-                          </span>
-                          <span className="text-stone-500 dark:text-neutral-400">
-                            {isChannelInbound
-                              ? `from @${channelMeta.sender}`
-                              : `via @${channelMeta.sender}`}
-                          </span>
-                        </p>
+                  <div key={msg.id}>
+                    {shouldRenderTimelineBeforeLatestAgentMessage &&
+                      latestVisibleAgentMessage?.id === msg.id && (
+                        <ToolTimelineBlock entries={selectedThreadToolTimeline} />
                       )}
-                      {renderAsAgent ? (
-                        <div className="space-y-1">
-                          {splitAgentMessageIntoBubbles(msg.content).map(
-                            (segment, index, parts) => {
-                              const position: AgentBubblePosition =
-                                parts.length === 1
-                                  ? 'single'
-                                  : index === 0
-                                    ? 'first'
-                                    : index === parts.length - 1
-                                      ? 'last'
-                                      : 'middle';
-
-                              return (
-                                <AgentMessageBubble
-                                  key={`${msg.id}:${index}`}
-                                  content={segment}
-                                  position={position}
-                                />
-                              );
-                            }
-                          )}
-                          {(() => {
-                            const raw = msg.extraMetadata?.citations;
-                            if (!Array.isArray(raw)) return null;
-                            const citations = raw.filter(
-                              (item): item is MessageCitation =>
-                                typeof item === 'object' &&
-                                item !== null &&
-                                typeof (item as MessageCitation).id === 'string' &&
-                                typeof (item as MessageCitation).key === 'string' &&
-                                typeof (item as MessageCitation).snippet === 'string' &&
-                                typeof (item as MessageCitation).timestamp === 'string'
-                            );
-                            if (citations.length === 0) return null;
-                            return <CitationChips citations={citations} />;
-                          })()}
-                          {latestVisibleMessage?.id === msg.id && (
-                            <p className="px-1 text-[10px] text-stone-400 dark:text-neutral-500">
-                              {formatRelativeTime(msg.createdAt)}
-                            </p>
-                          )}
-                        </div>
-                      ) : isChannelInbound ? (
-                        <div className="rounded-2xl px-4 py-2.5 bg-amber-50 border border-amber-200 text-stone-800 rounded-bl-md break-words overflow-hidden dark:bg-amber-900/20 dark:border-amber-800 dark:text-neutral-100">
-                          <BubbleMarkdown content={msg.content} tone="agent" />
-                          {latestVisibleMessage?.id === msg.id && (
-                            <p className="mt-1 text-[10px] text-stone-500 dark:text-neutral-400">
-                              {formatRelativeTime(msg.createdAt)}
-                            </p>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="rounded-2xl px-4 py-2.5 bg-primary-500 text-white rounded-br-md break-words overflow-hidden">
-                          <BubbleMarkdown content={msg.content} tone="user" />
-                          {latestVisibleMessage?.id === msg.id && (
-                            <p className="mt-1 text-[10px] text-white/60">
-                              {formatRelativeTime(msg.createdAt)}
-                            </p>
-                          )}
-                        </div>
-                      )}
-                      <button
-                        onClick={() => handleCopyMessage(msg.id, msg.content)}
-                        className={`absolute -top-1 ${alignRight ? '-left-8' : '-right-8'} p-1 rounded-md opacity-0 group-hover/msg:opacity-100 hover:bg-stone-100 dark:hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-800 text-stone-400 dark:text-neutral-500 hover:text-stone-600 dark:hover:text-neutral-300 transition-all`}
-                        title={t('chat.copyResponse')}>
-                        {copiedMessageId === msg.id ? (
-                          <svg
-                            className="w-3.5 h-3.5 text-sage-500"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M5 13l4 4L19 7"
-                            />
-                          </svg>
-                        ) : (
-                          <svg
-                            className="w-3.5 h-3.5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                            />
-                          </svg>
+                    <div
+                      className={`group/msg flex ${alignRight ? 'justify-end' : 'justify-start'}`}>
+                      <div className="relative w-fit max-w-[75%]">
+                        {channelMeta && (
+                          <p
+                            className="mb-0.5 flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-amber-700 dark:text-amber-300"
+                            data-testid={`channel-origin-${channelMeta.channel}`}>
+                            <span className="inline-flex h-3.5 items-center rounded-full bg-amber-100 px-1.5 text-[9px] text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
+                              {channelLabel}
+                            </span>
+                            <span className="text-stone-500 dark:text-neutral-400">
+                              {isChannelInbound
+                                ? `from @${channelMeta.sender}`
+                                : `via @${channelMeta.sender}`}
+                            </span>
+                          </p>
                         )}
-                      </button>
-                      {(() => {
-                        if (latestVisibleMessage?.id !== msg.id) return null;
-                        const myReactions =
-                          (msg.extraMetadata?.myReactions as string[] | undefined) ?? [];
-                        const hasReactions = myReactions.length > 0;
-                        // Show reaction row only for the most recent visible message.
-                        if (!hasReactions && msg.sender !== 'agent') return null;
-                        return (
-                          <div className="mt-1 flex items-center gap-1 flex-wrap min-h-[20px]">
-                            {myReactions.map(emoji => (
-                              <button
-                                key={emoji}
-                                onClick={() =>
-                                  selectedThreadId &&
-                                  void dispatch(
-                                    persistReaction({
-                                      threadId: selectedThreadId,
-                                      messageId: msg.id,
-                                      emoji,
-                                    })
-                                  )
-                                }
-                                className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-primary-100 border border-primary-200 text-xs transition-colors hover:bg-primary-200"
-                                title={`Remove ${emoji}`}>
-                                {emoji}
-                              </button>
-                            ))}
-                            {msg.sender === 'agent' &&
-                              (reactionPickerMsgId === msg.id ? (
-                                <div className="flex items-center gap-0.5 px-1 py-0.5 rounded-full bg-stone-100 dark:bg-neutral-800">
-                                  {['👍', '❤️', '😂', '🔥', '👀', '🎯'].map(emoji => (
-                                    <button
-                                      key={emoji}
-                                      onClick={() => {
-                                        if (selectedThreadId) {
-                                          void dispatch(
-                                            persistReaction({
-                                              threadId: selectedThreadId,
-                                              messageId: msg.id,
-                                              emoji,
-                                            })
-                                          );
-                                        }
-                                        setReactionPickerMsgId(null);
-                                      }}
-                                      className="px-0.5 rounded text-sm hover:scale-125 transition-transform"
-                                      title={emoji}>
-                                      {emoji}
-                                    </button>
-                                  ))}
-                                  <button
-                                    onClick={() => setReactionPickerMsgId(null)}
-                                    className="ml-0.5 text-stone-600 dark:text-neutral-300 hover:text-stone-400 dark:hover:text-neutral-500 text-xs px-0.5">
-                                    ✕
-                                  </button>
-                                </div>
-                              ) : (
+                        {renderAsAgent ? (
+                          <div className="space-y-1">
+                            {splitAgentMessageIntoBubbles(msg.content).map(
+                              (segment, index, parts) => {
+                                const position: AgentBubblePosition =
+                                  parts.length === 1
+                                    ? 'single'
+                                    : index === 0
+                                      ? 'first'
+                                      : index === parts.length - 1
+                                        ? 'last'
+                                        : 'middle';
+
+                                return (
+                                  <AgentMessageBubble
+                                    key={`${msg.id}:${index}`}
+                                    content={segment}
+                                    position={position}
+                                  />
+                                );
+                              }
+                            )}
+                            {(() => {
+                              const raw = msg.extraMetadata?.citations;
+                              if (!Array.isArray(raw)) return null;
+                              const citations = raw.filter(
+                                (item): item is MessageCitation =>
+                                  typeof item === 'object' &&
+                                  item !== null &&
+                                  typeof (item as MessageCitation).id === 'string' &&
+                                  typeof (item as MessageCitation).key === 'string' &&
+                                  typeof (item as MessageCitation).snippet === 'string' &&
+                                  typeof (item as MessageCitation).timestamp === 'string'
+                              );
+                              if (citations.length === 0) return null;
+                              return <CitationChips citations={citations} />;
+                            })()}
+                            {latestVisibleMessage?.id === msg.id && (
+                              <p className="px-1 text-[10px] text-stone-400 dark:text-neutral-500">
+                                {formatRelativeTime(msg.createdAt)}
+                              </p>
+                            )}
+                          </div>
+                        ) : isChannelInbound ? (
+                          <div className="rounded-2xl px-4 py-2.5 bg-amber-50 border border-amber-200 text-stone-800 rounded-bl-md break-words overflow-hidden dark:bg-amber-900/20 dark:border-amber-800 dark:text-neutral-100">
+                            <BubbleMarkdown content={msg.content} tone="agent" />
+                            {latestVisibleMessage?.id === msg.id && (
+                              <p className="mt-1 text-[10px] text-stone-500 dark:text-neutral-400">
+                                {formatRelativeTime(msg.createdAt)}
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="rounded-2xl px-4 py-2.5 bg-primary-500 text-white rounded-br-md break-words overflow-hidden">
+                            <BubbleMarkdown content={msg.content} tone="user" />
+                            {latestVisibleMessage?.id === msg.id && (
+                              <p className="mt-1 text-[10px] text-white/60">
+                                {formatRelativeTime(msg.createdAt)}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                        <button
+                          onClick={() => handleCopyMessage(msg.id, msg.content)}
+                          className={`absolute -top-1 ${alignRight ? '-left-8' : '-right-8'} p-1 rounded-md opacity-0 group-hover/msg:opacity-100 hover:bg-stone-100 dark:hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-800 text-stone-400 dark:text-neutral-500 hover:text-stone-600 dark:hover:text-neutral-300 transition-all`}
+                          title={t('chat.copyResponse')}>
+                          {copiedMessageId === msg.id ? (
+                            <svg
+                              className="w-3.5 h-3.5 text-sage-500"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24">
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 13l4 4L19 7"
+                              />
+                            </svg>
+                          ) : (
+                            <svg
+                              className="w-3.5 h-3.5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24">
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                              />
+                            </svg>
+                          )}
+                        </button>
+                        {(() => {
+                          if (latestVisibleMessage?.id !== msg.id) return null;
+                          const myReactions =
+                            (msg.extraMetadata?.myReactions as string[] | undefined) ?? [];
+                          const hasReactions = myReactions.length > 0;
+                          // Show reaction row only for the most recent visible message.
+                          if (!hasReactions && msg.sender !== 'agent') return null;
+                          return (
+                            <div className="mt-1 flex items-center gap-1 flex-wrap min-h-[20px]">
+                              {myReactions.map(emoji => (
                                 <button
-                                  onClick={() => setReactionPickerMsgId(msg.id)}
-                                  className="opacity-0 group-hover/msg:opacity-100 flex items-center px-1.5 py-0.5 rounded-full bg-stone-50 dark:bg-neutral-800/60 hover:bg-stone-200 dark:bg-neutral-800 dark:hover:bg-neutral-800 text-stone-500 dark:text-neutral-400 hover:text-stone-300 dark:hover:text-neutral-600 text-xs transition-all"
-                                  title="Add reaction">
-                                  +
+                                  key={emoji}
+                                  onClick={() =>
+                                    selectedThreadId &&
+                                    void dispatch(
+                                      persistReaction({
+                                        threadId: selectedThreadId,
+                                        messageId: msg.id,
+                                        emoji,
+                                      })
+                                    )
+                                  }
+                                  className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-primary-100 border border-primary-200 text-xs transition-colors hover:bg-primary-200"
+                                  title={`Remove ${emoji}`}>
+                                  {emoji}
                                 </button>
                               ))}
-                          </div>
-                        );
-                      })()}
+                              {msg.sender === 'agent' &&
+                                (reactionPickerMsgId === msg.id ? (
+                                  <div className="flex items-center gap-0.5 px-1 py-0.5 rounded-full bg-stone-100 dark:bg-neutral-800">
+                                    {['👍', '❤️', '😂', '🔥', '👀', '🎯'].map(emoji => (
+                                      <button
+                                        key={emoji}
+                                        onClick={() => {
+                                          if (selectedThreadId) {
+                                            void dispatch(
+                                              persistReaction({
+                                                threadId: selectedThreadId,
+                                                messageId: msg.id,
+                                                emoji,
+                                              })
+                                            );
+                                          }
+                                          setReactionPickerMsgId(null);
+                                        }}
+                                        className="px-0.5 rounded text-sm hover:scale-125 transition-transform"
+                                        title={emoji}>
+                                        {emoji}
+                                      </button>
+                                    ))}
+                                    <button
+                                      onClick={() => setReactionPickerMsgId(null)}
+                                      className="ml-0.5 text-stone-600 dark:text-neutral-300 hover:text-stone-400 dark:hover:text-neutral-500 text-xs px-0.5">
+                                      ✕
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button
+                                    onClick={() => setReactionPickerMsgId(msg.id)}
+                                    className="opacity-0 group-hover/msg:opacity-100 flex items-center px-1.5 py-0.5 rounded-full bg-stone-50 dark:bg-neutral-800/60 hover:bg-stone-200 dark:bg-neutral-800 dark:hover:bg-neutral-800 text-stone-500 dark:text-neutral-400 hover:text-stone-300 dark:hover:text-neutral-600 text-xs transition-all"
+                                    title="Add reaction">
+                                    +
+                                  </button>
+                                ))}
+                            </div>
+                          );
+                        })()}
+                      </div>
                     </div>
                   </div>
-                </div>
                 );
               })}
               {isSending &&
