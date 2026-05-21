@@ -31,17 +31,17 @@ import { useCallback, useEffect, useState } from 'react';
 import { useT } from '../../lib/i18n/I18nContext';
 import type { ToastNotification } from '../../types/intelligence';
 import { openUrl } from '../../utils/openUrl';
-import { isTauri } from '../../utils/tauriCommands/common';
 import {
   type GraphExportResponse,
   type GraphMode,
-  type ObsidianRegisterOutcome,
   memoryTreeFlushNow,
   memoryTreeGraphExport,
   memoryTreeRegisterObsidianVault,
   memoryTreeResetTree,
   memoryTreeWipeAll,
+  type ObsidianRegisterOutcome,
 } from '../../utils/tauriCommands';
+import { isTauri } from '../../utils/tauriCommands/common';
 import { MemoryGraph } from './MemoryGraph';
 import { MemorySources } from './MemorySources';
 import { VaultPanel } from './VaultPanel';
@@ -88,9 +88,7 @@ const SYNCABLE_TOOLKITS: ReadonlySet<string> = new Set(['gmail']);
  * Returns the registration outcome so the caller can choose what toast
  * to show. Throws on RPC failure (caller decides whether to swallow).
  */
-async function openVaultInObsidian(
-  contentRootAbs: string
-): Promise<ObsidianRegisterOutcome> {
+async function openVaultInObsidian(contentRootAbs: string): Promise<ObsidianRegisterOutcome> {
   console.debug('[ui-flow][memory-workspace] register-then-open vault path=%s', contentRootAbs);
   const outcome = await memoryTreeRegisterObsidianVault();
   if (outcome.status === 'obsidian_not_installed') {

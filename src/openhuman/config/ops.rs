@@ -1492,8 +1492,7 @@ pub async fn dws_sync_now() -> Result<RpcOutcome<serde_json::Value>, String> {
 pub async fn dws_sync_progress() -> Result<RpcOutcome<serde_json::Value>, String> {
     use crate::openhuman::tools::implementations::dws::sync;
     let snap = sync::progress_snapshot();
-    let payload =
-        serde_json::to_value(&snap).map_err(|e| format!("serialization error: {e}"))?;
+    let payload = serde_json::to_value(&snap).map_err(|e| format!("serialization error: {e}"))?;
     Ok(RpcOutcome::new(payload, Vec::new()))
 }
 
@@ -1552,9 +1551,7 @@ pub async fn dws_sync_reset_cursors(
             "cleared": cleared,
             "count": count,
         }),
-        vec![format!(
-            "dws_sync: reset {count} cursor(s) ({cleared:?})"
-        )],
+        vec![format!("dws_sync: reset {count} cursor(s) ({cleared:?})")],
     ))
 }
 

@@ -54,10 +54,16 @@ pub enum RegisterOutcome {
     /// We added a new entry for this path. Existing Obsidian instances
     /// may need a restart to notice; freshly launched ones see it
     /// immediately.
-    Registered { config_path: String, vault_id: String },
+    Registered {
+        config_path: String,
+        vault_id: String,
+    },
     /// An entry pointing at the same absolute path was already in the
     /// file. No write needed.
-    AlreadyPresent { config_path: String, vault_id: String },
+    AlreadyPresent {
+        config_path: String,
+        vault_id: String,
+    },
     /// Obsidian's config directory doesn't exist on disk. The user
     /// either hasn't installed Obsidian or has never launched it. UI
     /// should show install / manual-add guidance.
@@ -145,9 +151,8 @@ pub fn register_vault(vault_root_abs: &Path) -> Result<RegisterOutcome> {
             .unwrap_or_default(),
         Err(err) if err.kind() == std::io::ErrorKind::NotFound => Map::new(),
         Err(err) => {
-            return Err(anyhow::anyhow!(err)).with_context(|| {
-                format!("read obsidian.json at {}", config_path.display())
-            });
+            return Err(anyhow::anyhow!(err))
+                .with_context(|| format!("read obsidian.json at {}", config_path.display()));
         }
     };
 
@@ -221,20 +226,17 @@ fn write_atomically(dest: &Path, body: &[u8]) -> Result<()> {
     let parent = dest
         .parent()
         .context("destination has no parent directory")?;
-    std::fs::create_dir_all(parent).with_context(|| {
-        format!("create parent directory for {}", dest.display())
-    })?;
+    std::fs::create_dir_all(parent)
+        .with_context(|| format!("create parent directory for {}", dest.display()))?;
     let tmp = parent.join(format!(
         ".{}.tmp",
         dest.file_name()
             .and_then(|n| n.to_str())
             .unwrap_or("obsidian")
     ));
-    std::fs::write(&tmp, body)
-        .with_context(|| format!("write temp file {}", tmp.display()))?;
-    std::fs::rename(&tmp, dest).with_context(|| {
-        format!("rename {} -> {}", tmp.display(), dest.display())
-    })?;
+    std::fs::write(&tmp, body).with_context(|| format!("write temp file {}", tmp.display()))?;
+    std::fs::rename(&tmp, dest)
+        .with_context(|| format!("rename {} -> {}", tmp.display(), dest.display()))?;
     Ok(())
 }
 
@@ -249,7 +251,11 @@ mod tests {
         // least return Some(...) on any of the supported platforms the
         // build matrix runs on.
         let p = obsidian_config_path();
-        if cfg!(any(target_os = "macos", target_os = "linux", target_os = "windows")) {
+        if cfg!(any(
+            target_os = "macos",
+            target_os = "linux",
+            target_os = "windows"
+        )) {
             assert!(p.is_some(), "expected a config path on this platform");
             let p = p.unwrap();
             assert!(p.ends_with("obsidian.json"), "got {}", p.display());
@@ -283,10 +289,7 @@ mod tests {
 
     /// Direct-path variant of `register_vault` so tests don't depend on
     /// the real user's `~/Library/Application Support/obsidian/...`.
-    fn register_vault_at(
-        config_path: &Path,
-        vault_root_abs: &Path,
-    ) -> Result<RegisterOutcome> {
+    fn register_vault_at(config_path: &Path, vault_root_abs: &Path) -> Result<RegisterOutcome> {
         // Mirror the production logic but skip the platform resolver so
         // tests are hermetic. Kept in sync manually — small enough that
         // drift is easy to spot in review.
@@ -348,9 +351,7 @@ mod tests {
                 // File now exists and contains our vault.
                 let body = std::fs::read_to_string(&cfg).unwrap();
                 let parsed: Value = serde_json::from_str(&body).unwrap();
-                let stored = parsed["vaults"][&vault_id]["path"]
-                    .as_str()
-                    .unwrap();
+                let stored = parsed["vaults"][&vault_id]["path"].as_str().unwrap();
                 assert_eq!(stored, vault.display().to_string());
             }
             other => panic!("unexpected outcome: {other:?}"),

@@ -230,7 +230,13 @@ fn extract_title(info: &Value, header: &Value) -> Option<String> {
 }
 
 fn extract_meeting_time_ms(info: &Value, header: &Value) -> Option<i64> {
-    for k in ["startTime", "createTime", "meetingTime", "createdAt", "start"] {
+    for k in [
+        "startTime",
+        "createTime",
+        "meetingTime",
+        "createdAt",
+        "start",
+    ] {
         if let Some(ms) = info.get(k).and_then(coerce_timestamp_ms) {
             return Some(ms);
         }

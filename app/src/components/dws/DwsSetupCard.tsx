@@ -460,9 +460,8 @@ function renderSyncFinishedResult(
 /** Count categories whose state is terminal (Done or Failed). Drives
  *  the "x/N" label on the sync button while a run is in flight. */
 function countCompleted(progress: DwsSyncProgressSnapshot): number {
-  return progress.categories.filter(
-    c => c.state.kind === 'done' || c.state.kind === 'failed'
-  ).length;
+  return progress.categories.filter(c => c.state.kind === 'done' || c.state.kind === 'failed')
+    .length;
 }
 
 /** Display label for one of the four sync categories. Mirrors the
@@ -518,13 +517,7 @@ function SyncProgressList({ progress, active }: SyncProgressListProps) {
   );
 }
 
-function SyncProgressRow({
-  entry,
-  active,
-}: {
-  entry: DwsCategoryProgress;
-  active: boolean;
-}) {
+function SyncProgressRow({ entry, active }: { entry: DwsCategoryProgress; active: boolean }) {
   const meta = categoryMeta(entry.category);
   const { icon, text, tone } = renderSyncState(entry.state, active);
   return (
@@ -551,10 +544,7 @@ function renderSyncState(
         tone: 'text-stone-400 dark:text-neutral-500',
       };
     case 'running': {
-      const frac =
-        state.total != null && state.total > 0
-          ? ` ${state.current}/${state.total}`
-          : '';
+      const frac = state.total != null && state.total > 0 ? ` ${state.current}/${state.total}` : '';
       return {
         icon: (
           <span className="inline-block h-2 w-2 animate-spin rounded-full border border-primary-400 border-t-transparent" />

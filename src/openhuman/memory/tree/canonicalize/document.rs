@@ -125,7 +125,8 @@ pub fn canonicalise(
     // top of the body and we don't want a duplicate header).
     let title_trimmed = doc.title.trim();
     let body_trimmed = doc.body.trim();
-    let body_starts_with_heading = body_trimmed.starts_with("# ") || body_trimmed.starts_with("#\t");
+    let body_starts_with_heading =
+        body_trimmed.starts_with("# ") || body_trimmed.starts_with("#\t");
     if !title_trimmed.is_empty() && !body_starts_with_heading {
         md.push_str("# ");
         md.push_str(title_trimmed);
@@ -215,12 +216,18 @@ mod tests {
         // The body already starts with `# Launch plan` — we should NOT
         // add a second one.
         let h1_count = out.markdown.matches("# Launch plan").count();
-        assert_eq!(h1_count, 1, "expected exactly one H1, got:\n{}", out.markdown);
+        assert_eq!(
+            h1_count, 1,
+            "expected exactly one H1, got:\n{}",
+            out.markdown
+        );
     }
 
     #[test]
     fn skips_title_header_when_title_is_blank() {
-        let out = canonicalise("d1", "alice", &[], doc("   ", "body content")).unwrap().unwrap();
+        let out = canonicalise("d1", "alice", &[], doc("   ", "body content"))
+            .unwrap()
+            .unwrap();
         assert!(
             !out.markdown.starts_with("# "),
             "blank title must not emit an empty `# \n` header, got:\n{}",

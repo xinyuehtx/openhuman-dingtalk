@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { requestUsageRefresh } from '../hooks/usageRefresh';
 import { useRefetchSnapshotOnTurnEnd } from '../hooks/useRefetchSnapshotOnTurnEnd';
 import {
+  type ChannelMessageEvent,
   type ChatDoneEvent,
   type ChatInferenceStartEvent,
   type ChatIterationStartEvent,
@@ -37,6 +38,8 @@ import {
   addInferenceResponse,
   createNewThread,
   generateThreadTitleIfNeeded,
+  loadThreadMessages,
+  loadThreads,
   setActiveThread,
   setSelectedThread,
 } from '../store/threadSlice';
@@ -681,6 +684,33 @@ const ChatRuntimeProvider = ({ children }: { children: React.ReactNode }) => {
       onTaskBoardUpdated: (event: ChatTaskBoardUpdatedEvent) => {
         if (!event.task_board) return;
         dispatch(setTaskBoardForThread({ threadId: event.thread_id, board: event.task_board }));
+      },
+      onChannelMessage: (event: ChannelMessageEvent) => {
+        const eventKey = `channel_msg:${event.thread_id}:${event.request_id ?? 'none'}`;
+        if (
+          !markChatEventSeen(eventKey, { threadId: event.thread_id, requestId: event.request_id })
+        )
+          return;
+
+        rtLog('channel_message', {
+          thread: event.thread_id,
+          request: event.request_id,
+          channel: event.args?.channel,
+          sender: event.args?.channelSender,
+          role: event.args?.role,
+        });
+
+        // Refresh the thread list so a brand-new DingTalk thread shows up in
+        // the sidebar (the first inbound message creates the thread row).
+        void dispatch(loadThreads()).catch(() => {});
+
+        // If the user is staring at this thread, reload its messages so the
+        // bubble appears immediately. Other threads stay lazy — `loadThreads`
+        // already bumped `lastMessageAt` so the sidebar reflects activity.
+        const state = store.getState().thread;
+        if (state.selectedThreadId === event.thread_id) {
+          void dispatch(loadThreadMessages(event.thread_id)).catch(() => {});
+        }
       },
       onProactiveMessage: (event: ProactiveMessageEvent) => {
         const messageDigest = proactiveMessageDigest(event.full_response ?? '');

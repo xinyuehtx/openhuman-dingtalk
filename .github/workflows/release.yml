@@ -123,6 +123,67 @@ jobs:
         shell: bash
         run: pnpm install --frozen-lockfile
 
+      # The tag version (e.g. v0.54.8) may differ from the version baked
+      # into the config files on the checked-out commit (e.g. 0.54.3).
+      # Tauri's NSIS/DMG bundler embeds the version from tauri.conf.json
+      # into artifact filenames, so we must sync all four config files to
+      # the tag version before building — otherwise the produced file
+      # (OpenHuman_0.54.3_x64-setup.exe) won't match what the release
+      # step expects (OpenHuman_0.54.8_x64-setup.exe).
+      - name: Sync config versions to tag
+        shell: bash
+        run: |
+          VERSION="${{ steps.ver.outputs.version }}"
+          echo "[release] syncing config files to version ${VERSION}"
+
+          # app/package.json
+          node -e "
+            const fs = require('fs');
+            const p = 'app/package.json';
+            const pkg = JSON.parse(fs.readFileSync(p,'utf8'));
+            pkg.version = '${VERSION}';
+            fs.writeFileSync(p, JSON.stringify(pkg,null,2)+'\n');
+          "
+
+          # app/src-tauri/tauri.conf.json
+          node -e "
+            const fs = require('fs');
+            const p = 'app/src-tauri/tauri.conf.json';
+            const cfg = JSON.parse(fs.readFileSync(p,'utf8'));
+            cfg.version = '${VERSION}';
+            fs.writeFileSync(p, JSON.stringify(cfg,null,2)+'\n');
+          "
+
+          # Cargo.toml (root) — use node to avoid BSD vs GNU sed -i differences
+          node -e "
+            const fs = require('fs');
+            const p = 'Cargo.toml';
+            const content = fs.readFileSync(p,'utf8');
+            const updated = content.replace(
+              /(\[package\][\s\S]*?^version\s*=\s*\")([^\"]+)(\")/m,
+              '\$1${VERSION}\$3'
+            );
+            fs.writeFileSync(p, updated);
+          "
+
+          # app/src-tauri/Cargo.toml
+          node -e "
+            const fs = require('fs');
+            const p = 'app/src-tauri/Cargo.toml';
+            const content = fs.readFileSync(p,'utf8');
+            const updated = content.replace(
+              /(\[package\][\s\S]*?^version\s*=\s*\")([^\"]+)(\")/m,
+              '\$1${VERSION}\$3'
+            );
+            fs.writeFileSync(p, updated);
+          "
+
+          echo "[release] versions after sync:"
+          grep '"version"' app/package.json | head -1
+          grep '"version"' app/src-tauri/tauri.conf.json | head -1
+          grep '^version' Cargo.toml | head -1
+          grep '^version' app/src-tauri/Cargo.toml | head -1
+
       # Resolve the absolute CEF_PATH once: matrix.cef_cache_path uses `~`
       # which actions/cache expands but env vars do NOT expand on Windows.
       # Without this, cef-dll-sys receives a literal `~` path and MSVC fails

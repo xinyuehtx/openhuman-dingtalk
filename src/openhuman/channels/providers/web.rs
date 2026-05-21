@@ -413,6 +413,92 @@ pub async fn start_chat(
         return Err(prompt_guard_user_message(prompt_decision.action).to_string());
     }
 
+    // ── @mention routing ─────────────────────────────────────────────
+    // If the message starts with `@channel:recipient`, route it to the
+    // named external channel instead of running the agent loop. This
+    // lets OpenHuman users push messages to DingTalk (or any other
+    // registered channel) by @-mentioning the target user.
+    if let Some((channel_name, recipient, body)) =
+        crate::openhuman::channels::bus::parse_channel_mention(&message)
+    {
+        tracing::info!(
+            "[web-channel] @mention detected: channel='{}' recipient='{}' body_len={} client_id={} thread_id={} request_id={}",
+            channel_name,
+            recipient,
+            body.len(),
+            client_id,
+            thread_id,
+            request_id,
+        );
+
+        let client_id_mention = client_id.clone();
+        let thread_id_mention = thread_id.clone();
+        let request_id_mention = request_id.clone();
+
+        tokio::spawn(async move {
+            use crate::openhuman::channels::bus::{
+                ChannelSendRequest, ChannelSendResponse, CHANNEL_SEND_METHOD,
+            };
+
+            let send_result = crate::core::event_bus::request_native_global::<
+                ChannelSendRequest,
+                ChannelSendResponse,
+            >(
+                CHANNEL_SEND_METHOD,
+                ChannelSendRequest {
+                    channel_name: channel_name.clone(),
+                    recipient: recipient.clone(),
+                    content: body.clone(),
+                    thread_ts: None,
+                },
+            )
+            .await;
+
+            match send_result {
+                Ok(_resp) => {
+                    tracing::info!(
+                        "[web-channel] @mention message delivered channel='{}' recipient='{}'",
+                        channel_name,
+                        recipient,
+                    );
+                    publish_web_channel_event(WebChannelEvent {
+                        event: "chat_done".to_string(),
+                        client_id: client_id_mention,
+                        thread_id: thread_id_mention,
+                        request_id: request_id_mention,
+                        full_response: Some(format!(
+                            "✅ Message sent to @{}:{} — {}",
+                            channel_name, recipient, body
+                        )),
+                        ..Default::default()
+                    });
+                }
+                Err(err) => {
+                    tracing::error!(
+                        "[web-channel] @mention send failed channel='{}' recipient='{}': {}",
+                        channel_name,
+                        recipient,
+                        err,
+                    );
+                    publish_web_channel_event(WebChannelEvent {
+                        event: "chat_error".to_string(),
+                        client_id: client_id_mention,
+                        thread_id: thread_id_mention,
+                        request_id: request_id_mention,
+                        message: Some(format!(
+                            "Failed to send message to @{}:{} — {}",
+                            channel_name, recipient, err
+                        )),
+                        error_type: Some("inference".to_string()),
+                        ..Default::default()
+                    });
+                }
+            }
+        });
+
+        return Ok(request_id);
+    }
+
     let map_key = key_for(&client_id, &thread_id);
 
     {

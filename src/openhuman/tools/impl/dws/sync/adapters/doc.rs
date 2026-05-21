@@ -583,10 +583,7 @@ mod tests {
             "title": "通用个人年终总结",
             "name": "ignored",
         });
-        assert_eq!(
-            extract_read_title(&v).as_deref(),
-            Some("通用个人年终总结")
-        );
+        assert_eq!(extract_read_title(&v).as_deref(), Some("通用个人年终总结"));
     }
 
     #[test]

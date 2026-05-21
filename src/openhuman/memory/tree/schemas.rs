@@ -1017,12 +1017,11 @@ fn handle_register_obsidian_vault(_params: Map<String, Value>) -> ControllerFutu
                 vault_root
             );
         }
-        let outcome = tokio::task::spawn_blocking(move || {
-            obsidian_register::register_vault(&vault_root)
-        })
-        .await
-        .map_err(|e| format!("register_obsidian_vault join error: {e}"))?
-        .map_err(|e| format!("register_obsidian_vault failed: {e:#}"))?;
+        let outcome =
+            tokio::task::spawn_blocking(move || obsidian_register::register_vault(&vault_root))
+                .await
+                .map_err(|e| format!("register_obsidian_vault join error: {e}"))?
+                .map_err(|e| format!("register_obsidian_vault failed: {e:#}"))?;
         to_json(RpcOutcome::new(outcome, Vec::new()))
     })
 }

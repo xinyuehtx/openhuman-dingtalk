@@ -220,6 +220,37 @@ fn persist_channel_turn(
         persisted_message_id,
         descriptor.role
     );
+
+    // ── Live UI push ──────────────────────────────────────────────────
+    // Broadcast a `channel_message` WebChannelEvent to the "system" room
+    // so the OpenHuman web UI can append the new bubble (or refresh the
+    // selected thread) without the user having to switch threads. Carries
+    // enough metadata (channel + sender + role) for the frontend to render
+    // a DingTalk badge and distinguish DingTalk-originated turns from
+    // ordinary agent replies.
+    crate::openhuman::channels::providers::web::publish_web_channel_event(
+        crate::core::socketio::WebChannelEvent {
+            event: "channel_message".to_string(),
+            client_id: "system".to_string(),
+            thread_id: thread_id.clone(),
+            request_id: persisted_message_id.clone(),
+            full_response: Some(descriptor.content.to_string()),
+            message: Some(descriptor.sender.to_string()),
+            tool_name: Some(descriptor.channel.to_string()),
+            args: Some(json!({
+                "channel": descriptor.channel,
+                "channelSender": descriptor.sender,
+                "replyTarget": descriptor.reply_target,
+                "threadTs": descriptor.thread_ts,
+                "role": descriptor.role,
+                "sourceEvent": descriptor.source,
+                "sourceMessageId": descriptor.message_id,
+            })),
+            success: descriptor.success,
+            ..Default::default()
+        },
+    );
+
     Ok(())
 }
 

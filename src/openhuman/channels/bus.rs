@@ -35,6 +35,53 @@ pub struct ChannelSendResponse {
     pub success: bool,
 }
 
+// ---------------------------------------------------------------------------
+// @mention parsing for cross-channel message routing
+// ---------------------------------------------------------------------------
+
+/// Parse `@channel:recipient` mention directives from a message.
+///
+/// When an OpenHuman user types `@dingtalk:userId Hello!` in the Web UI,
+/// this function extracts the target channel name, recipient ID, and the
+/// remaining message body so the caller can route the message to an
+/// external channel instead of the agent.
+///
+/// # Format
+///
+/// ```text
+/// @<channel_name>:<recipient_id> <message body>
+/// ```
+///
+/// - `channel_name` — must match a registered [`Channel::name()`] (e.g. `dingtalk`, `telegram`)
+/// - `recipient_id` — platform-specific user/chat identifier (e.g. DingTalk `senderStaffId`)
+/// - `message body` — everything after the first whitespace following the mention
+///
+/// # Returns
+///
+/// `Some((channel_name, recipient_id, message_body))` when the message
+/// starts with a valid mention; `None` otherwise (the message should be
+/// handled by the agent as usual).
+pub fn parse_channel_mention(message: &str) -> Option<(String, String, String)> {
+    let trimmed = message.trim();
+    // Must start with '@'
+    let after_at = trimmed.strip_prefix('@')?;
+
+    // Split into "channel:recipient" and "message body" at the first whitespace
+    let (mention_part, body) = match after_at.find(char::is_whitespace) {
+        Some(pos) => (&after_at[..pos], after_at[pos..].trim()),
+        None => return None, // No message body after the mention
+    };
+
+    // Split mention_part into channel and recipient at ':'
+    let (channel, recipient) = mention_part.split_once(':')?;
+
+    if channel.is_empty() || recipient.is_empty() || body.is_empty() {
+        return None;
+    }
+
+    Some((channel.to_string(), recipient.to_string(), body.to_string()))
+}
+
 /// Register the `channel.send` native request handler so any module can
 /// send messages through locally-running external channels without
 /// importing channel instances directly.
@@ -68,8 +115,8 @@ pub fn register_channel_send_handler(
                     req.recipient,
                     req.content.len(),
                 );
-                let message = SendMessage::new(&req.content, &req.recipient)
-                    .in_thread(req.thread_ts);
+                let message =
+                    SendMessage::new(&req.content, &req.recipient).in_thread(req.thread_ts);
                 channel.send(&message).await.map_err(|e| {
                     format!(
                         "[channel.send] send failed on channel='{}': {}",
@@ -968,19 +1015,17 @@ async fn send_channel_reply(channel: &str, text: &str) {
         "[channel-inbound] attempting local send via native bus channel='{}'",
         channel,
     );
-    let local_result = crate::core::event_bus::request_native_global::<
-        ChannelSendRequest,
-        ChannelSendResponse,
-    >(
-        CHANNEL_SEND_METHOD,
-        ChannelSendRequest {
-            channel_name: channel.to_string(),
-            recipient: channel.to_string(),
-            content: text.to_string(),
-            thread_ts: None,
-        },
-    )
-    .await;
+    let local_result =
+        crate::core::event_bus::request_native_global::<ChannelSendRequest, ChannelSendResponse>(
+            CHANNEL_SEND_METHOD,
+            ChannelSendRequest {
+                channel_name: channel.to_string(),
+                recipient: channel.to_string(),
+                content: text.to_string(),
+                thread_ts: None,
+            },
+        )
+        .await;
 
     match local_result {
         Ok(resp) if resp.success => {

@@ -556,7 +556,11 @@ impl Channel for DingTalkChannel {
                     // Determine conversation type for diagnostics and group tracking.
                     let conversation_type = data
                         .get("conversationType")
-                        .and_then(|v| v.as_str().map(String::from).or_else(|| v.as_i64().map(|n| n.to_string())))
+                        .and_then(|v| {
+                            v.as_str()
+                                .map(String::from)
+                                .or_else(|| v.as_i64().map(|n| n.to_string()))
+                        })
                         .unwrap_or_else(|| "unknown".to_string());
                     let is_group_chat = conversation_type == "2";
 
@@ -587,7 +591,9 @@ impl Channel for DingTalkChannel {
 
                     // For group chats, store the conversationId for fallback sending.
                     if is_group_chat {
-                        if let Some(conversation_id) = data.get("conversationId").and_then(|c| c.as_str()) {
+                        if let Some(conversation_id) =
+                            data.get("conversationId").and_then(|c| c.as_str())
+                        {
                             tracing::debug!(
                                 "[dingtalk] storing group conversation mapping: chat_id={} -> conversationId={}",
                                 chat_id,

@@ -674,15 +674,10 @@ export type ObsidianRegisterOutcome =
  */
 export async function memoryTreeRegisterObsidianVault(): Promise<ObsidianRegisterOutcome> {
   console.debug('[memory-tree-rpc] memoryTreeRegisterObsidianVault: entry');
-  const resp = await callCoreRpc<
-    ObsidianRegisterOutcome | ResultEnvelope<ObsidianRegisterOutcome>
-  >({
-    method: 'openhuman.memory_tree_register_obsidian_vault',
-  });
-  const out = unwrapResult(resp);
-  console.debug(
-    '[memory-tree-rpc] memoryTreeRegisterObsidianVault: exit status=%s',
-    out.status
+  const resp = await callCoreRpc<ObsidianRegisterOutcome | ResultEnvelope<ObsidianRegisterOutcome>>(
+    { method: 'openhuman.memory_tree_register_obsidian_vault' }
   );
+  const out = unwrapResult(resp);
+  console.debug('[memory-tree-rpc] memoryTreeRegisterObsidianVault: exit status=%s', out.status);
   return out;
 }

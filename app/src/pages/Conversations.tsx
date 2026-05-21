@@ -72,8 +72,17 @@ import { formatTimelineEntry } from '../utils/toolTimelineFormatting';
 import { AgentMessageBubble, BubbleMarkdown } from './conversations/components/AgentMessageBubble';
 import { CitationChips, type MessageCitation } from './conversations/components/CitationChips';
 import { LimitPill } from './conversations/components/LimitPill';
+import { MentionPicker } from './conversations/components/MentionPicker';
 import { TaskKanbanBoard } from './conversations/components/TaskKanbanBoard';
 import { ToolTimelineBlock } from './conversations/components/ToolTimelineBlock';
+import {
+  applyMentionInsertion,
+  channelDisplayName,
+  deriveMentionTargets,
+  detectActiveMention,
+  filterMentionTargets,
+  type MentionTarget,
+} from './conversations/mentionPicker';
 import {
   evaluateComposerSend,
   getComposerBlockedSendFeedback,
@@ -240,6 +249,15 @@ const Conversations = ({ variant = 'page', composer = 'text' }: ConversationsPro
 
   const [showSidebar, setShowSidebar] = useState(true);
   const [inputValue, setInputValue] = useState('');
+  // ── @-mention picker state ───────────────────────────────────────
+  // Open when the caret sits inside an `@…` token; carries the query
+  // string for filtering and the active row index for keyboard nav.
+  const [mentionState, setMentionState] = useState<{
+    open: boolean;
+    query: string;
+    queryStart: number;
+    activeIndex: number;
+  }>({ open: false, query: '', queryStart: -1, activeIndex: 0 });
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const [inputMode, setInputMode] = useState<InputMode>('text');
   const [replyMode, setReplyMode] = useState<ReplyMode>('text');
@@ -659,6 +677,79 @@ const Conversations = ({ variant = 'page', composer = 'text' }: ConversationsPro
     };
   }, [inputMode, rustChat]);
 
+  // ── @-mention picker derivations + handlers ──────────────────────
+  // Targets are derived from every workspace thread whose id starts with
+  // `channel:` — the persistence subscriber writes one such thread per
+  // (channel, sender, replyTarget) tuple, so this gives us a live roster
+  // of DingTalk users (and any other connected channel) the user has
+  // recently spoken to.
+  const mentionTargets = useMemo(() => deriveMentionTargets(threads), [threads]);
+  const filteredMentionTargets = useMemo(
+    () => filterMentionTargets(mentionTargets, mentionState.query),
+    [mentionTargets, mentionState.query]
+  );
+
+  // Refresh the picker based on the caret position. `caret` defaults to
+  // the textarea's current selectionEnd; callers that already know the
+  // intended caret (e.g. after applying an insertion) can pass it in.
+  const updateMentionStateFromInput = (
+    nextValue: string,
+    nextCaret?: number
+  ) => {
+    const caret = nextCaret ?? textInputRef.current?.selectionEnd ?? nextValue.length;
+    const detection = detectActiveMention(nextValue, caret);
+    if (!detection.active) {
+      setMentionState(prev =>
+        prev.open ? { open: false, query: '', queryStart: -1, activeIndex: 0 } : prev
+      );
+      return;
+    }
+    setMentionState(prev => ({
+      open: true,
+      query: detection.query,
+      queryStart: detection.queryStart,
+      // Reset the highlight when reopening on a fresh `@`; preserve it
+      // while the same token is still being typed so arrow-keying isn't
+      // clobbered by every keystroke.
+      activeIndex: prev.open && prev.queryStart === detection.queryStart ? prev.activeIndex : 0,
+    }));
+  };
+
+  const closeMentionPicker = () =>
+    setMentionState({ open: false, query: '', queryStart: -1, activeIndex: 0 });
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const nextValue = event.target.value;
+    setInputValue(nextValue);
+    updateMentionStateFromInput(nextValue, event.target.selectionEnd);
+  };
+
+  const handleMentionSelect = (target: MentionTarget) => {
+    const textarea = textInputRef.current;
+    const caret = textarea?.selectionEnd ?? inputValue.length;
+    const detection = {
+      active: mentionState.open,
+      queryStart: mentionState.queryStart,
+      query: mentionState.query,
+    };
+    const { value: nextValue, caret: nextCaret } = applyMentionInsertion(
+      inputValue,
+      detection,
+      target,
+      caret
+    );
+    setInputValue(nextValue);
+    closeMentionPicker();
+    // Restore focus + caret after React applies the new value so the
+    // user keeps typing exactly where the mention prefix landed.
+    window.requestAnimationFrame(() => {
+      const ta = textInputRef.current;
+      if (!ta) return;
+      ta.focus();
+      ta.setSelectionRange(nextCaret, nextCaret);
+    });
+  };
+
   const handleSlashCommand = (command: string): boolean => {
     const decision = handleComposerSlashCommand(command, false);
     if (decision.kind === 'not_handled') return false;
@@ -957,6 +1048,44 @@ const Conversations = ({ variant = 'page', composer = 'text' }: ConversationsPro
 
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (isComposingTextRef.current || isImeCompositionKeyEvent(e)) return;
+
+    // The mention picker steals navigation + selection keys while open
+    // so the user can pick a target without sending the message.
+    if (mentionState.open && filteredMentionTargets.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setMentionState(prev => ({
+          ...prev,
+          activeIndex: (prev.activeIndex + 1) % filteredMentionTargets.length,
+        }));
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setMentionState(prev => ({
+          ...prev,
+          activeIndex:
+            (prev.activeIndex - 1 + filteredMentionTargets.length) %
+            filteredMentionTargets.length,
+        }));
+        return;
+      }
+      if (e.key === 'Enter' || e.key === 'Tab') {
+        e.preventDefault();
+        const target = filteredMentionTargets[mentionState.activeIndex];
+        if (target) handleMentionSelect(target);
+        return;
+      }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeMentionPicker();
+        return;
+      }
+    } else if (mentionState.open && filteredMentionTargets.length === 0 && e.key === 'Escape') {
+      e.preventDefault();
+      closeMentionPicker();
+      return;
+    }
 
     const inlineSuffix = getInlineCompletionSuffix(inputValue, inlineSuggestionValue);
     const textarea = e.currentTarget;
@@ -1534,16 +1663,57 @@ const Conversations = ({ variant = 'page', composer = 'text' }: ConversationsPro
                   }}
                 />
               )}
-              {visibleMessages.map(msg => (
+              {visibleMessages.map(msg => {
+                // Messages mirrored from an external channel (DingTalk,
+                // Slack, …) carry `scope: 'channel'` in their metadata.
+                // The persistence layer stores inbound user turns with
+                // `sender: 'user'` and the agent's outgoing reply with
+                // `sender: 'assistant'`. Render both on the left rail
+                // with a channel badge so the OpenHuman web user can tell
+                // at a glance that this turn happened off-platform and
+                // who the human counterpart is.
+                const channelMeta = (() => {
+                  const meta = msg.extraMetadata;
+                  if (!meta || typeof meta !== 'object') return null;
+                  const m = meta as Record<string, unknown>;
+                  if (m.scope !== 'channel') return null;
+                  const channel = typeof m.channel === 'string' ? m.channel : null;
+                  const sender = typeof m.channelSender === 'string' ? m.channelSender : null;
+                  if (!channel || !sender) return null;
+                  return { channel, sender };
+                })();
+                const isChannelInbound = channelMeta !== null && msg.sender === 'user';
+                const isChannelOutbound =
+                  channelMeta !== null && msg.sender !== 'user' && msg.sender !== 'agent';
+                const renderAsAgent = msg.sender === 'agent' || isChannelOutbound;
+                const alignRight = msg.sender === 'user' && !isChannelInbound;
+                const channelLabel = channelMeta
+                  ? channelDisplayName(channelMeta.channel)
+                  : null;
+                return (
                 <div key={msg.id}>
                   {shouldRenderTimelineBeforeLatestAgentMessage &&
                     latestVisibleAgentMessage?.id === msg.id && (
                       <ToolTimelineBlock entries={selectedThreadToolTimeline} />
                     )}
                   <div
-                    className={`group/msg flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    className={`group/msg flex ${alignRight ? 'justify-end' : 'justify-start'}`}>
                     <div className="relative w-fit max-w-[75%]">
-                      {msg.sender === 'agent' ? (
+                      {channelMeta && (
+                        <p
+                          className="mb-0.5 flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-amber-700 dark:text-amber-300"
+                          data-testid={`channel-origin-${channelMeta.channel}`}>
+                          <span className="inline-flex h-3.5 items-center rounded-full bg-amber-100 px-1.5 text-[9px] text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
+                            {channelLabel}
+                          </span>
+                          <span className="text-stone-500 dark:text-neutral-400">
+                            {isChannelInbound
+                              ? `from @${channelMeta.sender}`
+                              : `via @${channelMeta.sender}`}
+                          </span>
+                        </p>
+                      )}
+                      {renderAsAgent ? (
                         <div className="space-y-1">
                           {splitAgentMessageIntoBubbles(msg.content).map(
                             (segment, index, parts) => {
@@ -1586,6 +1756,15 @@ const Conversations = ({ variant = 'page', composer = 'text' }: ConversationsPro
                             </p>
                           )}
                         </div>
+                      ) : isChannelInbound ? (
+                        <div className="rounded-2xl px-4 py-2.5 bg-amber-50 border border-amber-200 text-stone-800 rounded-bl-md break-words overflow-hidden dark:bg-amber-900/20 dark:border-amber-800 dark:text-neutral-100">
+                          <BubbleMarkdown content={msg.content} tone="agent" />
+                          {latestVisibleMessage?.id === msg.id && (
+                            <p className="mt-1 text-[10px] text-stone-500 dark:text-neutral-400">
+                              {formatRelativeTime(msg.createdAt)}
+                            </p>
+                          )}
+                        </div>
                       ) : (
                         <div className="rounded-2xl px-4 py-2.5 bg-primary-500 text-white rounded-br-md break-words overflow-hidden">
                           <BubbleMarkdown content={msg.content} tone="user" />
@@ -1598,7 +1777,7 @@ const Conversations = ({ variant = 'page', composer = 'text' }: ConversationsPro
                       )}
                       <button
                         onClick={() => handleCopyMessage(msg.id, msg.content)}
-                        className={`absolute -top-1 ${msg.sender === 'user' ? '-left-8' : '-right-8'} p-1 rounded-md opacity-0 group-hover/msg:opacity-100 hover:bg-stone-100 dark:hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-800 text-stone-400 dark:text-neutral-500 hover:text-stone-600 dark:hover:text-neutral-300 transition-all`}
+                        className={`absolute -top-1 ${alignRight ? '-left-8' : '-right-8'} p-1 rounded-md opacity-0 group-hover/msg:opacity-100 hover:bg-stone-100 dark:hover:bg-neutral-800 dark:bg-neutral-800 dark:hover:bg-neutral-800 text-stone-400 dark:text-neutral-500 hover:text-stone-600 dark:hover:text-neutral-300 transition-all`}
                         title={t('chat.copyResponse')}>
                         {copiedMessageId === msg.id ? (
                           <svg
@@ -1698,7 +1877,8 @@ const Conversations = ({ variant = 'page', composer = 'text' }: ConversationsPro
                     </div>
                   </div>
                 </div>
-              ))}
+                );
+              })}
               {isSending &&
                 // Suppress the legacy 3-dot placeholder once streaming
                 // output (visible text or thinking) has started — the
@@ -1983,6 +2163,24 @@ const Conversations = ({ variant = 'page', composer = 'text' }: ConversationsPro
           ) : inputMode === 'text' ? (
             <div className="flex items-end gap-3">
               <div className="relative flex flex-1 items-center justify-center rounded-xl border border-stone-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 transition-all focus-within:border-primary-500/50 focus-within:ring-1 focus-within:ring-primary-500/50">
+                {mentionState.open && (
+                  <MentionPicker
+                    targets={filteredMentionTargets}
+                    activeIndex={Math.min(
+                      mentionState.activeIndex,
+                      Math.max(0, filteredMentionTargets.length - 1)
+                    )}
+                    onHoverIndex={index =>
+                      setMentionState(prev => ({ ...prev, activeIndex: index }))
+                    }
+                    onSelect={handleMentionSelect}
+                    emptyHint={
+                      mentionTargets.length === 1
+                        ? 'Send a message from DingTalk first to populate this list.'
+                        : 'No matching recipients.'
+                    }
+                  />
+                )}
                 <div
                   aria-hidden
                   className="pointer-events-none absolute inset-0 overflow-hidden whitespace-pre-wrap break-words px-4 py-2.5 text-sm leading-normal font-sans">
@@ -1994,13 +2192,41 @@ const Conversations = ({ variant = 'page', composer = 'text' }: ConversationsPro
                 <textarea
                   ref={textInputRef}
                   value={inputValue}
-                  onChange={e => setInputValue(e.target.value)}
+                  onChange={handleInputChange}
                   onCompositionStart={() => {
                     isComposingTextRef.current = true;
                   }}
-                  onCompositionEnd={() => {
+                  onCompositionEnd={event => {
                     isComposingTextRef.current = false;
+                    // IME commit may have inserted an `@`; re-check.
+                    updateMentionStateFromInput(
+                      event.currentTarget.value,
+                      event.currentTarget.selectionEnd
+                    );
                   }}
+                  onKeyUp={event => {
+                    // Caret-only moves (arrow keys, click-induced selection
+                    // changes that bubble through onKeyUp) need to re-evaluate
+                    // whether the picker should be open.
+                    if (
+                      event.key === 'ArrowLeft' ||
+                      event.key === 'ArrowRight' ||
+                      event.key === 'Home' ||
+                      event.key === 'End'
+                    ) {
+                      updateMentionStateFromInput(
+                        event.currentTarget.value,
+                        event.currentTarget.selectionEnd
+                      );
+                    }
+                  }}
+                  onClick={event => {
+                    updateMentionStateFromInput(
+                      event.currentTarget.value,
+                      event.currentTarget.selectionEnd
+                    );
+                  }}
+                  onBlur={closeMentionPicker}
                   onKeyDown={handleInputKeyDown}
                   placeholder={t('chat.typeMessage')}
                   rows={1}

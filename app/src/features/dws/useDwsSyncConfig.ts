@@ -97,9 +97,7 @@ export interface UseDwsSyncConfigResult {
    *  Does NOT trigger a sync — pair with `forceColdStartSync` for
    *  the "强制冷启动拉取" UI flow.
    *  Returns the list of state-keys that were cleared. */
-  resetCursors: (
-    categories?: Array<keyof DwsSyncCategories> | null
-  ) => Promise<string[] | null>;
+  resetCursors: (categories?: Array<keyof DwsSyncCategories> | null) => Promise<string[] | null>;
   /** Convenience: clear cursors AND immediately kick off a sync so
    *  the next run pulls history all the way back to its cold-start
    *  window. Used by the "强制冷启动拉取" button. */
@@ -286,25 +284,19 @@ export function useDwsSyncConfig(): UseDwsSyncConfigResult {
   }, [refreshConfig]);
 
   const resetCursors = useCallback(
-    async (
-      categories?: Array<keyof DwsSyncCategories> | null
-    ): Promise<string[] | null> => {
+    async (categories?: Array<keyof DwsSyncCategories> | null): Promise<string[] | null> => {
       setError(null);
       try {
         const raw = await callCoreRpc<unknown>({
           method: 'openhuman.config_dws_sync_reset_cursors',
-          params:
-            categories && categories.length > 0
-              ? { categories }
-              : {},
+          params: categories && categories.length > 0 ? { categories } : {},
         });
         const out = unwrapOutcome<{ cleared?: string[]; count?: number }>(raw) ?? {};
         // Refresh so the UI's last_synced_at labels disappear for cleared cats.
         await refreshConfig();
         return out.cleared ?? [];
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : 'Failed to reset DWS sync cursors';
+        const message = err instanceof Error ? err.message : 'Failed to reset DWS sync cursors';
         setError(message);
         return null;
       }
@@ -313,9 +305,7 @@ export function useDwsSyncConfig(): UseDwsSyncConfigResult {
   );
 
   const forceColdStartSync = useCallback(
-    async (
-      categories?: Array<keyof DwsSyncCategories> | null
-    ): Promise<SyncNowResult | null> => {
+    async (categories?: Array<keyof DwsSyncCategories> | null): Promise<SyncNowResult | null> => {
       // Clear first so the subsequent sync_now sees no cursor and falls
       // back to the per-category cold-start window. A reset failure
       // surfaces the error and aborts before the sync — better than

@@ -295,8 +295,10 @@ mod tests {
 
     #[test]
     fn name_changes_with_model() {
-        let p =
-            CloudChatProvider::from_provider(Box::new(StubProvider::ok("noop")), "claude-haiku-4.5");
+        let p = CloudChatProvider::from_provider(
+            Box::new(StubProvider::ok("noop")),
+            "claude-haiku-4.5",
+        );
         assert!(p.name().contains("claude-haiku-4.5"));
     }
 

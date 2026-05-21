@@ -113,6 +113,34 @@ export interface ProactiveMessageEvent {
   full_response: string;
 }
 
+/**
+ * Emitted by the core whenever an inbound/processed channel turn (DingTalk,
+ * Slack, Telegram, …) is persisted into the workspace conversation store.
+ * Drives live refresh so the OpenHuman web user sees DingTalk traffic land
+ * in the matching thread without manual reload.
+ *
+ * `args` carries structured metadata: `channel`, `channelSender`,
+ * `replyTarget`, `threadTs`, `role` (`"user"` for inbound, `"assistant"` for
+ * the bot's reply), `sourceEvent`, `sourceMessageId`.
+ */
+export interface ChannelMessageEvent {
+  thread_id: string;
+  request_id?: string;
+  full_response?: string;
+  message?: string;
+  tool_name?: string;
+  success?: boolean;
+  args?: {
+    channel?: string;
+    channelSender?: string;
+    replyTarget?: string;
+    threadTs?: string | null;
+    role?: 'user' | 'assistant' | string;
+    sourceEvent?: string;
+    sourceMessageId?: string;
+  };
+}
+
 /** Emitted when the agent turn begins (before the first LLM call). */
 export interface ChatInferenceStartEvent {
   thread_id: string;
@@ -292,6 +320,7 @@ export interface ChatEventListeners {
   onToolArgsDelta?: (event: ChatToolArgsDeltaEvent) => void;
   onTaskBoardUpdated?: (event: ChatTaskBoardUpdatedEvent) => void;
   onProactiveMessage?: (event: ProactiveMessageEvent) => void;
+  onChannelMessage?: (event: ChannelMessageEvent) => void;
   onDone?: (event: ChatDoneEvent) => void;
   onError?: (event: ChatErrorEvent) => void;
 }
@@ -321,6 +350,7 @@ export function subscribeChatEvents(listeners: ChatEventListeners): () => void {
     toolArgsDelta: 'tool_args_delta',
     taskBoardUpdated: 'task_board_updated',
     proactiveMessage: 'proactive_message',
+    channelMessage: 'channel_message',
     done: 'chat_done',
     error: 'chat_error',
   } as const;
@@ -571,6 +601,24 @@ export function subscribeChatEvents(listeners: ChatEventListeners): () => void {
     };
     socket.on(EVENTS.proactiveMessage, cb);
     handlers.push([EVENTS.proactiveMessage, cb]);
+  }
+
+  if (listeners.onChannelMessage) {
+    const cb = (payload: unknown) => {
+      const e = payload as ChannelMessageEvent;
+      chatLog(
+        '%s thread_id=%s request_id=%s channel=%s sender=%s role=%s',
+        EVENTS.channelMessage,
+        e.thread_id,
+        e.request_id,
+        e.args?.channel ?? '',
+        e.args?.channelSender ?? '',
+        e.args?.role ?? ''
+      );
+      listeners.onChannelMessage?.(e);
+    };
+    socket.on(EVENTS.channelMessage, cb);
+    handlers.push([EVENTS.channelMessage, cb]);
   }
 
   if (listeners.onTaskBoardUpdated) {

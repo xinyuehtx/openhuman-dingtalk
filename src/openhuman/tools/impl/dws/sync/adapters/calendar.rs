@@ -28,9 +28,7 @@ pub async fn run(
 ) -> SyncCategoryResult {
     let start = format_iso_local(since);
     let end = format_iso_local(now + FORWARD_WINDOW_SECS);
-    let command = format!(
-        "dws calendar event list --start {start} --end {end} --format json"
-    );
+    let command = format!("dws calendar event list --start {start} --end {end} --format json");
 
     let response = match run_dws_json(&command).await {
         Ok(v) => v,
@@ -135,8 +133,7 @@ fn extract_event_start_ms(event: &Value) -> Option<i64> {
 }
 
 fn extract_event_end_ms(event: &Value) -> Option<i64> {
-    extract_dt_ms(event.get("end"))
-        .or_else(|| event.get("endTime").and_then(coerce_timestamp_ms))
+    extract_dt_ms(event.get("end")).or_else(|| event.get("endTime").and_then(coerce_timestamp_ms))
 }
 
 /// dws calendar nests start/end as `{ dateTime: <iso>, timeZone: ... }`

@@ -68,7 +68,12 @@ impl DwsSyncProgress {
     pub fn completed_count(&self) -> usize {
         self.categories
             .iter()
-            .filter(|c| matches!(c.state, CategoryState::Done { .. } | CategoryState::Failed { .. }))
+            .filter(|c| {
+                matches!(
+                    c.state,
+                    CategoryState::Done { .. } | CategoryState::Failed { .. }
+                )
+            })
             .count()
     }
 }
@@ -104,15 +109,10 @@ pub enum CategoryState {
     /// after admission. They differ when the fast-score path drops
     /// some chunks, or when the source-id dedup gate suppresses
     /// already-known sources.
-    Done {
-        records: u64,
-        chunks: u64,
-    },
+    Done { records: u64, chunks: u64 },
     /// Adapter failed end-to-end (or partial failure where 0 chunks
     /// were written and at least one item errored).
-    Failed {
-        error: String,
-    },
+    Failed { error: String },
 }
 
 static PROGRESS: Mutex<Option<DwsSyncProgress>> = Mutex::new(None);

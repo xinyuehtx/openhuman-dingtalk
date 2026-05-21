@@ -1582,7 +1582,11 @@ fn handle_dws_sync_reset_cursors(params: Map<String, Value>) -> ControllerFuture
             Ok(outcome) => {
                 log::info!(
                     "[config][rpc] dws_sync_reset_cursors ok ({} cleared)",
-                    outcome.value.get("count").and_then(|v| v.as_u64()).unwrap_or(0)
+                    outcome
+                        .value
+                        .get("count")
+                        .and_then(|v| v.as_u64())
+                        .unwrap_or(0)
                 );
                 to_json(outcome)
             }

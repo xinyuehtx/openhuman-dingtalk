@@ -102,10 +102,7 @@ pub async fn load_state(workspace_dir: &Path) -> DwsSyncState {
 /// untouched — the in-memory cursor reset doesn't survive a restart
 /// in that case, but a subsequent successful sync writes a fresh
 /// state file.
-pub async fn reset_cursors(
-    workspace_dir: &Path,
-    categories: &[DwsSyncCategory],
-) -> Vec<String> {
+pub async fn reset_cursors(workspace_dir: &Path, categories: &[DwsSyncCategory]) -> Vec<String> {
     let mut state = load_state(workspace_dir).await;
     let cleared: Vec<String> = if categories.is_empty() {
         let all: Vec<String> = state.last_synced_at.keys().cloned().collect();
@@ -259,7 +256,10 @@ async fn sync_now_inner(categories: &[DwsSyncCategory], run_id: &str) -> DwsSync
                 run_id,
                 category,
                 progress::CategoryState::Failed {
-                    error: result.error.clone().unwrap_or_else(|| "unknown".to_string()),
+                    error: result
+                        .error
+                        .clone()
+                        .unwrap_or_else(|| "unknown".to_string()),
                 },
             );
         }
@@ -564,4 +564,3 @@ mod tests {
         );
     }
 }
-
