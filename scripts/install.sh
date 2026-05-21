@@ -527,6 +527,21 @@ ensure_local_bin_path() {
   fi
 }
 
+# Fork builds ship with an ad-hoc codesign (APPLE_SIGNING_IDENTITY=- in
+# .github/workflows/release.yml). That signature is structurally valid so
+# the bundle launches, but `com.apple.quarantine` set by the download flow
+# still triggers a Gatekeeper "unidentified developer" rejection on first
+# launch. Stripping the xattr after install matches what the user would do
+# manually via right-click → Open, without leaving them to discover it.
+strip_quarantine() {
+  local target="$1"
+  if ! command -v xattr >/dev/null 2>&1; then
+    log_warn "xattr not available; skipping quarantine strip on ${target}"
+    return 0
+  fi
+  xattr -dr com.apple.quarantine "${target}" 2>/dev/null || true
+}
+
 install_macos() {
   local apps_dir="${HOME}/Applications"
   local app_path="${apps_dir}/OpenHuman.app"
@@ -537,6 +552,7 @@ install_macos() {
     if [ "${DRY_RUN}" = true ]; then
       echo "DRY RUN: tar -xzf ${DOWNLOAD_PATH} -C ${TMP_DIR}"
       echo "DRY RUN: replace ${app_path}"
+      echo "DRY RUN: xattr -dr com.apple.quarantine ${app_path}"
     else
       tar -xzf "${DOWNLOAD_PATH}" -C "${TMP_DIR}"
       if [ ! -d "${TMP_DIR}/OpenHuman.app" ]; then
@@ -545,6 +561,7 @@ install_macos() {
       fi
       rm -rf "${app_path}"
       cp -R "${TMP_DIR}/OpenHuman.app" "${app_path}"
+      strip_quarantine "${app_path}"
     fi
   elif [[ "${ASSET_NAME}" =~ \.dmg$ ]]; then
     log_info "Mounting DMG and copying OpenHuman.app"
@@ -590,6 +607,7 @@ else:
       rm -rf "${app_path}"
       cp -R "${mount_point}/OpenHuman.app" "${app_path}"
       hdiutil detach "${mount_point}" >/dev/null
+      strip_quarantine "${app_path}"
     fi
   else
     log_err "Unsupported macOS asset type: ${ASSET_NAME}"

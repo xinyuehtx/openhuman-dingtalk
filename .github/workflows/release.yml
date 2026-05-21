@@ -210,6 +210,22 @@ jobs:
         env:
           NODE_OPTIONS: "--max-old-space-size=8192"
           CEF_PATH: ${{ steps.cef.outputs.path }}
+          # Ad-hoc sign so the bundle has a proper `_CodeSignature/CodeResources`
+          # with sealed resources. Without this, Tauri's `tauri-macos-sign`
+          # short-circuits when no identity is configured, leaving only the
+          # Rust-linker-signed inner binary while the .app wrapper is unsigned.
+          # The resulting bundle fails `codesign --verify --deep --strict` with
+          # "code has no resources but signature indicates they must be present",
+          # gets `Signature=adhoc, Sealed Resources=none, Identifier=OpenHuman-<hash>`,
+          # and Gatekeeper refuses to launch it outright (CEF helpers refuse to
+          # load under the entitled main, leading to a blank webview even when
+          # the user manages to bypass the initial warning).
+          #
+          # Setting "-" triggers `codesign --force -s -` against frameworks,
+          # helpers, and the bundle inside-out, producing a structurally valid
+          # ad-hoc bundle that users can launch via right-click → Open after
+          # quarantine is stripped (handled by scripts/install.sh).
+          APPLE_SIGNING_IDENTITY: "-"
         run: |
           export PATH="$GITHUB_WORKSPACE/.cache/cargo-install/bin:$HOME/.cargo/bin:$PATH"
 
@@ -225,12 +241,21 @@ jobs:
           BUILD_RC=$?
           set -e
 
+          if [[ ! -d "$APP_PATH" ]]; then
+            echo "Build failed: .app not produced (cargo rc=$BUILD_RC)" >&2
+            ls -R "$BUNDLE_DIR" 2>/dev/null || true
+            exit ${BUILD_RC:-1}
+          fi
+
+          # Fail fast on a malformed bundle. The whole point of setting
+          # APPLE_SIGNING_IDENTITY=- above is to make this pass; if it
+          # regresses (e.g. tauri-cli upgrade silently drops the hook),
+          # downstream users hit Gatekeeper rejections before we notice.
+          echo "Verifying codesign on $APP_PATH"
+          codesign --verify --deep --strict --verbose=2 "$APP_PATH"
+          codesign -dvv "$APP_PATH" 2>&1 | grep -E '^(Identifier|Signature|Sealed Resources)='
+
           if [[ ! -f "$DMG_PATH" ]]; then
-            if [[ ! -d "$APP_PATH" ]]; then
-              echo "Build failed: neither .dmg nor .app produced (cargo rc=$BUILD_RC)" >&2
-              ls -R "$BUNDLE_DIR" 2>/dev/null || true
-              exit ${BUILD_RC:-1}
-            fi
             echo "DMG missing but .app present — rebuilding DMG via hdiutil"
             rm -f "${BUNDLE_DIR}/macos"/rw.*.dmg "$DMG_PATH"
             mkdir -p "${BUNDLE_DIR}/dmg"
@@ -307,7 +332,7 @@ jobs:
           body: |
             Fork build of OpenHuman ${{ steps.ver.outputs.version }} (unsigned).
 
-            - macOS arm64 (Apple Silicon): `OpenHuman_${{ steps.ver.outputs.version }}_aarch64.dmg` — first launch: right-click → Open to bypass Gatekeeper.
+            - macOS arm64 (Apple Silicon): `OpenHuman_${{ steps.ver.outputs.version }}_aarch64.dmg` — 首次打开如提示"无法验证开发者"，在终端执行 `xattr -dr com.apple.quarantine /Applications/OpenHuman.app`（或拷到任意位置后对该路径执行同命令）。`scripts/install.sh` 已自动处理此步。
             - Windows x64: `OpenHuman_${{ steps.ver.outputs.version }}_x64-setup.exe` (NSIS).
 
             Quick install (see `scripts/install.{sh,ps1}` for one-line installers).
