@@ -659,3 +659,76 @@ fn scope_slug_non_gmail_uses_full_scope() {
         "slugifying the full 'gmail:...' scope must differ from the participants-only slug"
     );
 }
+
+// ─── extract_first_markdown_heading ─────────────────────────────────────
+
+#[test]
+fn h1_extraction_returns_title_from_first_line() {
+    assert_eq!(
+        super::extract_first_markdown_heading("# 项目设计文档\n\n正文..."),
+        Some("项目设计文档".to_string())
+    );
+}
+
+#[test]
+fn h1_extraction_skips_leading_blank_lines() {
+    assert_eq!(
+        super::extract_first_markdown_heading("\n\n# 会议纪要\nbody"),
+        Some("会议纪要".to_string())
+    );
+}
+
+#[test]
+fn h1_extraction_skips_non_h1_headings() {
+    // ## and ### are section headers; the first '# H1' wins.
+    let body = "## 子标题\n\n# 真标题\n## 子标题2\n";
+    assert_eq!(
+        super::extract_first_markdown_heading(body),
+        Some("真标题".to_string())
+    );
+}
+
+#[test]
+fn h1_extraction_collapses_internal_whitespace() {
+    assert_eq!(
+        super::extract_first_markdown_heading("#    项目  设计  文档   \n"),
+        Some("项目 设计 文档".to_string())
+    );
+}
+
+#[test]
+fn h1_extraction_strips_atx_close_hashes() {
+    assert_eq!(
+        super::extract_first_markdown_heading("# 标题 ###\n"),
+        Some("标题".to_string())
+    );
+}
+
+#[test]
+fn h1_extraction_caps_at_max_length() {
+    // 100 CJK chars × 1 scalar = 100 scalars; helper caps at 60.
+    let long: String = "标".repeat(100);
+    let body = format!("# {long}\n");
+    let title = super::extract_first_markdown_heading(&body).expect("title present");
+    assert_eq!(title.chars().count(), 60);
+}
+
+#[test]
+fn h1_extraction_returns_none_when_no_h1_present() {
+    assert!(super::extract_first_markdown_heading("plain prose only").is_none());
+    assert!(super::extract_first_markdown_heading("## only h2\n### only h3").is_none());
+    assert!(super::extract_first_markdown_heading("").is_none());
+    assert!(super::extract_first_markdown_heading("#no-space-after-hash").is_none());
+    assert!(super::extract_first_markdown_heading("#   \n").is_none());
+}
+
+#[test]
+fn h1_extraction_allows_leading_whitespace_on_heading_line() {
+    // Some authors indent their headings inside code fences or quotes — our
+    // policy is "first ATX H1 anywhere," so leading whitespace before the
+    // `#` is fine. Trailing whitespace on the title is trimmed.
+    assert_eq!(
+        super::extract_first_markdown_heading("   # 站会纪要 2026-05-21  \n"),
+        Some("站会纪要 2026-05-21".to_string())
+    );
+}

@@ -563,20 +563,31 @@ pub(crate) async fn seal_one_level(
     };
     // Build a display title for Obsidian-friendly Chinese filenames.
     //
-    // - Topic trees: take the entity surface form from the scope
-    //   (e.g. `"person:张三"` → `"张三"`).
-    // - Source trees: prefer the first available real title (Markdown H1
-    //   from the first chunk body — documents, meeting notes, AI listening
-    //   transcripts all emit a `# Title` header), falling back to a
-    //   readable label derived from the scope. Without the H1 fallback,
-    //   document trees scoped to `document:<opaque_id>` would write
-    //   `<opaque_id>-L1.md` instead of something a human can recognise
-    //   in their Obsidian sidebar.
+    // The contract is: `display_title` may ONLY be `Some` when the
+    // resulting filename is naturally unique-per-summary in its
+    // destination directory. Setting it from a scope-derived label
+    // (e.g. `#eng-L1.md` for every L1 seal of `slack:#eng`) would
+    // collide every fanout-many seals and overwrite earlier files.
+    // Concretely:
     //
-    // The H1 path only runs at L1 seals (children are real chunks with
-    // bodies that contain markdown). At L≥2 the children are summary
-    // text and the H1 line wouldn't be representative of the source —
-    // we stay on the scope label there, which is stable per tree.
+    // - **Topic trees**: scope is `kind:surface` and the tree only
+    //   ever holds *one* lineage of summaries — the entity surface
+    //   (e.g. `"张三"`) is unique within `topic-<scope>/L<n>/`.
+    // - **Source trees, L1 with an H1**: the first chunk body's
+    //   `# Title` line names the document / meeting / transcript.
+    //   When two chunks share a title, this still collides — but
+    //   the typical document/meeting tree only seals once per
+    //   distinct piece of content, so collisions are vanishingly
+    //   rare and harmless (idempotent rewrite of identical body).
+    // - **Source trees, L1 without an H1**: fall back to the
+    //   hash-based filename. The alias still surfaces the scope
+    //   short-label via `build_summary_alias`, so users see e.g.
+    //   `L1 · #eng · 5 条子记录 · 2026-04-28` without the file
+    //   path collisions that a scope-derived basename would cause.
+    // - **Source trees, L≥2**: hash filenames. Summary children
+    //   don't have a canonical title and the same tree can produce
+    //   many L2/L3 summaries — names must stay opaque to stay
+    //   unique.
     let display_title_owned: Option<String> = match tree.kind {
         TreeKind::Topic => {
             let entity_name = tree
@@ -586,24 +597,10 @@ pub(crate) async fn seal_one_level(
                 .unwrap_or_else(|| tree.scope.clone());
             Some(entity_name)
         }
-        _ => {
-            // L1 only: peek at the first hydrated chunk body for an H1.
-            let from_h1 = if node.level == 1 {
-                inputs
-                    .iter()
-                    .find_map(|inp| extract_first_markdown_heading(&inp.content))
-            } else {
-                None
-            };
-            from_h1.or_else(|| {
-                let label = scope_short_label_for_title(&tree.scope);
-                if label.is_empty() {
-                    None
-                } else {
-                    Some(label)
-                }
-            })
-        }
+        _ if node.level == 1 => inputs
+            .iter()
+            .find_map(|inp| extract_first_markdown_heading(&inp.content)),
+        _ => None,
     };
     let compose_input = SummaryComposeInput {
         summary_id: &node.id,
@@ -947,35 +944,6 @@ fn extract_first_markdown_heading(body: &str) -> Option<String> {
         return Some(capped);
     }
     None
-}
-
-/// Extract a short human-readable label from a tree scope string for use
-/// as the summary file's `display_title`. Returns an empty string if no
-/// meaningful label can be derived.
-///
-/// Examples:
-/// - `"gmail:alice@x.com|bob@y.com"` → `"alice@x.com ↔ bob@y.com"`
-/// - `"slack:#general"` → `"slack-#general"`
-/// - `"document:项目设计文档"` → `"项目设计文档"`
-fn scope_short_label_for_title(scope: &str) -> String {
-    if let Some((prefix, rest)) = scope.split_once(':') {
-        match prefix {
-            "gmail" if !rest.is_empty() => {
-                let addrs: Vec<&str> = rest.split('|').collect();
-                match addrs.as_slice() {
-                    [] => String::new(),
-                    [only] => only.to_string(),
-                    [first, second] => format!("{first} ↔ {second}"),
-                    [first, others @ ..] => format!("{first} + {} others", others.len()),
-                }
-            }
-            // For document / chat / other sources, the portion after the
-            // colon is usually the source title or channel name.
-            _ => rest.to_string(),
-        }
-    } else {
-        scope.to_string()
-    }
 }
 
 #[cfg(test)]

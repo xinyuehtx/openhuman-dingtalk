@@ -472,13 +472,26 @@ mod tests {
 
     #[test]
     fn system_prompt_describes_plain_text_output() {
-        // When structured_facets is disabled, the prompt asks for plain prose.
+        // When structured_facets is disabled, the prompt asks for plain Chinese
+        // prose only — no JSON block, no markdown wrapper, no commentary.
         let p = system_prompt(4096, false);
         assert!(!p.contains("4096"));
-        assert!(!p.contains("Stay well under"));
         assert!(!p.contains("\"summary\""));
-        assert!(p.to_lowercase().contains("no commentary"));
-        assert!(p.to_lowercase().contains("no json"));
+        // The Chinese-language directive must be present (regression guard for
+        // anyone reverting to English-only wording).
+        assert!(
+            p.contains("中文"),
+            "system prompt must instruct the model to reply in Chinese; got:\n{p}"
+        );
+        // Two clear signals that JSON output is forbidden in this mode.
+        assert!(
+            p.contains("只输出中文摘要正文"),
+            "plain-text mode must instruct 'output Chinese prose only'; got:\n{p}"
+        );
+        assert!(
+            !p.contains("```json"),
+            "plain-text mode must NOT include JSON fence instruction"
+        );
     }
 
     #[test]
@@ -494,9 +507,19 @@ mod tests {
             p.contains("evidence_chunks"),
             "should mention evidence_chunks"
         );
+        // The list of canonical facet keys lives in the bullet "使用规范化的
+        // key" — anchor on the canonical-key tokens (`package_manager`,
+        // `verbosity`) rather than English prose so future copy edits to
+        // the surrounding instructions don't break this assertion.
         assert!(
-            p.contains("canonical keys"),
-            "should specify canonical keys"
+            p.contains("package_manager") && p.contains("verbosity"),
+            "should enumerate canonical facet keys (e.g. package_manager, verbosity); \
+             got:\n{p}"
+        );
+        // Regression guard for the Chinese-language requirement.
+        assert!(
+            p.contains("中文"),
+            "structured-facet mode must still instruct Chinese output; got:\n{p}"
         );
     }
 
@@ -656,7 +679,15 @@ mod tests {
             provider,
         );
         let prompt = s.build_prompt("body", 2048);
-        assert!(prompt.system.to_lowercase().contains("no commentary"));
+        // Plain-text mode: Chinese-prose instruction present, JSON envelope
+        // absent. Mirrors `system_prompt_describes_plain_text_output` on the
+        // freshly-built prompt instance to confirm the system prompt actually
+        // flows through `build_prompt`.
+        assert!(
+            prompt.system.contains("只输出中文摘要正文"),
+            "plain-text prompt must instruct Chinese prose only; got:\n{}",
+            prompt.system
+        );
         assert!(!prompt.system.contains("\"summary\""));
         assert_eq!(prompt.user, "body");
         assert_eq!(prompt.temperature, 0.0);
