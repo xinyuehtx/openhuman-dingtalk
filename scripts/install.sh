@@ -556,11 +556,35 @@ install_macos() {
         log_err "hdiutil not available, cannot install from DMG."
         exit 1
       fi
-      mount_output="$(hdiutil attach "${DOWNLOAD_PATH}" -nobrowse)"
-      mount_point="$(echo "${mount_output}" | awk '/\/Volumes\// {print $NF; exit}')"
+      # Use -plist for robust parsing: text output uses tabs that awk splits as
+      # whitespace, so volumes whose name contains a space (e.g. "OpenHuman 1"
+      # when an older copy is still mounted) parse to just "1" and the install
+      # fails. plistlib ships with the system Python 3 on every supported
+      # macOS, so this stays dependency-free.
+      mount_output="$(hdiutil attach "${DOWNLOAD_PATH}" -nobrowse -plist)"
+      mount_point="$(printf '%s' "${mount_output}" | python3 -c '
+import os, plistlib, sys
+data = plistlib.loads(sys.stdin.buffer.read())
+candidates = [
+    e.get("mount-point")
+    for e in (data.get("system-entities") or [])
+    if e.get("mount-point")
+]
+for mp in candidates:
+    if os.path.isdir(os.path.join(mp, "OpenHuman.app")):
+        print(mp)
+        break
+else:
+    if candidates:
+        print(candidates[0])
+' 2>/dev/null || true)"
       if [ -z "${mount_point}" ] || [ ! -d "${mount_point}/OpenHuman.app" ]; then
         log_err "Could not find OpenHuman.app in mounted DMG."
         echo "${mount_output}"
+        # Best-effort cleanup of any volumes we attached but couldn't use.
+        if [ -n "${mount_point}" ]; then
+          hdiutil detach "${mount_point}" >/dev/null 2>&1 || true
+        fi
         exit 1
       fi
       rm -rf "${app_path}"
