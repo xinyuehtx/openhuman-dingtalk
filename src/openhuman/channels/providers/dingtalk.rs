@@ -27,15 +27,41 @@ impl CachedAccessToken {
     }
 }
 
+/// A session webhook URL together with its DingTalk-supplied expiry timestamp.
+#[derive(Clone, Debug)]
+struct SessionWebhookEntry {
+    url: String,
+    /// Millisecond epoch timestamp after which the webhook becomes invalid.
+    expires_at_ms: u64,
+}
+
+impl SessionWebhookEntry {
+    fn is_expired(&self) -> bool {
+        let now_ms = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_millis() as u64;
+        now_ms >= self.expires_at_ms
+    }
+}
+
 /// DingTalk channel — connects via Stream Mode WebSocket for real-time messages.
 /// Replies are sent through per-message session webhook URLs with access_token fallback.
+///
+/// Send path priority:
+/// 1. Session webhook (temporary per-message URL, lowest latency, no extra permissions).
+/// 2. Group API `/v1.0/robot/groupMessages/send` for group chats when webhook is expired.
+/// 3. Single-chat API `/v1.0/robot/oToMessages/batchSend` for 1:1 chats when webhook is expired.
 pub struct DingTalkChannel {
     client_id: String,
     client_secret: String,
     allowed_users: Vec<String>,
-    /// Per-chat session webhooks for sending replies (chatID -> webhook URL).
+    /// Per-chat session webhooks for sending replies (chatID -> webhook entry).
     /// DingTalk provides a unique webhook URL with each incoming message.
-    session_webhooks: Arc<RwLock<HashMap<String, String>>>,
+    session_webhooks: Arc<RwLock<HashMap<String, SessionWebhookEntry>>>,
+    /// Maps a chat ID (conversationId) to its openConversationId for group-chat fallback.
+    /// Only populated for group chats (conversationType == "2").
+    group_conversations: Arc<RwLock<HashMap<String, String>>>,
     /// Cached access token for fallback message sending when session webhooks expire.
     access_token_cache: Arc<RwLock<Option<CachedAccessToken>>>,
 }
@@ -63,6 +89,7 @@ impl DingTalkChannel {
             client_secret,
             allowed_users,
             session_webhooks: Arc::new(RwLock::new(HashMap::new())),
+            group_conversations: Arc::new(RwLock::new(HashMap::new())),
             access_token_cache: Arc::new(RwLock::new(None)),
         }
     }
@@ -182,7 +209,11 @@ impl DingTalkChannel {
     }
 
     /// Send a message using session webhook (primary path).
-    async fn send_via_webhook(&self, webhook_url: &str, message: &SendMessage) -> anyhow::Result<()> {
+    async fn send_via_webhook(
+        &self,
+        webhook_url: &str,
+        message: &SendMessage,
+    ) -> anyhow::Result<()> {
         let title = message.subject.as_deref().unwrap_or("OpenHuman");
         let body = serde_json::json!({
             "msgtype": "markdown",
@@ -208,17 +239,22 @@ impl DingTalkChannel {
         Ok(())
     }
 
-    /// Send a message using access_token-based robot API (fallback when webhook is unavailable).
-    async fn send_via_access_token(&self, recipient: &str, message: &SendMessage) -> anyhow::Result<()> {
+    /// Send a message using access_token-based single-chat robot API.
+    /// Only works for 1:1 (human ↔ robot) conversations.
+    async fn send_via_single_chat(
+        &self,
+        user_id: &str,
+        message: &SendMessage,
+    ) -> anyhow::Result<()> {
         let token = self.get_access_token().await?;
         tracing::debug!(
-            "[dingtalk] sending message via access_token to recipient={}",
-            recipient
+            "[dingtalk] sending single-chat message via oToMessages/batchSend to user={}",
+            user_id
         );
 
         let body = serde_json::json!({
             "robotCode": self.client_id,
-            "userIds": [recipient],
+            "userIds": [user_id],
             "msgKey": "sampleMarkdown",
             "msgParam": serde_json::json!({
                 "title": message.subject.as_deref().unwrap_or("OpenHuman"),
@@ -237,11 +273,88 @@ impl DingTalkChannel {
         if !resp.status().is_success() {
             let status = resp.status();
             let err = resp.text().await.unwrap_or_default();
-            anyhow::bail!("DingTalk robot batchSend failed ({status}): {err}");
+            anyhow::bail!(
+                "DingTalk robot oToMessages/batchSend failed ({status}): {err}. \
+                 Ensure the 'Enterprise Robot Send Message' permission is granted \
+                 in the DingTalk Developer Console."
+            );
         }
 
-        tracing::debug!("[dingtalk] access_token message sent successfully");
+        tracing::debug!("[dingtalk] single-chat message sent successfully");
         Ok(())
+    }
+
+    /// Send a message to a group chat using the access_token-based group robot API.
+    /// Requires `openConversationId` and the 'Enterprise Robot Send Message' permission.
+    async fn send_via_group_chat(
+        &self,
+        open_conversation_id: &str,
+        message: &SendMessage,
+    ) -> anyhow::Result<()> {
+        let token = self.get_access_token().await?;
+        tracing::debug!(
+            "[dingtalk] sending group-chat message via groupMessages/send to conversation={}",
+            open_conversation_id
+        );
+
+        let body = serde_json::json!({
+            "robotCode": self.client_id,
+            "openConversationId": open_conversation_id,
+            "msgKey": "sampleMarkdown",
+            "msgParam": serde_json::json!({
+                "title": message.subject.as_deref().unwrap_or("OpenHuman"),
+                "text": message.content,
+            }).to_string(),
+        });
+
+        let resp = self
+            .http_client()
+            .post("https://api.dingtalk.com/v1.0/robot/groupMessages/send")
+            .header("x-acs-dingtalk-access-token", &token)
+            .json(&body)
+            .send()
+            .await?;
+
+        if !resp.status().is_success() {
+            let status = resp.status();
+            let err = resp.text().await.unwrap_or_default();
+            anyhow::bail!(
+                "DingTalk robot groupMessages/send failed ({status}): {err}. \
+                 Ensure the 'Enterprise Robot Send Message' permission is granted \
+                 in the DingTalk Developer Console."
+            );
+        }
+
+        tracing::debug!("[dingtalk] group-chat message sent successfully");
+        Ok(())
+    }
+
+    /// Fallback send path when the session webhook is missing or expired.
+    /// Picks the correct API based on whether `recipient` maps to a known group conversation.
+    async fn send_via_access_token_fallback(
+        &self,
+        recipient: &str,
+        message: &SendMessage,
+    ) -> anyhow::Result<()> {
+        // Check if this recipient is a known group conversation.
+        let group_conversation_id = {
+            let groups = self.group_conversations.read().await;
+            groups.get(recipient).cloned()
+        };
+
+        if let Some(conversation_id) = group_conversation_id {
+            tracing::debug!(
+                "[dingtalk] recipient={} is a group chat, using groupMessages/send API",
+                recipient
+            );
+            self.send_via_group_chat(&conversation_id, message).await
+        } else {
+            tracing::debug!(
+                "[dingtalk] recipient={} is a single chat, using oToMessages/batchSend API",
+                recipient
+            );
+            self.send_via_single_chat(recipient, message).await
+        }
     }
 }
 
@@ -256,35 +369,51 @@ impl Channel for DingTalkChannel {
     }
 
     async fn send(&self, message: &SendMessage) -> anyhow::Result<()> {
-        // Try session webhook first (primary path).
-        let webhook_url = {
+        // Try session webhook first (primary path — lowest latency, no extra permissions).
+        let webhook_entry = {
             let webhooks = self.session_webhooks.read().await;
             webhooks.get(&message.recipient).cloned()
         };
 
-        if let Some(url) = webhook_url {
-            tracing::debug!(
-                "[dingtalk] sending via session webhook to recipient={}",
-                message.recipient
-            );
-            match self.send_via_webhook(&url, message).await {
-                Ok(()) => return Ok(()),
-                Err(e) => {
-                    tracing::warn!(
-                        "[dingtalk] webhook send failed (possibly expired): {e}; \
-                         falling back to access_token API"
-                    );
+        if let Some(entry) = webhook_entry {
+            if entry.is_expired() {
+                tracing::warn!(
+                    "[dingtalk] session webhook for recipient={} has expired (expires_at_ms={}); \
+                     skipping to access_token fallback",
+                    message.recipient,
+                    entry.expires_at_ms
+                );
+                // Remove the stale entry.
+                let mut webhooks = self.session_webhooks.write().await;
+                webhooks.remove(&message.recipient);
+            } else {
+                tracing::debug!(
+                    "[dingtalk] sending via session webhook to recipient={}",
+                    message.recipient
+                );
+                match self.send_via_webhook(&entry.url, message).await {
+                    Ok(()) => return Ok(()),
+                    Err(e) => {
+                        tracing::warn!(
+                            "[dingtalk] webhook send failed (possibly expired): {e}; \
+                             falling back to access_token API"
+                        );
+                        // Remove the broken webhook entry.
+                        let mut webhooks = self.session_webhooks.write().await;
+                        webhooks.remove(&message.recipient);
+                    }
                 }
             }
         } else {
             tracing::debug!(
-                "[dingtalk] no session webhook for recipient={}; using access_token API",
+                "[dingtalk] no session webhook for recipient={}; using access_token fallback",
                 message.recipient
             );
         }
 
-        // Fallback: send via access_token-based robot API.
-        self.send_via_access_token(&message.recipient, message).await
+        // Fallback: pick the correct API based on chat type (group vs single).
+        self.send_via_access_token_fallback(&message.recipient, message)
+            .await
     }
 
     async fn send_draft(&self, message: &SendMessage) -> anyhow::Result<Option<String>> {
@@ -328,7 +457,8 @@ impl Channel for DingTalkChannel {
             "[dingtalk] finalize_draft: sending final message to recipient={}",
             recipient
         );
-        let final_message = SendMessage::new(text, recipient).in_thread(thread_ts.map(String::from));
+        let final_message =
+            SendMessage::new(text, recipient).in_thread(thread_ts.map(String::from));
         self.send(&final_message).await
     }
 
@@ -423,13 +553,49 @@ impl Channel for DingTalkChannel {
                     // Private chat uses sender ID, group chat uses conversation ID.
                     let chat_id = Self::resolve_chat_id(&data, sender_id);
 
-                    // Store session webhook for later replies
+                    // Determine conversation type for diagnostics and group tracking.
+                    let conversation_type = data
+                        .get("conversationType")
+                        .and_then(|v| v.as_str().map(String::from).or_else(|| v.as_i64().map(|n| n.to_string())))
+                        .unwrap_or_else(|| "unknown".to_string());
+                    let is_group_chat = conversation_type == "2";
+
+                    // Store session webhook for later replies.
                     if let Some(webhook) = data.get("sessionWebhook").and_then(|w| w.as_str()) {
-                        let webhook = webhook.to_string();
+                        let expires_at_ms = data
+                            .get("sessionWebhookExpiredTime")
+                            .and_then(|v| v.as_u64())
+                            .unwrap_or(0);
+
+                        tracing::debug!(
+                            "[dingtalk] storing session webhook for chat_id={}, \
+                             conversation_type={}, expires_at_ms={}",
+                            chat_id,
+                            conversation_type,
+                            expires_at_ms
+                        );
+
+                        let entry = SessionWebhookEntry {
+                            url: webhook.to_string(),
+                            expires_at_ms,
+                        };
                         let mut webhooks = self.session_webhooks.write().await;
                         // Use both keys so reply routing works for both group and private flows.
-                        webhooks.insert(chat_id.clone(), webhook.clone());
-                        webhooks.insert(sender_id.to_string(), webhook);
+                        webhooks.insert(chat_id.clone(), entry.clone());
+                        webhooks.insert(sender_id.to_string(), entry);
+                    }
+
+                    // For group chats, store the conversationId for fallback sending.
+                    if is_group_chat {
+                        if let Some(conversation_id) = data.get("conversationId").and_then(|c| c.as_str()) {
+                            tracing::debug!(
+                                "[dingtalk] storing group conversation mapping: chat_id={} -> conversationId={}",
+                                chat_id,
+                                conversation_id
+                            );
+                            let mut groups = self.group_conversations.write().await;
+                            groups.insert(chat_id.clone(), conversation_id.to_string());
+                        }
                     }
 
                     // Acknowledge the event
@@ -566,5 +732,58 @@ client_secret = "secret"
         });
         let chat_id = DingTalkChannel::resolve_chat_id(&data, "staff-1");
         assert_eq!(chat_id, "cid-group");
+    }
+
+    #[test]
+    fn resolve_chat_id_handles_string_group_conversation_type() {
+        let data = serde_json::json!({
+            "conversationType": "2",
+            "conversationId": "cid-group-str",
+        });
+        let chat_id = DingTalkChannel::resolve_chat_id(&data, "staff-1");
+        assert_eq!(chat_id, "cid-group-str");
+    }
+
+    #[test]
+    fn resolve_chat_id_uses_sender_for_private_chat() {
+        let data = serde_json::json!({
+            "conversationType": "1",
+            "conversationId": "cid-private",
+        });
+        let chat_id = DingTalkChannel::resolve_chat_id(&data, "staff-1");
+        assert_eq!(chat_id, "staff-1");
+    }
+
+    #[test]
+    fn session_webhook_entry_expired() {
+        let entry = SessionWebhookEntry {
+            url: "https://example.com/webhook".to_string(),
+            expires_at_ms: 1000, // far in the past
+        };
+        assert!(entry.is_expired());
+    }
+
+    #[test]
+    fn session_webhook_entry_not_expired() {
+        let far_future_ms = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_millis() as u64
+            + 3_600_000; // 1 hour from now
+
+        let entry = SessionWebhookEntry {
+            url: "https://example.com/webhook".to_string(),
+            expires_at_ms: far_future_ms,
+        };
+        assert!(!entry.is_expired());
+    }
+
+    #[test]
+    fn session_webhook_entry_zero_expiry_is_expired() {
+        let entry = SessionWebhookEntry {
+            url: "https://example.com/webhook".to_string(),
+            expires_at_ms: 0,
+        };
+        assert!(entry.is_expired());
     }
 }

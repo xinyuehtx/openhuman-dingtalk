@@ -198,7 +198,8 @@ pub async fn status() -> DwsRuntimeStatus {
                 let (a, b, c) = (parts.next()?, parts.next()?, parts.next()?);
                 if a.chars().all(|c| c.is_ascii_digit())
                     && b.chars().all(|c| c.is_ascii_digit())
-                    && c.chars().all(|c| c.is_ascii_digit() || c == '-' || c == '+')
+                    && c.chars()
+                        .all(|c| c.is_ascii_digit() || c == '-' || c == '+')
                 {
                     Some(stripped.to_string())
                 } else {
@@ -214,9 +215,7 @@ pub async fn status() -> DwsRuntimeStatus {
                     if bytes[i].is_ascii_digit() {
                         let start = i;
                         let mut dots = 0;
-                        while i < bytes.len()
-                            && (bytes[i].is_ascii_digit() || bytes[i] == b'.')
-                        {
+                        while i < bytes.len() && (bytes[i].is_ascii_digit() || bytes[i] == b'.') {
                             if bytes[i] == b'.' {
                                 dots += 1;
                             }

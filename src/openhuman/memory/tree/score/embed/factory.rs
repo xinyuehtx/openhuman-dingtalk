@@ -35,18 +35,39 @@ use super::{CloudEmbedder, Embedder, InertEmbedder, OllamaEmbedder};
 use crate::openhuman::config::Config;
 use crate::openhuman::inference::local::ollama_base_url;
 
-/// Cheap heuristic for "is a backend session reachable?" — the cloud
-/// embedder needs one and bails on first embed call without it. We use
-/// the *presence* of `auth-profiles.json` next to the config file as a
-/// proxy: production after login has it, test harnesses and fresh
-/// pre-login installs don't. The CloudEmbedder still re-validates the
-/// JWT at every embed call, so a stale file just surfaces at embed
-/// time (not factory build), preserving the prior failure behavior.
+/// True when an OpenHuman backend session JWT is actually present in
+/// `auth-profiles.json`. Previously this was a bare file-existence check —
+/// but channel auth (Dingtalk, Slack, …) creates the same file without an
+/// `app-session` profile, so the check would falsely route to
+/// [`CloudEmbedder`] and every embed call would surface a misleading "No
+/// backend session" error.
+///
+/// We do the cheapest possible structural check: parse the JSON and look
+/// for an `app-session:*` key under `profiles`. The CloudEmbedder still
+/// re-validates the JWT at every embed call, so a stale file just
+/// surfaces at embed time (not factory build), preserving the prior
+/// failure behavior for real-logged-in users.
 fn cloud_session_available(config: &Config) -> bool {
-    config
-        .config_path
-        .parent()
-        .map(|dir| dir.join("auth-profiles.json").exists())
+    let path = match config.config_path.parent() {
+        Some(dir) => dir.join("auth-profiles.json"),
+        None => return false,
+    };
+    let bytes = match std::fs::read(&path) {
+        Ok(b) => b,
+        Err(_) => return false,
+    };
+    let parsed: serde_json::Value = match serde_json::from_slice(&bytes) {
+        Ok(v) => v,
+        Err(_) => return false,
+    };
+    parsed
+        .get("profiles")
+        .and_then(|p| p.as_object())
+        .map(|profiles| {
+            profiles
+                .keys()
+                .any(|k| k.starts_with(crate::openhuman::credentials::APP_SESSION_PROVIDER))
+        })
         .unwrap_or(false)
 }
 
@@ -139,15 +160,21 @@ mod tests {
     }
 
     /// Drop a stub `auth-profiles.json` next to the test config so
-    /// `cloud_session_available()` returns true. Contents don't matter
-    /// — the factory only checks presence.
+    /// `cloud_session_available()` returns true. We include an `app-session`
+    /// profile key because the check now looks for that prefix, not just
+    /// file existence (channel auth files have no app-session and must NOT
+    /// be treated as a backend session).
     fn touch_auth_profile(cfg: &Config) {
         let path = cfg
             .config_path
             .parent()
             .map(|p| p.join("auth-profiles.json"))
             .expect("config_path has a parent");
-        std::fs::write(&path, "{}").expect("write stub auth-profiles.json");
+        let body = format!(
+            r#"{{"profiles":{{"{p}:default":{{"provider":"{p}","profile_name":"default"}}}}}}"#,
+            p = crate::openhuman::credentials::APP_SESSION_PROVIDER
+        );
+        std::fs::write(&path, body).expect("write stub auth-profiles.json");
     }
 
     #[test]
@@ -251,5 +278,34 @@ mod tests {
         cfg.local_ai.usage.embeddings = true;
         let e = build_embedder_from_config(&cfg).expect("override path should build");
         assert_eq!(e.name(), "ollama");
+    }
+
+    #[test]
+    fn channel_only_auth_profile_falls_back_to_inert() {
+        // Regression: channel auth (Dingtalk, Slack, …) writes
+        // `auth-profiles.json` with only a `channel:*` profile and no
+        // `app-session` token. The old factory used bare file existence
+        // as a proxy for "signed in" and routed embeddings to CloudEmbedder
+        // — every embed then failed with "No backend session", which
+        // blocked the extract job and stalled tree growth. The factory
+        // must now detect the missing app-session key and degrade to
+        // InertEmbedder so chunks still flow into the tree.
+        let (_tmp, mut cfg) = test_config();
+        cfg.memory_tree.embedding_endpoint = None;
+        cfg.memory_tree.embedding_model = None;
+        let path = cfg
+            .config_path
+            .parent()
+            .map(|p| p.join("auth-profiles.json"))
+            .unwrap();
+        // Dingtalk-only profile, no app-session entry.
+        let body = r#"{"profiles":{"channel:dingtalk:api_key:default":{"provider":"channel:dingtalk:api_key","profile_name":"default"}}}"#;
+        std::fs::write(&path, body).unwrap();
+        let e = build_embedder_from_config(&cfg).expect("inert fallback should build");
+        assert_eq!(
+            e.name(),
+            "inert",
+            "channel-only auth must not be treated as a backend session"
+        );
     }
 }

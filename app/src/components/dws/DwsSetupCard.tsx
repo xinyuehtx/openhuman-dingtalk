@@ -14,15 +14,10 @@ const SYNC_CATEGORIES: Array<{
   emoji: string;
   hint: string;
 }> = [
-  { key: 'calendar', label: '日历', emoji: '📅', hint: '事件、会议、日程提醒' },
-  { key: 'todo', label: '待办', emoji: '✅', hint: '未完成任务、截止时间' },
-  { key: 'contact', label: '通讯录', emoji: '👥', hint: '同事、部门成员' },
-  { key: 'attendance', label: '考勤', emoji: '⏰', hint: '打卡、请假记录' },
-  { key: 'approval', label: '审批', emoji: '📋', hint: 'OA 流程实例' },
-  { key: 'report', label: '日志', emoji: '📝', hint: '日报 / 周报 / 月报' },
-  { key: 'mail', label: '邮箱', emoji: '📧', hint: '近期邮件' },
-  { key: 'doc', label: '文档', emoji: '📄', hint: '钉钉文档列表' },
-  { key: 'chat', label: '群聊', emoji: '💬', hint: '群组与机器人' },
+  { key: 'chat', label: '群聊', emoji: '💬', hint: '近期群消息 → 记忆树' },
+  { key: 'doc', label: '文档', emoji: '📄', hint: '我编辑/访问过的文档 → 记忆树' },
+  { key: 'calendar', label: '日历', emoji: '📅', hint: '近期与未来 7 天日程 → 记忆树' },
+  { key: 'minutes', label: 'AI 听记', emoji: '🎙️', hint: '会议纪要：摘要 + 待办 → 记忆树' },
 ];
 
 /** Suggested sync intervals (minutes). 5 is the backend-enforced floor. */

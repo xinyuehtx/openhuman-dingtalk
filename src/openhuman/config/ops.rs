@@ -1307,15 +1307,10 @@ pub struct DwsSyncSettingsPatch {
 
 /// Partial category toggle update (only provided fields are applied).
 pub struct DwsSyncCategoriesPatch {
-    pub calendar: Option<bool>,
-    pub todo: Option<bool>,
-    pub contact: Option<bool>,
-    pub attendance: Option<bool>,
-    pub approval: Option<bool>,
-    pub report: Option<bool>,
-    pub mail: Option<bool>,
-    pub doc: Option<bool>,
     pub chat: Option<bool>,
+    pub doc: Option<bool>,
+    pub calendar: Option<bool>,
+    pub minutes: Option<bool>,
 }
 
 /// Reads the current DWS sync settings from config, plus the per-category
@@ -1330,15 +1325,10 @@ pub async fn get_dws_sync_settings() -> Result<RpcOutcome<serde_json::Value>, St
         "enabled": config.dws_sync.enabled,
         "interval_minutes": config.dws_sync.interval_minutes,
         "categories": {
-            "calendar": config.dws_sync.categories.calendar,
-            "todo": config.dws_sync.categories.todo,
-            "contact": config.dws_sync.categories.contact,
-            "attendance": config.dws_sync.categories.attendance,
-            "approval": config.dws_sync.categories.approval,
-            "report": config.dws_sync.categories.report,
-            "mail": config.dws_sync.categories.mail,
-            "doc": config.dws_sync.categories.doc,
             "chat": config.dws_sync.categories.chat,
+            "doc": config.dws_sync.categories.doc,
+            "calendar": config.dws_sync.categories.calendar,
+            "minutes": config.dws_sync.categories.minutes,
         },
         "last_synced_at": state.last_synced_at,
     });
@@ -1374,32 +1364,17 @@ pub async fn apply_dws_sync_settings(
     }
     if let Some(cats) = update.categories {
         let c = &mut config.dws_sync.categories;
-        if let Some(v) = cats.calendar {
-            c.calendar = v;
-        }
-        if let Some(v) = cats.todo {
-            c.todo = v;
-        }
-        if let Some(v) = cats.contact {
-            c.contact = v;
-        }
-        if let Some(v) = cats.attendance {
-            c.attendance = v;
-        }
-        if let Some(v) = cats.approval {
-            c.approval = v;
-        }
-        if let Some(v) = cats.report {
-            c.report = v;
-        }
-        if let Some(v) = cats.mail {
-            c.mail = v;
+        if let Some(v) = cats.chat {
+            c.chat = v;
         }
         if let Some(v) = cats.doc {
             c.doc = v;
         }
-        if let Some(v) = cats.chat {
-            c.chat = v;
+        if let Some(v) = cats.calendar {
+            c.calendar = v;
+        }
+        if let Some(v) = cats.minutes {
+            c.minutes = v;
         }
         tracing::debug!("[config][dws_sync] categories updated");
     }

@@ -25,11 +25,13 @@
  * configured cloud or local LLM and the new summary nodes appear in
  * the graph after the worker drains.
  */
+import { revealItemInDir } from '@tauri-apps/plugin-opener';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useT } from '../../lib/i18n/I18nContext';
 import type { ToastNotification } from '../../types/intelligence';
 import { openUrl } from '../../utils/openUrl';
+import { isTauri } from '../../utils/tauriCommands/common';
 import {
   type GraphExportResponse,
   type GraphMode,
@@ -71,6 +73,12 @@ const SYNCABLE_TOOLKITS: ReadonlySet<string> = new Set(['gmail']);
  * the React app away from the Memory tab. The opener plugin hands the
  * URL straight to the system handler so Obsidian launches as a
  * separate process.
+ *
+ * IMPORTANT: Obsidian's `obsidian://open?path=...` only works after the
+ * user has registered the content folder as a vault. If they haven't,
+ * Obsidian launches and shows a "vault doesn't exist" dialog. Use
+ * `revealVaultInFinder` as a one-time companion so the user can drag
+ * the highlighted folder into Obsidian's "Open folder as vault" picker.
  */
 async function openVaultInObsidian(contentRootAbs: string): Promise<void> {
   const url = `obsidian://open?path=${encodeURIComponent(contentRootAbs)}`;
@@ -79,6 +87,26 @@ async function openVaultInObsidian(contentRootAbs: string): Promise<void> {
     await openUrl(url);
   } catch (err) {
     console.error('[ui-flow][memory-workspace] openUrl failed', err);
+  }
+}
+
+/**
+ * Reveal the vault directory in the host OS file manager (Finder on
+ * macOS, Explorer on Windows, default on Linux). Used as a fallback /
+ * companion to {@link openVaultInObsidian} so first-time users can
+ * locate the folder and drag it onto Obsidian's vault picker. Outside
+ * Tauri this is a no-op (web preview / browser dev).
+ */
+async function revealVaultInFinder(contentRootAbs: string): Promise<void> {
+  if (!isTauri()) {
+    console.debug('[ui-flow][memory-workspace] revealVaultInFinder skipped: not Tauri');
+    return;
+  }
+  console.debug('[ui-flow][memory-workspace] reveal vault in finder path=%s', contentRootAbs);
+  try {
+    await revealItemInDir(contentRootAbs);
+  } catch (err) {
+    console.error('[ui-flow][memory-workspace] revealItemInDir failed', err);
   }
 }
 
@@ -308,18 +336,48 @@ export function MemoryWorkspace({ onToast }: MemoryWorkspaceProps) {
             )}
           </button>
           {graph && (
-            <button
-              type="button"
-              onClick={() => void openVaultInObsidian(graph.content_root_abs)}
-              data-testid="memory-open-in-obsidian"
-              className="inline-flex items-center gap-2 rounded-lg
-                         bg-violet-500 px-4 py-2 text-sm font-semibold text-white
-                         shadow-sm transition-colors hover:bg-violet-600
-                         focus:outline-none focus:ring-2 focus:ring-violet-300"
-              title={`obsidian://open?path=${graph.content_root_abs}`}>
-              <ExternalLinkIcon />
-              {t('workspace.viewVault')}
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => void openVaultInObsidian(graph.content_root_abs)}
+                data-testid="memory-open-in-obsidian"
+                className="inline-flex items-center gap-2 rounded-lg
+                           bg-violet-500 px-4 py-2 text-sm font-semibold text-white
+                           shadow-sm transition-colors hover:bg-violet-600
+                           focus:outline-none focus:ring-2 focus:ring-violet-300"
+                title={
+                  // Obsidian only resolves the `path=` URI when the absolute
+                  // path falls inside an already-registered vault. Spell that
+                  // out here so first-time users know what to do if Obsidian
+                  // says "vault doesn't exist".
+                  `Opens ${graph.content_root_abs} via obsidian://. ` +
+                  `If Obsidian reports "vault doesn't exist", click the ` +
+                  `folder button next to this one and drag the revealed ` +
+                  `folder onto Obsidian's "Open folder as vault" picker once.`
+                }>
+                <ExternalLinkIcon />
+                {t('workspace.viewVault')}
+              </button>
+              <button
+                type="button"
+                onClick={() => void revealVaultInFinder(graph.content_root_abs)}
+                data-testid="memory-reveal-vault-folder"
+                className="inline-flex items-center gap-2 rounded-lg
+                           border border-stone-200 dark:border-neutral-700
+                           bg-white dark:bg-neutral-900 px-3 py-2 text-sm
+                           font-semibold text-stone-700 dark:text-neutral-200
+                           shadow-sm transition-colors hover:bg-stone-50
+                           dark:hover:bg-neutral-800/60
+                           focus:outline-none focus:ring-2 focus:ring-stone-200"
+                title={
+                  `Reveal ${graph.content_root_abs} in the file manager. ` +
+                  `Use this once to add the folder as an Obsidian vault: ` +
+                  `Obsidian → File → Open Vault → Open folder as vault → ` +
+                  `select the revealed folder.`
+                }>
+                <FolderIcon />
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -461,6 +519,23 @@ function ExternalLinkIcon() {
       <path d="M14 3h7v7" />
       <path d="M10 14L21 3" />
       <path d="M21 14v7H3V3h7" />
+    </svg>
+  );
+}
+
+function FolderIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true">
+      <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
     </svg>
   );
 }

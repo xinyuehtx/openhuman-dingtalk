@@ -1420,15 +1420,10 @@ struct DwsSyncSettingsUpdate {
 
 #[derive(Debug, Deserialize)]
 struct DwsSyncCategoriesUpdate {
-    calendar: Option<bool>,
-    todo: Option<bool>,
-    contact: Option<bool>,
-    attendance: Option<bool>,
-    approval: Option<bool>,
-    report: Option<bool>,
-    mail: Option<bool>,
-    doc: Option<bool>,
     chat: Option<bool>,
+    doc: Option<bool>,
+    calendar: Option<bool>,
+    minutes: Option<bool>,
 }
 
 fn handle_get_dws_sync_settings(_params: Map<String, Value>) -> ControllerFuture {
@@ -1460,15 +1455,10 @@ fn handle_update_dws_sync_settings(params: Map<String, Value>) -> ControllerFutu
         let categories_patch = update
             .categories
             .map(|c| config_rpc::DwsSyncCategoriesPatch {
-                calendar: c.calendar,
-                todo: c.todo,
-                contact: c.contact,
-                attendance: c.attendance,
-                approval: c.approval,
-                report: c.report,
-                mail: c.mail,
-                doc: c.doc,
                 chat: c.chat,
+                doc: c.doc,
+                calendar: c.calendar,
+                minutes: c.minutes,
             });
         let patch = config_rpc::DwsSyncSettingsPatch {
             enabled: update.enabled,

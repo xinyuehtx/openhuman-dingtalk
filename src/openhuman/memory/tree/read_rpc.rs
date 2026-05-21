@@ -965,9 +965,19 @@ pub struct GraphExportResponse {
     #[serde(default)]
     pub edges: Vec<GraphEdge>,
     /// Absolute path to the on-disk `<workspace>/memory_tree/content/` root.
-    /// UIs use this to open files via the `obsidian://open?path=...` deep
-    /// link — Obsidian resolves arbitrary absolute paths without requiring
-    /// the vault to be registered.
+    /// UIs use this to build `obsidian://open?path=...` deep links.
+    ///
+    /// IMPORTANT: Obsidian only resolves the `path=` URI when the absolute
+    /// path falls *inside an already-registered vault*. If the user has
+    /// never added this directory as a vault, Obsidian shows a "vault
+    /// doesn't exist" dialog. The seal pipeline calls
+    /// [`crate::openhuman::memory::tree::content_store::obsidian::ensure_obsidian_defaults`]
+    /// so a `.obsidian/` config is present and the folder is immediately
+    /// usable as a vault — but the user still has to register it once via
+    /// Obsidian's "Open folder as vault" action. UIs should surface that
+    /// instruction alongside the deep-link button (the older docstring
+    /// claiming Obsidian resolves arbitrary paths without registration was
+    /// incorrect).
     pub content_root_abs: String,
 }
 

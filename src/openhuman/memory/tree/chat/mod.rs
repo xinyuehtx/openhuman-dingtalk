@@ -44,7 +44,7 @@ use std::sync::Arc;
 use anyhow::Result;
 use async_trait::async_trait;
 
-use crate::openhuman::config::{Config, DEFAULT_CLOUD_LLM_MODEL};
+use crate::openhuman::config::Config;
 
 pub mod cloud;
 pub mod local;
@@ -101,18 +101,25 @@ pub trait ChatProvider: Send + Sync {
 /// Build the [`ChatProvider`] dictated by the unified
 /// `Config::workload_local_model("memory")`.
 ///
-/// - When that returns `None` (i.e. `memory_provider` is unset / `"cloud"`):
-///   wires [`cloud::CloudChatProvider`] against the OpenHuman backend with
-///   `cloud_llm_model` (defaulting to `summarization-v1`).
-/// - When it returns `Some(model)` (i.e. `memory_provider = "ollama:<m>"`):
+/// - When that returns `Some(model)` (i.e. `memory_provider = "ollama:<m>"`):
 ///   wires [`local::OllamaChatProvider`] against the legacy
 ///   `llm_extractor_endpoint` / `llm_summariser_endpoint` (the daemon
 ///   endpoints stay in the `memory_tree` block — only the cloud/local
 ///   routing decision moves to the unified `memory_provider`).
+/// - When it returns `None`: delegates to the unified inference factory
+///   (`create_chat_provider("memory", config)`). The factory takes care of:
+///     1. The custom OpenAI-compatible shortcut when `inference_url +
+///        api_key` are set (so users on a self-hosted endpoint with no
+///        OpenHuman backend session still get a working extract / summarise
+///        path);
+///     2. `<slug>:<model>` resolution against `cloud_providers`;
+///     3. Falling back to the OpenHuman backend with session-JWT for plain
+///        `"openhuman"` strings.
 ///
-/// `consumer` is one of `"extract"` / `"summarise"` and selects the local
-/// endpoint+model pair (extract uses `llm_extractor_*`, summarise uses
-/// `llm_summariser_*`). For cloud both consumers share the same model.
+/// `consumer` is one of `"extract"` / `"summarise"` and only affects the
+/// local (Ollama) branch where the per-path endpoint+model+timeout differ.
+/// On the cloud / custom-LLM path both consumers share the same provider —
+/// they're both "produce a short condensed representation" calls.
 pub fn build_chat_provider(
     config: &Config,
     consumer: ChatConsumer,
@@ -161,31 +168,11 @@ pub fn build_chat_provider(
             std::time::Duration::from_millis(timeout_ms),
         )?))
     } else {
-        let model = config
-            .memory_tree
-            .cloud_llm_model
-            .clone()
-            .unwrap_or_else(|| DEFAULT_CLOUD_LLM_MODEL.to_string());
-        // The `auth-profiles.json` lives next to `config.toml`, so the
-        // openhuman_dir is the parent of config_path. Without this the
-        // inner OpenHumanBackendProvider falls back to `~/.openhuman`
-        // and fails with "No backend session" on any workspace not
-        // located at the home default — the bug observed when running
-        // with `OPENHUMAN_WORKSPACE` pointed elsewhere.
-        let openhuman_dir = config.config_path.parent().map(std::path::PathBuf::from);
         log::debug!(
-            "[memory_tree::chat] building Cloud provider consumer={} model={} \
-             openhuman_dir={:?}",
-            consumer.as_str(),
-            model,
-            openhuman_dir
+            "[memory_tree::chat] building Cloud provider via inference factory consumer={}",
+            consumer.as_str()
         );
-        Ok(Arc::new(cloud::CloudChatProvider::new(
-            config.api_url.clone(),
-            model,
-            openhuman_dir,
-            config.secrets.encrypt,
-        )))
+        Ok(Arc::new(cloud::CloudChatProvider::from_factory(config)?))
     }
 }
 
@@ -271,6 +258,31 @@ mod tests {
     fn chat_consumer_str_round_trip() {
         assert_eq!(ChatConsumer::Extract.as_str(), "extract");
         assert_eq!(ChatConsumer::Summarise.as_str(), "summarise");
+    }
+
+    #[test]
+    fn build_provider_uses_custom_inference_when_set() {
+        // Regression: a user on a self-hosted OpenAI-compatible endpoint
+        // (`inference_url + api_key`) with `memory_provider` left at the
+        // default (resolves to bare `"openhuman"`) must still get a working
+        // chat provider even when no OpenHuman backend session exists. The
+        // unified inference factory routes this through
+        // `OpenAiCompatibleProvider` ("custom_openai") behind the cloud
+        // wrapper because `make_openhuman_backend` honours the custom
+        // `inference_url + api_key` shortcut.
+        let mut cfg = Config::default();
+        cfg.memory_provider = None; // resolves to PROVIDER_OPENHUMAN
+        cfg.inference_url = Some("https://idealab.example.com/v1".into());
+        cfg.api_key = Some("test-key".into());
+        cfg.default_model = Some("Qwen3.6-Plus-DogFooding".into());
+        let provider = build_chat_provider(&cfg, ChatConsumer::Extract).unwrap();
+        // Display name follows the resolved model from the factory — for
+        // custom inference that's `default_model`, not `summarization-v1`.
+        assert!(
+            provider.name().contains("Qwen3.6-Plus-DogFooding"),
+            "expected resolved model in name, got {}",
+            provider.name()
+        );
     }
 
     #[tokio::test]

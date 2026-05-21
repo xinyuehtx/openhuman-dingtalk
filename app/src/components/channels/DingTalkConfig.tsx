@@ -78,11 +78,29 @@ function SetupGuide() {
             </li>
             <li>在「机器人配置」中启用机器人能力</li>
             <li>
-              在「事件订阅」中选择{' '}
-              <span className="font-semibold">Stream 模式</span>（无需回调地址）
+              在「权限管理」中申请以下权限：
+              <ul className="list-disc list-inside ml-4 mt-1 space-y-1">
+                <li>
+                  <span className="font-semibold">企业内机器人发送消息</span>
+                  （必需 — 机器人回复消息需要此权限）
+                </li>
+              </ul>
+            </li>
+            <li>
+              在「事件订阅」中选择 <span className="font-semibold">Stream 模式</span>
+              （无需回调地址）
             </li>
             <li>发布应用 → 在钉钉中添加机器人到群聊或私聊</li>
           </ol>
+
+          <div className="mt-2 p-2 rounded bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20">
+            <p className="text-red-700 dark:text-red-300">
+              ⚠️ <span className="font-medium">重要：</span>
+              如果未申请「企业内机器人发送消息」权限，机器人可以接收消息但
+              <span className="font-semibold">无法回复</span>。
+              企业内部应用的权限申请通常会自动通过。
+            </p>
+          </div>
 
           <div className="mt-2 p-2 rounded bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20">
             <p className="text-amber-700 dark:text-amber-300">

@@ -60,4 +60,15 @@ echo "[ensure-tauri-cli] installing vendored CEF-aware tauri-cli from $VENDOR_CL
 echo "[ensure-tauri-cli] CEF_PATH=$CEF_PATH"
 echo "[ensure-tauri-cli] INSTALL_ROOT=$INSTALL_ROOT"
 echo "[ensure-tauri-cli] (first install only — takes a few minutes; subsequent runs are instant)"
+
+# tauri-bundler's build.rs compiles a CEF helper for both aarch64-apple-darwin
+# and x86_64-apple-darwin. When running on Apple Silicon (aarch64), the
+# x86_64-apple-darwin Rust std library may not be installed — especially when
+# rust-toolchain.toml triggers an auto-install of a pinned channel that only
+# brings the host target. Ensure both targets are present before building.
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  echo "[ensure-tauri-cli] ensuring cross-compilation targets for universal CEF helper"
+  rustup target add aarch64-apple-darwin x86_64-apple-darwin 2>/dev/null || true
+fi
+
 cargo install --root "$INSTALL_ROOT" --locked --path "$VENDOR_CLI"

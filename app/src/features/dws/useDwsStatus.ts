@@ -71,18 +71,12 @@ async function fetchRuntimeStatus(): Promise<DwsRuntimeStatusPayload> {
 }
 
 async function callRuntimeCommand(method: string): Promise<DwsCommandPayload> {
-  const raw = await callCoreRpc<unknown>({
-    method,
-    params: {},
-  });
+  const raw = await callCoreRpc<unknown>({ method, params: {} });
   return unwrap<DwsCommandPayload>(raw) ?? {};
 }
 
 function commandToOpResult(payload: DwsCommandPayload, fallback: string): DwsOperationResult {
-  return {
-    success: payload.success === true,
-    output: payload.output?.trim() || fallback,
-  };
+  return { success: payload.success === true, output: payload.output?.trim() || fallback };
 }
 
 export function useDwsStatus(): DwsStatusResult {
@@ -154,7 +148,10 @@ export function useDwsStatus(): DwsStatusResult {
     setOperating(true);
     try {
       const payload = await callRuntimeCommand('openhuman.config_dws_runtime_logout');
-      const result = commandToOpResult(payload, payload.success ? '已退出登录。' : '退出登录失败。');
+      const result = commandToOpResult(
+        payload,
+        payload.success ? '已退出登录。' : '退出登录失败。'
+      );
       await checkStatus();
       return result;
     } catch (err) {

@@ -193,16 +193,22 @@ jobs:
         env:
           NODE_OPTIONS: "--max-old-space-size=8192"
           CEF_PATH: ${{ steps.cef.outputs.path }}
+          # Use a short CARGO_TARGET_DIR to avoid Windows MAX_PATH (260 char)
+          # limit. The default path through app/src-tauri/target/... plus
+          # long CEF .obj filenames exceeds 260 chars on repos with longer
+          # names (e.g. openhuman-dingtalk), causing MSVC C1083 errors.
+          CARGO_TARGET_DIR: C:\cbt
         run: |
           export PATH="$GITHUB_WORKSPACE/.cache/cargo-install/bin:$HOME/.cargo/bin:$PATH"
 
           cargo tauri build --target ${{ matrix.target }} --bundles nsis -- --bin OpenHuman
 
-          # tauri-bundler may emit to either app/src-tauri/target/... or root
-          # target/... depending on how cargo resolves the workspace; check
-          # both.
+          # With CARGO_TARGET_DIR overridden, output lands under C:\cbt.
+          # Also check the default locations as fallback.
+          SHORT_TARGET="/c/cbt"
           EXE_PATH=""
           for candidate in \
+            "${SHORT_TARGET}/${{ matrix.target }}/release/bundle/nsis"/OpenHuman_*_x64-setup.exe \
             "$GITHUB_WORKSPACE/app/src-tauri/target/${{ matrix.target }}/release/bundle/nsis"/OpenHuman_*_x64-setup.exe \
             "$GITHUB_WORKSPACE/target/${{ matrix.target }}/release/bundle/nsis"/OpenHuman_*_x64-setup.exe ; do
             if [[ -f "$candidate" ]]; then
@@ -213,6 +219,7 @@ jobs:
 
           if [[ -z "$EXE_PATH" ]]; then
             echo "NSIS .exe not found in any expected location" >&2
+            ls -R "${SHORT_TARGET}/${{ matrix.target }}/release/bundle" 2>/dev/null || true
             ls -R "$GITHUB_WORKSPACE/app/src-tauri/target/${{ matrix.target }}/release/bundle" 2>/dev/null || true
             ls -R "$GITHUB_WORKSPACE/target/${{ matrix.target }}/release/bundle" 2>/dev/null || true
             exit 1

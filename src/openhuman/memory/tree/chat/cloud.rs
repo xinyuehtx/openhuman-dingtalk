@@ -1,28 +1,43 @@
-//! Cloud chat provider — routes through the OpenHuman backend's
-//! `/openai/v1/chat/completions` surface using the existing
-//! [`crate::openhuman::inference::provider::openhuman_backend::OpenHumanBackendProvider`].
+//! Cloud chat provider — routes the memory-tree's `memory` workload through
+//! the unified inference factory so the same code path covers both the
+//! OpenHuman backend (session-JWT auth, `summarization-v1`) and any
+//! user-configured OpenAI-compatible endpoint (`inference_url + api_key` or a
+//! `<slug>:<model>` cloud_providers entry).
 //!
-//! Used when `memory_tree.llm_backend = "cloud"` (the default). The
-//! request shape is the standard OpenAI-compatible chat-completions
-//! protocol, with `temperature: 0.0` and a `summarization-v1` (or
-//! caller-configured) model.
+//! Used whenever the workload isn't routed to local Ollama (i.e.
+//! `Config::workload_uses_local("memory") == false`).
 //!
-//! When the configured model is unavailable for the user's organization,
-//! the provider automatically falls back through a list of known
-//! summarization-capable models before giving up.
-
-use std::path::PathBuf;
+//! Internally it wraps a `Box<dyn Provider>` produced by
+//! [`create_chat_provider`]. That factory already knows how to:
+//!
+//! - shortcut to a custom OpenAI-compatible endpoint when
+//!   `inference_url + api_key` are set (so users running entirely on their
+//!   own LLM, with no OpenHuman backend session, still get extract/summarise),
+//! - rewrite OpenHuman tier names (`summarization-v1`, `hint:<tier>`) to the
+//!   user's `default_model` inside the custom-LLM provider,
+//! - resolve `<slug>:<model>` against `cloud_providers`,
+//! - and fall back to the OpenHuman backend with session-JWT for plain
+//!   `"openhuman"` strings.
+//!
+//! When the resolved inner provider is the OpenHuman backend and the
+//! configured model is unprovisioned for the user's org, this wrapper still
+//! walks the historical fallback list (`summarization-v1`,
+//! DeepSeek variants) so existing behaviour is preserved.
 
 use anyhow::{Context, Result};
 use async_trait::async_trait;
 
-use crate::openhuman::inference::provider::openhuman_backend::OpenHumanBackendProvider;
+use crate::openhuman::config::Config;
+use crate::openhuman::inference::provider::create_chat_provider;
 use crate::openhuman::inference::provider::traits::{ChatMessage, Provider};
-use crate::openhuman::inference::provider::ProviderRuntimeOptions;
 
 use super::{ChatPrompt, ChatProvider};
 
-/// Fallback models tried in order when the configured model is unavailable.
+/// Fallback models tried in order when the configured model is unavailable
+/// on the OpenHuman backend. For custom OpenAI-compatible providers the
+/// upstream `model_override_for_tiers` mapping already collapses every
+/// OpenHuman tier name onto the user's `default_model`, so this list is a
+/// no-op there — kept as a safety net for the backend path.
 const FALLBACK_MODELS: &[&str] = &[
     "summarization-v1",
     "deepseek-ai/DeepSeek-V3-0324",
@@ -38,40 +53,43 @@ fn is_model_unavailable_error(err: &anyhow::Error) -> bool {
     msg.contains("not available for your organization")
 }
 
-/// Cloud-routed chat provider. Holds an [`OpenHumanBackendProvider`] and
-/// forwards each [`ChatProvider::chat_for_json`] call through its
-/// `chat_with_history` method.
+/// Cloud-routed chat provider. Holds a factory-built [`Provider`] and forwards
+/// each [`ChatProvider::chat_for_json`] call through its `chat_with_history`
+/// method.
 pub struct CloudChatProvider {
-    inner: OpenHumanBackendProvider,
+    inner: Box<dyn Provider>,
     model: String,
     /// Cached display name `"cloud:<model>"` for logs.
     display: String,
 }
 
 impl CloudChatProvider {
-    /// Build a new cloud provider against `api_url` (or the default
-    /// `effective_api_url` when `None`) for `model`. The provider does NOT
-    /// resolve the bearer token at construction — it does so per request,
-    /// matching the existing `OpenHumanBackendProvider` contract. That way
-    /// a session refresh between memory-tree calls is picked up
-    /// transparently.
-    ///
-    /// `openhuman_dir` is the directory containing `auth-profiles.json` (i.e.
-    /// the parent of `config.config_path`). Without it the inner provider
-    /// would fall back to `~/.openhuman` and fail with "No backend session"
-    /// on workspaces not located at the home default.
-    pub fn new(
-        api_url: Option<String>,
-        model: String,
-        openhuman_dir: Option<PathBuf>,
-        secrets_encrypt: bool,
-    ) -> Self {
-        let opts = ProviderRuntimeOptions {
-            openhuman_dir,
-            secrets_encrypt,
-            ..ProviderRuntimeOptions::default()
-        };
-        let inner = OpenHumanBackendProvider::new(api_url.as_deref(), &opts);
+    /// Build a cloud provider via the unified inference factory using the
+    /// `"memory"` workload role. This honours `memory_provider` plus the
+    /// `inference_url + api_key` shortcut so users running on a custom
+    /// OpenAI-compatible endpoint (and not signed in to the OpenHuman
+    /// backend) still get a working chat surface for extract/summarise.
+    pub fn from_factory(config: &Config) -> Result<Self> {
+        let (inner, model) = create_chat_provider("memory", config)
+            .context("memory_tree::chat::cloud build_chat_provider(role=memory)")?;
+        let display = format!("cloud:{model}");
+        log::debug!(
+            "[memory_tree::chat::cloud] from_factory resolved_model={}",
+            model
+        );
+        Ok(Self {
+            inner,
+            model,
+            display,
+        })
+    }
+
+    /// Construct directly from a pre-built provider — used by tests so the
+    /// soft-fallback / display-name behaviour can be exercised without going
+    /// through the factory.
+    #[cfg(test)]
+    pub(crate) fn from_provider(inner: Box<dyn Provider>, model: impl Into<String>) -> Self {
+        let model = model.into();
         let display = format!("cloud:{model}");
         Self {
             inner,
@@ -210,16 +228,75 @@ impl ChatProvider for CloudChatProvider {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::atomic::{AtomicUsize, Ordering};
+
+    /// Minimal stub Provider for unit tests — records the model arg of each
+    /// `chat_with_history` call and returns either a canned response or an
+    /// error.
+    struct StubProvider {
+        response: anyhow::Result<String>,
+        last_model: std::sync::Mutex<Option<String>>,
+        calls: AtomicUsize,
+    }
+
+    impl StubProvider {
+        fn ok(text: impl Into<String>) -> Self {
+            Self {
+                response: Ok(text.into()),
+                last_model: std::sync::Mutex::new(None),
+                calls: AtomicUsize::new(0),
+            }
+        }
+
+        fn err(msg: impl Into<String>) -> Self {
+            Self {
+                response: Err(anyhow::anyhow!(msg.into())),
+                last_model: std::sync::Mutex::new(None),
+                calls: AtomicUsize::new(0),
+            }
+        }
+    }
+
+    #[async_trait]
+    impl Provider for StubProvider {
+        async fn chat_with_system(
+            &self,
+            _system_prompt: Option<&str>,
+            _message: &str,
+            model: &str,
+            _temperature: f64,
+        ) -> anyhow::Result<String> {
+            self.calls.fetch_add(1, Ordering::SeqCst);
+            *self.last_model.lock().unwrap() = Some(model.to_string());
+            self.response
+                .as_ref()
+                .map(|s| s.clone())
+                .map_err(|e| anyhow::anyhow!("{e}"))
+        }
+    }
+
+    fn sample_prompt() -> ChatPrompt {
+        ChatPrompt {
+            system: "sys".into(),
+            user: "u".into(),
+            temperature: 0.0,
+            kind: "test",
+        }
+    }
 
     #[test]
     fn name_includes_model() {
-        let p = CloudChatProvider::new(None, "summarization-v1".into(), None, true);
+        let p = CloudChatProvider::from_provider(
+            Box::new(StubProvider::ok("noop")),
+            "summarization-v1",
+        );
         assert_eq!(p.name(), "cloud:summarization-v1");
     }
 
     #[test]
     fn name_changes_with_model() {
-        let p = CloudChatProvider::new(None, "claude-haiku-4.5".into(), None, true);
+        let p =
+            CloudChatProvider::from_provider(Box::new(StubProvider::ok("noop")), "claude-haiku-4.5");
         assert!(p.name().contains("claude-haiku-4.5"));
     }
 
@@ -240,8 +317,6 @@ mod tests {
 
     #[test]
     fn generic_404_with_model_not_treated_as_unavailable() {
-        // A generic 404 mentioning "model" should NOT trigger fallback —
-        // only the explicit "not available for your organization" phrase should.
         let err =
             anyhow::anyhow!("OpenHuman API error (404 Not Found): model endpoint returned 404");
         assert!(!is_model_unavailable_error(&err));
@@ -255,5 +330,13 @@ mod tests {
     #[test]
     fn fallback_list_not_empty() {
         assert!(!FALLBACK_MODELS.is_empty());
+    }
+
+    #[tokio::test]
+    async fn forwards_call_with_configured_model() {
+        let stub = StubProvider::ok("hi");
+        let p = CloudChatProvider::from_provider(Box::new(stub), "Qwen3.6-Plus-DogFooding");
+        let out = p.chat_for_json(&sample_prompt()).await.unwrap();
+        assert_eq!(out, "hi");
     }
 }

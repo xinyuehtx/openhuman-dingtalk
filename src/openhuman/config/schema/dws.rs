@@ -1,8 +1,8 @@
 //! DWS (DingTalk Workspace CLI) sync configuration.
 //!
 //! Controls periodic data synchronization from DingTalk products via the `dws`
-//! CLI tool. Each category (calendar, todo, contacts, etc.) can be individually
-//! enabled or disabled.
+//! CLI tool. Each category (chat, mail, doc, calendar, minutes) can be
+//! individually enabled or disabled.
 
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -27,37 +27,28 @@ pub struct DwsSyncConfig {
 }
 
 /// Per-category sync toggles. Each field corresponds to a DingTalk product
-/// that the `dws` CLI can pull data from.
+/// that the `dws` CLI can pull data from and the openhuman memory tree can
+/// ingest. Unknown fields from older config files (`contact`, `attendance`,
+/// `report`, `todo`, `approval`, `mail`) are silently dropped by serde —
+/// those categories were retired. Mail was pulled out specifically because
+/// the dws mail-search scope requires a separate browser-driven PAT grant
+/// and the privacy surface (full inbox bodies in local memory) didn't
+/// justify the friction.
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(default)]
 pub struct DwsSyncCategories {
-    /// 日历 — calendar events
+    /// 群聊 — group chat messages → `ingest_chat`.
+    #[serde(default = "default_true")]
+    pub chat: bool,
+    /// 文档 — DingTalk docs → `ingest_document`.
+    #[serde(default = "default_true")]
+    pub doc: bool,
+    /// 日历 — calendar events → `ingest_document`.
     #[serde(default = "default_true")]
     pub calendar: bool,
-    /// 待办 — todo tasks
+    /// AI 听记 — meeting minutes (summary + todos) → `ingest_document`.
     #[serde(default = "default_true")]
-    pub todo: bool,
-    /// 通讯录 — contacts
-    #[serde(default)]
-    pub contact: bool,
-    /// 考勤 — attendance records
-    #[serde(default)]
-    pub attendance: bool,
-    /// 审批 — OA approval instances
-    #[serde(default)]
-    pub approval: bool,
-    /// 日志 — reports
-    #[serde(default)]
-    pub report: bool,
-    /// 邮箱 — email
-    #[serde(default)]
-    pub mail: bool,
-    /// 文档 — documents
-    #[serde(default)]
-    pub doc: bool,
-    /// 群聊 — group chats
-    #[serde(default)]
-    pub chat: bool,
+    pub minutes: bool,
 }
 
 fn default_interval_minutes() -> u32 {
@@ -81,15 +72,10 @@ impl Default for DwsSyncConfig {
 impl Default for DwsSyncCategories {
     fn default() -> Self {
         Self {
+            chat: true,
+            doc: true,
             calendar: true,
-            todo: true,
-            contact: false,
-            attendance: false,
-            approval: false,
-            report: false,
-            mail: false,
-            doc: false,
-            chat: false,
+            minutes: true,
         }
     }
 }

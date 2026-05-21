@@ -2,17 +2,21 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { callCoreRpc } from '../../services/coreRpcClient';
 
-/** Per-category sync toggle state. */
+/** Per-category sync toggle state.
+ *
+ * v2 surface (post-redesign): four content sources that all flow into the
+ * memory tree via `ingest_chat` / `ingest_document`. The previous
+ * categories (contact / attendance / approval / report / todo) were
+ * dropped as low-signal; mail was pulled out because `mail.message:search`
+ * requires a separate browser-driven PAT grant and pulling full inbox
+ * bodies into local memory raised the privacy bar past what the feature
+ * justified.
+ */
 export interface DwsSyncCategories {
-  calendar: boolean;
-  todo: boolean;
-  contact: boolean;
-  attendance: boolean;
-  approval: boolean;
-  report: boolean;
-  mail: boolean;
-  doc: boolean;
   chat: boolean;
+  doc: boolean;
+  calendar: boolean;
+  minutes: boolean;
 }
 
 /** Last-sync unix timestamps keyed by category id (snake_case). */
@@ -83,15 +87,10 @@ function unwrapOutcome<T>(value: unknown): T | undefined {
 
 function normalizeConfig(raw: RawConfigResponse): DwsSyncConfig {
   const categories: DwsSyncCategories = {
-    calendar: false,
-    todo: false,
-    contact: false,
-    attendance: false,
-    approval: false,
-    report: false,
-    mail: false,
-    doc: false,
     chat: false,
+    doc: false,
+    calendar: false,
+    minutes: false,
     ...(raw.categories ?? {}),
   };
   return {

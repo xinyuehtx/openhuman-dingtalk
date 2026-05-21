@@ -6,7 +6,9 @@ use serde_json::{json, Value};
 use crate::api::config::{app_env_from_env, effective_backend_api_url, is_staging_app_env};
 use crate::api::jwt::get_session_token;
 use crate::api::rest::BackendOAuthClient;
-use crate::openhuman::config::{Config, DingTalkConfig, DiscordConfig, IMessageConfig, TelegramConfig};
+use crate::openhuman::config::{
+    Config, DingTalkConfig, DiscordConfig, IMessageConfig, TelegramConfig,
+};
 use crate::openhuman::credentials;
 use crate::rpc::RpcOutcome;
 
@@ -332,7 +334,7 @@ pub async fn connect_channel(
             mention_only,
             "[discord] connect_channel: wrote channels_config.discord; restart core for listener to load token"
         );
-    } else if channel_id == "dingtalk" && auth_mode == ChannelAuthMode::BotToken {
+    } else if channel_id == "dingtalk" && auth_mode == ChannelAuthMode::ApiKey {
         let client_id = creds_map
             .get("client_id")
             .and_then(|v| v.as_str())
@@ -437,7 +439,7 @@ pub async fn disconnect_channel(
                 "[imessage] disconnect_channel: cleared channels_config.imessage"
             );
         }
-    } else if channel_id == "dingtalk" && auth_mode == ChannelAuthMode::BotToken {
+    } else if channel_id == "dingtalk" && auth_mode == ChannelAuthMode::ApiKey {
         let mut persisted = config.clone();
         if persisted.channels_config.dingtalk.take().is_some() {
             persisted
