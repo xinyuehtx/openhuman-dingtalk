@@ -857,14 +857,29 @@ const Conversations = ({ variant = 'page', composer = 'text' }: ConversationsPro
       }
       sendingThreadIdRef.current = null;
       const msg = err instanceof Error ? err.message : String(err);
+      const lowered = msg.toLowerCase();
       if (
-        msg.toLowerCase().includes('blocked by a security policy') ||
-        msg.toLowerCase().includes('flagged for security review')
+        lowered.includes('blocked by a security policy') ||
+        lowered.includes('flagged for security review')
       ) {
-        const code = msg.toLowerCase().includes('flagged for security review')
+        const code = lowered.includes('flagged for security review')
           ? 'prompt_review'
           : 'prompt_blocked';
         setSendError(chatSendError(code, msg));
+      } else if (
+        lowered.includes('no client id for event routing') ||
+        lowered.includes('socket not connected')
+      ) {
+        // chatSend waits up to 3s for a socket.id; if it still times out the
+        // realtime channel is genuinely down (core crashed, port mismatch, …).
+        // Surface a dedicated code so analytics and UI can react properly
+        // instead of bucketing this with generic cloud send failures.
+        setSendError(
+          chatSendError(
+            'socket_disconnected',
+            'Realtime socket is not connected — responses cannot be delivered without a client ID.'
+          )
+        );
       } else {
         setSendError(chatSendError('cloud_send_failed', msg));
       }

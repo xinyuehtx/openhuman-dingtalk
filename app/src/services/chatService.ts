@@ -685,6 +685,21 @@ export interface ChatSendParams {
 }
 
 /**
+ * Wait briefly for the socket to (re)connect and yield an `id` for event
+ * routing. Used by `chatSend` / `chatCancel` to absorb the boot-time race
+ * where the user hits send before the Socket.IO handshake completes.
+ */
+async function waitForSocketClientId(timeoutMs = 3000): Promise<string | null> {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    const id = socketService.getSocket()?.id;
+    if (id) return id;
+    await new Promise(resolve => setTimeout(resolve, 50));
+  }
+  return socketService.getSocket()?.id ?? null;
+}
+
+/**
  * Send a chat message via core RPC.
  *
  * The Rust core spawns the agent loop asynchronously and streams events
@@ -692,8 +707,7 @@ export interface ChatSendParams {
  * connection using the `client_id` (socket ID) for routing.
  */
 export async function chatSend(params: ChatSendParams): Promise<void> {
-  const socket = socketService.getSocket();
-  const clientId = socket?.id;
+  const clientId = await waitForSocketClientId();
   if (!clientId) {
     throw new Error('Socket not connected — no client ID for event routing');
   }
@@ -715,8 +729,7 @@ export async function chatSend(params: ChatSendParams): Promise<void> {
  * Cancel an in-flight chat request via core RPC.
  */
 export async function chatCancel(threadId: string): Promise<boolean> {
-  const socket = socketService.getSocket();
-  const clientId = socket?.id;
+  const clientId = await waitForSocketClientId(1000);
   if (!clientId) return false;
 
   try {

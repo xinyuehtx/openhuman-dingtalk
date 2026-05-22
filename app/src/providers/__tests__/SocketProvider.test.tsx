@@ -54,7 +54,7 @@ describe('SocketProvider — token transitions', () => {
     setBackendMock.mockClear();
   });
 
-  it('does not connect when mounted with a null token', () => {
+  it('connects with placeholder token when mounted without a session (local-only mode)', () => {
     setToken(null);
     render(
       <SocketProvider>
@@ -62,7 +62,10 @@ describe('SocketProvider — token transitions', () => {
       </SocketProvider>
     );
 
-    expect(vi.mocked(socketService.connect)).not.toHaveBeenCalled();
+    // Socket always connects so chatSend has a valid client_id for event routing.
+    expect(vi.mocked(socketService.connect)).toHaveBeenCalledTimes(1);
+    // Local-only mode skips the backend session RPC.
+    expect(vi.mocked(callCoreRpc)).not.toHaveBeenCalled();
     expect(vi.mocked(socketService.disconnect)).not.toHaveBeenCalled();
   });
 
@@ -102,7 +105,7 @@ describe('SocketProvider — token transitions', () => {
     expect(vi.mocked(socketService.disconnect)).not.toHaveBeenCalled();
   });
 
-  it('disconnects when the token is cleared after being set', () => {
+  it('reconnects with placeholder when token is cleared after being set', () => {
     setToken('jwt-abc');
     const { rerender } = render(
       <SocketProvider>
@@ -110,6 +113,7 @@ describe('SocketProvider — token transitions', () => {
       </SocketProvider>
     );
     expect(vi.mocked(socketService.connect)).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(socketService.connect)).toHaveBeenLastCalledWith('jwt-abc');
 
     setToken(null);
     rerender(
@@ -118,7 +122,12 @@ describe('SocketProvider — token transitions', () => {
       </SocketProvider>
     );
 
-    expect(vi.mocked(socketService.disconnect)).toHaveBeenCalledTimes(1);
+    // Token transition real→null reconnects with the placeholder (socketService
+    // handles its own cleanup of the old socket internally when the token changes).
+    expect(vi.mocked(socketService.connect)).toHaveBeenCalledTimes(2);
+    expect(vi.mocked(socketService.connect)).toHaveBeenLastCalledWith(
+      expect.not.stringMatching(/^jwt-/)
+    );
   });
 
   it('reconnects when the token rotates to a new value', () => {

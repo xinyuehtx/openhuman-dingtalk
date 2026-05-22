@@ -6,32 +6,35 @@ import { socketService } from '../services/socketService';
 import { setBackend, setCore } from '../store/connectivitySlice';
 import { store } from '../store/index';
 import { IS_DEV } from '../utils/config';
-import { hasStoredLlmSettings } from '../utils/configPersistence';
 import { useCoreState } from './CoreStateProvider';
 
 /**
- * Placeholder token used for the core socket connection in custom-LLM mode.
- * The core socket.io server does not validate the token — it is only used as
- * the `auth` handshake field. Using a constant placeholder lets the socket
- * connect normally so chat events (chat_done, chat_error, text_delta, etc.)
- * can be routed back to the frontend via the socket's `client_id`.
+ * Placeholder token used for the core socket connection when there is no
+ * cloud session. The core socket.io server does NOT validate the token —
+ * it is only used as the `auth` handshake field. Using a constant placeholder
+ * lets the socket connect on boot so chat events (chat_done, chat_error,
+ * text_delta, etc.) can be routed back to the frontend via the socket's
+ * `client_id`. Without this, `chatSend` would throw
+ * "Socket not connected — no client ID for event routing" for any user
+ * running the DingTalk fork without a backend session.
  */
-const CUSTOM_LLM_PLACEHOLDER_TOKEN = 'custom-llm-local';
+const LOCAL_PLACEHOLDER_TOKEN = 'openhuman-local';
 
 /**
- * SocketProvider manages the socket connection based on JWT token.
- * The frontend TypeScript socket client is the single realtime path
+ * SocketProvider manages the socket connection based on the cloud session
+ * token. The frontend TypeScript socket client is the single realtime path
  * for both desktop and web.
  *
- * In custom-LLM mode (user has configured inference_url + api_key but has
- * no backend session), the provider connects with a placeholder token so
- * chat RPC calls can obtain a valid `socket.id` for event routing.
+ * In local-only mode (no backend session — common in the DingTalk fork)
+ * the provider connects with a placeholder token so chat RPC calls can
+ * obtain a valid `socket.id` for event routing. The backend session RPC
+ * is skipped in that mode since there is nothing to authenticate with.
  */
 const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const { snapshot } = useCoreState();
   const token = snapshot.sessionToken;
-  const isCustomLlmMode = !token && hasStoredLlmSettings();
-  const effectiveToken = token ?? (isCustomLlmMode ? CUSTOM_LLM_PLACEHOLDER_TOKEN : null);
+  const isLocalOnlyMode = !token;
+  const effectiveToken = token ?? LOCAL_PLACEHOLDER_TOKEN;
   const previousTokenRef = useRef<string | null>(null);
 
   // Keep daemon lifecycle management for desktop health/recovery.
@@ -53,18 +56,20 @@ const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     daemonLifecycle.maxAttemptsReached,
   ]);
 
-  // Handle socket connection based on effective token
+  // Handle socket connection based on effective token. `effectiveToken` is
+  // always truthy (real session token, or `LOCAL_PLACEHOLDER_TOKEN`) so the
+  // socket is always connected — only the backend session RPC is gated on
+  // having a real cloud session.
   useEffect(() => {
     const previousToken = previousTokenRef.current;
 
-    // Token was set - connect
-    if (effectiveToken && effectiveToken !== previousToken) {
+    if (effectiveToken !== previousToken) {
       previousTokenRef.current = effectiveToken;
       socketService.connect(effectiveToken);
 
-      // In custom-LLM mode we skip the backend socket connection RPC —
+      // In local-only mode we skip the backend socket connection RPC —
       // there is no backend session to authenticate with.
-      if (!isCustomLlmMode) {
+      if (!isLocalOnlyMode) {
         // Also connect the Rust sidecar to backend-alphahuman so inbound
         // Discord/Telegram managed-DM messages reach the agent loop.
         void callCoreRpc({ method: 'openhuman.socket_connect_with_session', params: {} }).catch(
@@ -85,25 +90,17 @@ const SocketProvider = ({ children }: { children: React.ReactNode }) => {
           }
         );
       } else if (IS_DEV) {
-        console.log('[SocketProvider] Custom LLM mode — skipping backend socket connection');
+        console.log('[SocketProvider] Local-only mode — skipping backend socket connection');
       }
     }
-
-    // Token was unset - disconnect
-    if (!effectiveToken && previousToken) {
-      previousTokenRef.current = null;
-      socketService.disconnect();
-    }
-  }, [effectiveToken, isCustomLlmMode]);
+  }, [effectiveToken, isLocalOnlyMode]);
 
   // Cleanup on unmount only
   useEffect(() => {
     return () => {
-      if (!effectiveToken) {
-        socketService.disconnect();
-      }
+      socketService.disconnect();
     };
-  }, [effectiveToken]);
+  }, []);
 
   return <>{children}</>;
 };

@@ -559,67 +559,6 @@ export default function Skills() {
             )}
 
             {otherGroups.map(group => renderGroup(group))}
-            {
-              <>
-                {channelsGroup && (
-                  <div className="rounded-2xl border border-stone-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-3 shadow-soft animate-fade-up">
-                    <div className="px-1 pb-3 pt-1">
-                      <h2
-                        className="flex items-center gap-2 text-sm font-semibold text-stone-900 dark:text-neutral-100"
-                        data-walkthrough="skills-channels">
-                        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-stone-100 dark:bg-neutral-800">
-                          <SkillCategoryIcon
-                            category="Channels"
-                            className={skillCategoryHeadingClassName('Channels')}
-                          />
-                        </span>
-                        {t('skills.channels')}
-                      </h2>
-                      <p className="mt-0.5 text-[11px] leading-relaxed text-stone-500 dark:text-neutral-400">
-                        {t('channels.defaultMessaging')}
-                      </p>
-                    </div>
-                    <div
-                      className="grid gap-2 sm:gap-3"
-                      style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(5.5rem, 1fr))' }}>
-                      {channelsGroup.items.map(item => (
-                        <ChannelTile
-                          key={item.id}
-                          def={item.channelDef!}
-                          status={item.channelStatus!}
-                          icon={item.icon}
-                          onOpen={() => setChannelModalDef(item.channelDef!)}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* <MeetingBotsCard onToast={addToast} /> */}
-
-                {/* DingTalk DWS Integration */}
-                <div className="rounded-2xl border border-stone-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-3 shadow-soft animate-fade-up">
-                  <div className="px-1 pb-3 pt-1">
-                    <h2
-                      className="flex items-center gap-2 text-sm font-semibold text-stone-900 dark:text-neutral-100"
-                      data-walkthrough="skills-dws">
-                      <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-stone-100 dark:bg-neutral-800">
-                        🔔
-                      </span>
-                      钉钉工作台 (DWS)
-                    </h2>
-                    <p className="mt-0.5 text-[11px] leading-relaxed text-stone-500 dark:text-neutral-400">
-                      通过 DingTalk Workspace CLI 管理钉钉全产品能力
-                    </p>
-                  </div>
-                  <div className="px-1 pb-1">
-                    <DwsSetupCard />
-                  </div>
-                </div>
-
-                {otherGroups.map(group => renderGroup(group))}
-              </>
-            }
           </div>
         </div>
       </div>
