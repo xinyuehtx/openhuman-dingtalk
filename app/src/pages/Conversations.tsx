@@ -20,8 +20,7 @@ import { trackEvent } from '../services/analytics';
 import { threadApi } from '../services/api/threadApi';
 // [#1123] getCoreStateSnapshot and isWelcomeLocked commented out — welcome-agent onboarding replaced by Joyride walkthrough
 // import { getCoreStateSnapshot, isWelcomeLocked } from '../lib/coreState/store';
-// [#1123] Commented out — welcome-agent onboarding replaced by Joyride walkthrough
-// import { useCoreState } from '../providers/CoreStateProvider';
+import { useCoreState } from '../providers/CoreStateProvider';
 import { chatCancel, chatSend, useRustChat } from '../services/chatService';
 import { store } from '../store';
 import {
@@ -228,9 +227,16 @@ const Conversations = ({ variant = 'page', composer = 'text' }: ConversationsPro
     // welcomeThreadId,
   } = useAppSelector(state => state.thread);
 
+  const { snapshot } = useCoreState();
   // [#1123] Commented out — welcome-agent onboarding replaced by Joyride walkthrough
-  // const { snapshot } = useCoreState();
   // const welcomeLocked = isWelcomeLocked(snapshot);
+
+  // Local-only mode: no cloud session token (DingTalk fork's most common case)
+  // OR user has configured a custom LLM endpoint. Either way, cloud usage
+  // limits and the cloud-socket pre-flight don't apply — the in-process core
+  // socket is what carries chat events, and `chatService.chatSend` already
+  // handles its own boot-time handshake race.
+  const isLocalOnlyMode = !snapshot.sessionToken || hasStoredLlmSettings();
 
   // [#1123] Commented out — welcome-agent onboarding replaced by Joyride walkthrough
   // While the proactive welcome agent is running and hasn't published its
@@ -768,7 +774,7 @@ const Conversations = ({ variant = 'page', composer = 'text' }: ConversationsPro
       composerInteractionBlocked,
       isAtLimit,
       socketStatus,
-      isCustomLlmMode: hasStoredLlmSettings(),
+      isLocalOnlyMode,
     });
     const trimmed = sendDecision.trimmedText;
 

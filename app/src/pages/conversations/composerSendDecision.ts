@@ -15,8 +15,16 @@ export interface ComposerSendDecisionArgs {
   composerInteractionBlocked: boolean;
   isAtLimit: boolean;
   socketStatus: string;
-  /** When true, usage-limit and socket-disconnected checks are skipped. */
-  isCustomLlmMode?: boolean;
+  /**
+   * `true` when the user is running in local-only mode — no cloud session token,
+   * or a stored custom-LLM endpoint. In that mode both gates are skipped:
+   *   1. cloud usage limit (there is no cloud quota to consult), and
+   *   2. socket pre-flight (the socket targets the in-process core, so the
+   *      `selectSocketStatus` redux snapshot can race with the boot-time
+   *      handshake — `chatService.chatSend` has its own 3s wait that will
+   *      catch a genuine outage).
+   */
+  isLocalOnlyMode?: boolean;
 }
 
 export interface ComposerSendDecision {
@@ -63,11 +71,18 @@ export const evaluateComposerSend = (args: ComposerSendDecisionArgs): ComposerSe
     return { shouldSend: false, trimmedText, blockReason: 'composer_blocked' };
   }
 
-  if (args.isAtLimit && !args.isCustomLlmMode) {
+  if (args.isAtLimit && !args.isLocalOnlyMode) {
     return { shouldSend: false, trimmedText, blockReason: 'usage_limit_reached' };
   }
 
-  if (args.socketStatus !== 'connected' && !args.isCustomLlmMode) {
+  // Only block on an explicit `'disconnected'`. `'connecting'` is the normal
+  // boot-time state (handshake usually completes in a few hundred ms) and
+  // `chatService.chatSend` already retries up to 3s for a valid `socket.id`
+  // before throwing — pre-flight blocking on `'connecting'` makes the user
+  // see a hard error when sending a fraction of a second too early. Genuine
+  // outages still fall through to the `chatSend` error path which surfaces
+  // the same `socket_disconnected` code.
+  if (args.socketStatus === 'disconnected' && !args.isLocalOnlyMode) {
     return { shouldSend: false, trimmedText, blockReason: 'socket_disconnected' };
   }
 

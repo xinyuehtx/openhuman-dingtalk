@@ -72,6 +72,49 @@ describe('evaluateComposerSend', () => {
     expect(decision.shouldSend).toBe(false);
   });
 
+  it('does not block while the socket is still connecting (boot-time race)', () => {
+    // Pre-flight should let the chatService 3s waitForSocketClientId tolerate
+    // the boot-time handshake instead of immediately throwing a hard error.
+    const decision = evaluateComposerSend({
+      rawText: 'hello',
+      selectedThreadId: 'thread-1',
+      composerInteractionBlocked: false,
+      isAtLimit: false,
+      socketStatus: 'connecting',
+    });
+
+    expect(decision).toEqual({ shouldSend: true, trimmedText: 'hello' });
+  });
+
+  it('does not block on disconnected socket when in local-only mode', () => {
+    // DingTalk-fork users without a cloud session — the socket goes to the
+    // in-process core and the redux snapshot can race with the actual
+    // handshake; chatService.chatSend handles a genuine outage downstream.
+    const decision = evaluateComposerSend({
+      rawText: 'hello',
+      selectedThreadId: 'thread-1',
+      composerInteractionBlocked: false,
+      isAtLimit: false,
+      socketStatus: 'disconnected',
+      isLocalOnlyMode: true,
+    });
+
+    expect(decision).toEqual({ shouldSend: true, trimmedText: 'hello' });
+  });
+
+  it('does not block at usage limit when in local-only mode', () => {
+    const decision = evaluateComposerSend({
+      rawText: 'hello',
+      selectedThreadId: 'thread-1',
+      composerInteractionBlocked: false,
+      isAtLimit: true,
+      socketStatus: 'connected',
+      isLocalOnlyMode: true,
+    });
+
+    expect(decision).toEqual({ shouldSend: true, trimmedText: 'hello' });
+  });
+
   it('allows send path setup for valid chat send input', () => {
     const decision = evaluateComposerSend({
       rawText: ' hello ',

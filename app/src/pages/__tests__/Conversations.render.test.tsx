@@ -13,6 +13,7 @@ import { Provider } from 'react-redux';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { useCoreState } from '../../providers/CoreStateProvider';
 import { agentProfilesApi } from '../../services/api/agentProfilesApi';
 import { threadApi } from '../../services/api/threadApi';
 import { chatSend } from '../../services/chatService';
@@ -151,6 +152,24 @@ vi.mock('../../lib/coreState/store', () => ({
   })),
   isWelcomeLocked: vi.fn(() => false),
   setCoreStateSnapshot: vi.fn(),
+}));
+
+// CoreStateProvider: Conversations now reads sessionToken via useCoreState to
+// derive isLocalOnlyMode. Provide a minimal local-only snapshot so the bypass
+// matches the local-only mode the existing tests already simulate.
+vi.mock('../../providers/CoreStateProvider', () => ({
+  useCoreState: vi.fn(() => ({
+    snapshot: {
+      auth: { isAuthenticated: false, userId: null, user: null, profileId: null },
+      sessionToken: null,
+      currentUser: null,
+      onboardingCompleted: true,
+      chatOnboardingCompleted: true,
+      analyticsEnabled: false,
+      localState: {},
+      runtime: {},
+    },
+  })),
 }));
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -616,6 +635,25 @@ describe('Conversations — smoke render (#1123 welcome-lock removal)', () => {
   });
 
   it('blocks the send when the account is over budget (no rate-limit modal anymore)', async () => {
+    // Override the default local-only snapshot — usage limit only applies to
+    // cloud-mode users (sessionToken present). Local-only users (DingTalk
+    // fork's most common case) bypass the cloud-side usage gate, so this
+    // assertion is only meaningful in cloud mode. `mockReturnValue` (not
+    // `mockReturnValueOnce`) because Conversations calls `useCoreState` on
+    // every render and there are many renders during a single test.
+    vi.mocked(useCoreState).mockReturnValue({
+      snapshot: {
+        auth: { isAuthenticated: true, userId: 'user-1', user: null, profileId: null },
+        sessionToken: 'jwt-cloud',
+        currentUser: null,
+        onboardingCompleted: true,
+        chatOnboardingCompleted: true,
+        analyticsEnabled: false,
+        localState: {},
+        runtime: {},
+      },
+    } as unknown as ReturnType<typeof useCoreState>);
+
     const { textarea } = await renderSelectedConversation({ isAtLimit: true });
 
     await submitComposerText(textarea, 'hello at limit');
