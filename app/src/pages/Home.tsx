@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import ConnectionIndicator from '../components/ConnectionIndicator';
@@ -8,6 +8,7 @@ import {
   PromotionalCreditsBanner,
   UsageLimitBanner,
 } from '../components/home/HomeBanners';
+import LlmConfigCard from '../components/home/LlmConfigCard';
 import { dismissBanner, shouldShowBanner } from '../components/upsell/upsellDismissState';
 import { useUsageState } from '../hooks/useUsageState';
 import { useUser } from '../hooks/useUser';
@@ -17,7 +18,8 @@ import { selectBlockingState } from '../store/connectivitySelectors';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { resolveTheme, setThemeMode, type ThemeMode } from '../store/themeSlice';
 import { APP_VERSION } from '../utils/config';
-import { hasStoredLlmSettings } from '../utils/configPersistence';
+import { hasStoredLlmSettings, type LlmSettings } from '../utils/configPersistence';
+import LlmSetup from './LlmSetup';
 
 export function resolveHomeUserName(user: unknown): string {
   if (!user || typeof user !== 'object') return 'User';
@@ -80,6 +82,11 @@ const Home = () => {
   const blocking = useAppSelector(selectBlockingState);
   const [isRestartingCore, setIsRestartingCore] = useState(false);
   const [restartError, setRestartError] = useState<string | null>(null);
+  // Inline LLM configuration editor toggle
+  const [showLlmEditor, setShowLlmEditor] = useState(false);
+  const handleLlmEditComplete = useCallback((_settings: LlmSettings) => {
+    setShowLlmEditor(false);
+  }, []);
 
   const dispatch = useAppDispatch();
   const themeMode = useAppSelector(state => state.theme.mode) as ThemeMode;
@@ -261,6 +268,24 @@ const Home = () => {
             {t('home.askAssistant')}
           </button>
         </div>
+
+        {/* LLM Configuration card — only in custom LLM mode */}
+        {isCustomLlmMode && !showLlmEditor && (
+          <LlmConfigCard onEdit={() => setShowLlmEditor(true)} />
+        )}
+
+        {/* Inline LLM editor — expanded when user clicks Edit */}
+        {isCustomLlmMode && showLlmEditor && (
+          <div className="mt-3 bg-white dark:bg-neutral-900 rounded-2xl shadow-soft border border-stone-200 dark:border-neutral-800 p-4 animate-fade-up">
+            <LlmSetup mode="edit" compact onComplete={handleLlmEditComplete} />
+            <button
+              type="button"
+              onClick={() => setShowLlmEditor(false)}
+              className="w-full mt-3 py-2 text-sm text-stone-500 dark:text-neutral-400 hover:text-stone-700 dark:hover:text-neutral-200 transition-colors">
+              Cancel
+            </button>
+          </div>
+        )}
 
         {showEarlyBirdy && !isCustomLlmMode && (
           <EarlyBirdyBanner onDismiss={handleDismissEarlyBirdy} />
