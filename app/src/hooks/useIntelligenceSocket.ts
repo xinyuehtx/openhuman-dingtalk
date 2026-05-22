@@ -41,10 +41,15 @@ export const useIntelligenceSocketManager = () => {
   useEffect(() => {
     const previousToken = previousTokenRef.current;
 
+    // Local-only mode (no cloud session). `SocketProvider` keeps a
+    // placeholder-token connection alive so `chatService.chatSend` can route
+    // events via `socket.id`. Tearing it down here would silently kill the
+    // realtime channel the moment the user opens the Intelligence/Memory
+    // page — `connect()` below cannot revive it because its `tokenToUse`
+    // guard short-circuits when `token === null`, so the next chatSend
+    // throws "Socket not connected — no client ID for event routing". Bail
+    // out and let SocketProvider own the lifecycle in this mode.
     if (!token) {
-      if (previousToken || isConnected) {
-        disconnect();
-      }
       previousTokenRef.current = null;
       return;
     }
